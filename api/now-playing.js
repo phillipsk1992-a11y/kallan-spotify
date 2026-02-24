@@ -1,38 +1,39 @@
-async function fetchNowPlaying() {
-    try {
-      const res = await fetch(SPOTIFY_API_URL);
-      if (!res.ok) throw new Error('API error');
-      const data = await res.json();
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate');
 
-      if (data.track) {
-        const dot = data.isPlaying ? 'live' : 'offline';
-        const label = data.isPlaying 
-          ? '<span class="spotify-live-label">now</span> ' 
-          : '';
-        
-        widget.innerHTML = `
-          <div class="spotify-status">
-            <span class="spotify-dot ${dot}"></span>
-            ${label}<a href="${data.url}" class="spotify-link" target="_blank" rel="noopener">
-              <span class="spotify-track">${data.track}</span>
-              <span class="spotify-artist"> — ${data.artist}</span>
-            </a>
-          </div>
-        `;
-      } else {
-        widget.innerHTML = `
-          <div class="spotify-status">
-            <span class="spotify-dot offline"></span>
-            <span class="spotify-error">nothing playing</span>
-          </div>
-        `;
-      }
-    } catch (e) {
-      // If the API isn't set up yet, show a graceful fallback
-      widget.innerHTML = `
-        <p style="font-weight: 300; font-size: 13px;">
-          [Spotify integration pending setup — see source code for instructions]
-        </p>
-      `;
-    }
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REFRESH_TOKEN } = process.env;
+  const basic = Buffer.from(`${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`).toString('base64');
+
+  const tokenRes = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${basic}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: SPOTIFY_REFRESH_TOKEN,
+    }),
+  });
+
+  const { access_token } = await tokenRes.json();
+
+  const nowRes = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+    headers: { Authorization: `Bearer ${access_token}` },
+  });
+
+  if (nowRes.status === 200) {
+    const data = await nowRes.json();
+    if (data.item) {
+      return res.json({
+        isPlaying: data.is_playing,
+        track: data.item.name,
+        artist: data.item.artists.map(a => a.name).join(', '),
+        album: data.item.album.name,
+        url: data.item.external_urls.spotify,
+        playedAt: null,
+      })
