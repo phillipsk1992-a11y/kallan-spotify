@@ -1,3 +1,6 @@
 {
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "googleapis": "^129.0.0"
+  }
 }
