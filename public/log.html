@@ -1,1 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Log</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Practice">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎸</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+
+  :root {
+    --bg: #f5f2eb;
+    --fg: #1a1a1a;
+    --dim: #888;
+    --rule: #ccc;
+    --accent: #d44;
+    --spotify: #1db954;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    background: var(--bg);
+    color: var(--fg);
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 2rem 1.5rem;
+    max-width: 400px;
+    margin: 0 auto;
+    min-height: 100vh;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .title {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+  }
+
+  .log-form { margin-bottom: 2rem; }
+  .form-group { margin-bottom: 1rem; }
+  .form-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    margin-bottom: 0.3rem;
+    display: block;
+  }
+
+  .category-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.4rem;
+  }
+  .cat-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 0.6rem 0.3rem;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--dim);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cat-btn:hover { border-color: var(--fg); color: var(--fg); }
+  .cat-btn.selected { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+  .minutes-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .minutes-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--fg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  .minutes-btn:hover { background: var(--fg); color: var(--bg); }
+  .minutes-btn:active { background: var(--fg); color: var(--bg); }
+  .minutes-display {
+    font-size: 24px;
+    font-weight: 500;
+    min-width: 4rem;
+    text-align: center;
+  }
+  .minutes-unit { font-size: 12px; color: var(--dim); font-weight: 300; }
+  .quick-mins { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
+  .quick-min-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--dim);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .quick-min-btn:hover { border-color: var(--fg); color: var(--fg); }
+
+  .notes-input {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--fg);
+    resize: none;
+    height: 2.5rem;
+  }
+  .notes-input::placeholder { color: var(--rule); }
+  .notes-input:focus { outline: 1px solid var(--fg); border-color: var(--fg); }
+
+  .submit-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid var(--fg);
+    background: var(--fg);
+    color: var(--bg);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 1rem;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.15s;
+  }
+  .submit-btn:hover { background: transparent; color: var(--fg); }
+  .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .submit-btn:disabled:hover { background: var(--fg); color: var(--bg); }
+  .submit-btn.loading { opacity: 0.6; cursor: wait; }
+
+  .success-msg { display: none; text-align: center; padding: 1.5rem 0; }
+  .success-msg.show { display: block; }
+  .success-check { font-size: 32px; margin-bottom: 0.5rem; }
+  .success-text { font-size: 13px; color: var(--dim); font-weight: 300; }
+  .success-detail { font-size: 14px; font-weight: 500; margin-top: 0.3rem; }
+
+  .today-section {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+    margin-top: 1rem;
+  }
+  .today-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    margin-bottom: 0.8rem;
+  }
+  .today-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .today-cat { font-weight: 500; text-transform: lowercase; }
+  .today-mins { color: var(--dim); font-weight: 300; }
+  .today-time { color: var(--dim); font-weight: 300; font-size: 11px; }
+  .today-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    padding-top: 0.6rem;
+    font-weight: 500;
+  }
+  .today-empty {
+    font-size: 12px;
+    color: var(--dim);
+    font-weight: 300;
+    font-style: italic;
+  }
+
+  .error-msg {
+    font-size: 11px;
+    color: var(--accent);
+    margin-top: 0.5rem;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="title">Log Practice</div>
+
+<div class="log-form" id="logForm">
+  <div class="form-group">
+    <div class="form-label">category</div>
+    <div class="category-grid">
+      <button class="cat-btn" data-cat="technique" onclick="selectCat(this)">technique</button>
+      <button class="cat-btn" data-cat="reading" onclick="selectCat(this)">reading</button>
+      <button class="cat-btn" data-cat="chords" onclick="selectCat(this)">chords</button>
+      <button class="cat-btn" data-cat="scales" onclick="selectCat(this)">scales</button>
+      <button class="cat-btn" data-cat="tunes" onclick="selectCat(this)">tunes</button>
+      <button class="cat-btn" data-cat="theory" onclick="selectCat(this)">theory</button>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="form-label">minutes</div>
+    <div class="minutes-row">
+      <button class="minutes-btn" onclick="adjustMins(-1)">−</button>
+      <div>
+        <span class="minutes-display" id="minsDisplay">10</span>
+        <span class="minutes-unit">min</span>
+      </div>
+      <button class="minutes-btn" onclick="adjustMins(1)">+</button>
+    </div>
+    <div class="quick-mins">
+      <button class="quick-min-btn" onclick="setMins(5)">5</button>
+      <button class="quick-min-btn" onclick="setMins(10)">10</button>
+      <button class="quick-min-btn" onclick="setMins(15)">15</button>
+      <button class="quick-min-btn" onclick="setMins(20)">20</button>
+      <button class="quick-min-btn" onclick="setMins(30)">30</button>
+      <button class="quick-min-btn" onclick="setMins(45)">45</button>
+      <button class="quick-min-btn" onclick="setMins(60)">60</button>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="form-label">notes (optional)</div>
+    <textarea class="notes-input" id="notesInput" placeholder="e.g. Page 144, jazz blues"></textarea>
+  </div>
+
+  <button class="submit-btn" id="submitBtn" onclick="logPractice()" disabled>Log Practice</button>
+  <div class="error-msg" id="errorMsg">Failed to log — check connection and try again</div>
+</div>
+
+<div class="success-msg" id="successMsg">
+  <div class="success-check">✓</div>
+  <div class="success-text">Logged</div>
+  <div class="success-detail" id="successDetail"></div>
+  <button class="submit-btn" style="margin-top: 1.5rem; background: transparent; color: var(--fg);" onclick="resetForm()">Log Another</button>
+</div>
+
+<div class="today-section">
+  <div class="today-title">Today — <span id="todayDate"></span></div>
+  <div id="todayEntries"><div class="today-empty">loading...</div></div>
+  <div class="today-total" id="todayTotalRow" style="display: none;">
+    <span>total</span>
+    <span id="todayTotal">0min</span>
+  </div>
+</div>
+
+<script>
+// CONFIG - update these
+var API_BASE = 'https://kallan-spotify.vercel.app';
+var LOG_SECRET = 'kallanpracticelog92';
+
+var selectedCat = null;
+var mins = 10;
+
+function selectCat(btn) {
+  document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('selected'); });
+  btn.classList.add('selected');
+  selectedCat = btn.getAttribute('data-cat');
+  updateSubmit();
+}
+
+function adjustMins(delta) {
+  mins = Math.max(1, Math.min(120, mins + delta));
+  document.getElementById('minsDisplay').textContent = mins;
+}
+
+function setMins(val) {
+  mins = val;
+  document.getElementById('minsDisplay').textContent = mins;
+}
+
+function updateSubmit() {
+  document.getElementById('submitBtn').disabled = !selectedCat;
+}
+
+function logPractice() {
+  var notes = document.getElementById('notesInput').value;
+  var btn = document.getElementById('submitBtn');
+  var errMsg = document.getElementById('errorMsg');
+
+  btn.classList.add('loading');
+  btn.disabled = true;
+  btn.textContent = 'LOGGING...';
+  errMsg.classList.remove('show');
+
+  fetch(API_BASE + '/api/practice-log', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + LOG_SECRET
+    },
+    body: JSON.stringify({
+      category: selectedCat,
+      minutes: mins,
+      notes: notes
+    })
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
+  .then(function(data) {
+    // Success
+    document.getElementById('logForm').style.display = 'none';
+    document.getElementById('successMsg').classList.add('show');
+    document.getElementById('successDetail').textContent = selectedCat + ' · ' + mins + 'min';
+
+    // Refresh today's entries
+    fetchToday();
+  })
+  .catch(function(err) {
+    console.error('Log error:', err);
+    errMsg.classList.add('show');
+    btn.classList.remove('loading');
+    btn.disabled = false;
+    btn.textContent = 'LOG PRACTICE';
+    updateSubmit();
+  });
+}
+
+function resetForm() {
+  document.getElementById('logForm').style.display = 'block';
+  document.getElementById('successMsg').classList.remove('show');
+  document.getElementById('errorMsg').classList.remove('show');
+  selectedCat = null;
+  mins = 10;
+  document.getElementById('minsDisplay').textContent = '10';
+  document.getElementById('notesInput').value = '';
+  document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('selected'); });
+  var btn = document.getElementById('submitBtn');
+  btn.classList.remove('loading');
+  btn.textContent = 'LOG PRACTICE';
+  updateSubmit();
+}
+
+function fetchToday() {
+  fetch(API_BASE + '/api/practice-log')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var container = document.getElementById('todayEntries');
+      var totalRow = document.getElementById('todayTotalRow');
+
+      if (!data.todayEntries || data.todayEntries.length === 0) {
+        container.innerHTML = '<div class="today-empty">no practice logged today</div>';
+        totalRow.style.display = 'none';
+        return;
+      }
+
+      var html = '';
+      data.todayEntries.forEach(function(e) {
+        var d = new Date(e.timestamp);
+        var time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+        html += '<div class="today-entry">';
+        html += '<span class="today-cat">' + e.category + '</span>';
+        html += '<span class="today-mins">' + e.minutes + 'min</span>';
+        html += '<span class="today-time">' + time + '</span>';
+        html += '</div>';
+      });
+      container.innerHTML = html;
+      document.getElementById('todayTotal').textContent = data.todayTotal + 'min';
+      totalRow.style.display = 'flex';
+    })
+    .catch(function() {
+      document.getElementById('todayEntries').innerHTML = '<div class="today-empty">couldn\'t load today\'s data</div>';
+    });
+}
+
+// Set today's date
+var now = new Date();
+var days = ['sun','mon','tue','wed','thu','fri','sat'];
+var months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+document.getElementById('todayDate').textContent = days[now.getDay()] + ' ' + months[now.getMonth()] + ' ' + now.getDate();
+
+// Load today's entries on page load
+fetchToday();
+</script>
+
+</body>
+</html>
 
