@@ -80,14 +80,32 @@ module.exports = async (req, res) => {
           notes: r[3] || ''
         }));
 
-      // Calculate summaries
-      const now = new Date();
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const dayOfWeek = now.getDay(); // 0=Sun
-      const startOfWeek = new Date(startOfDay);
-      startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      // Calculate summaries in user's timezone
+      // TZ offset in hours - set via env var, defaults to +12 (Majuro)
+      const TZ_OFFSET = parseInt(process.env.TZ_OFFSET_HOURS || '12');
+
+      function toLocal(date) {
+        // Convert a UTC date to the user's local time by adding offset
+        return new Date(date.getTime() + TZ_OFFSET * 60 * 60 * 1000);
+      }
+
+      function localStartOfDay(localDate) {
+        return new Date(Date.UTC(localDate.getUTCFullYear(), localDate.getUTCMonth(), localDate.getUTCDate()));
+      }
+
+      const nowLocal = toLocal(new Date());
+      const startOfDayLocal = localStartOfDay(nowLocal);
+      // Convert back to UTC for comparison
+      const startOfDayUTC = new Date(startOfDayLocal.getTime() - TZ_OFFSET * 60 * 60 * 1000);
+
+      const dayOfWeek = startOfDayLocal.getUTCDay(); // 0=Sun
+      const startOfWeekUTC = new Date(startOfDayUTC.getTime() - dayOfWeek * 24 * 60 * 60 * 1000);
+
+      const startOfMonthLocal = new Date(Date.UTC(nowLocal.getUTCFullYear(), nowLocal.getUTCMonth(), 1));
+      const startOfMonthUTC = new Date(startOfMonthLocal.getTime() - TZ_OFFSET * 60 * 60 * 1000);
+
+      const startOfYearLocal = new Date(Date.UTC(nowLocal.getUTCFullYear(), 0, 1));
+      const startOfYearUTC = new Date(startOfYearLocal.getTime() - TZ_OFFSET * 60 * 60 * 1000);
 
       let weekTotal = 0, monthTotal = 0, yearTotal = 0, todayTotal = 0;
       let lastEntry = null;
@@ -101,24 +119,25 @@ module.exports = async (req, res) => {
 
       entries.forEach(e => {
         const d = new Date(e.timestamp);
-        if (d >= startOfYear) yearTotal += e.minutes;
-        if (d >= startOfMonth) monthTotal += e.minutes;
-        if (d >= startOfWeek) {
+        if (d >= startOfYearUTC) yearTotal += e.minutes;
+        if (d >= startOfMonthUTC) monthTotal += e.minutes;
+        if (d >= startOfWeekUTC) {
           weekTotal += e.minutes;
           if (!weekByCategory[e.category]) weekByCategory[e.category] = { minutes: 0, notes: '' };
           weekByCategory[e.category].minutes += e.minutes;
           if (e.notes) weekByCategory[e.category].notes = e.notes;
         }
-        if (d >= startOfDay) {
+        if (d >= startOfDayUTC) {
           todayTotal += e.minutes;
           todayEntries.push(e);
         }
 
-        // Track last practiced day
-        const entryDay = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString();
-        if (!lastDayDate || entryDay >= lastDayDate) {
-          if (entryDay !== lastDayDate) {
-            lastDayDate = entryDay;
+        // Track last practiced day (in local time)
+        const dLocal = toLocal(d);
+        const entryDayKey = dLocal.getUTCFullYear() + '-' + dLocal.getUTCMonth() + '-' + dLocal.getUTCDate();
+        if (!lastDayDate || entryDayKey >= lastDayDate) {
+          if (entryDayKey !== lastDayDate) {
+            lastDayDate = entryDayKey;
             lastDayMins = 0;
           }
           lastDayMins += e.minutes;
@@ -137,7 +156,7 @@ module.exports = async (req, res) => {
           timestamp: lastEntry.timestamp,
           dayTotal: lastDayMins
         } : null,
-        weekStart: startOfWeek.toISOString(),
+        weekStart: new Date(startOfWeekUTC.getTime() + TZ_OFFSET * 60 * 60 * 1000).toISOString(),
         totalEntries: entries.length
       });
     }
