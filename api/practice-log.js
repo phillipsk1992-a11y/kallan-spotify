@@ -42,55 +42,66 @@ function parseTimestamp(ts) {
   return isNaN(d.getTime()) ? null : d;
 }
 
-// Get the Monday of the current week (ISO week, Mon=start)
-function getWeekStart(date) {
-  const d = new Date(date);
-  const day = d.getDay(); // 0=Sun, 1=Mon...
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  const mon = new Date(d);
-  mon.setDate(diff);
-  mon.setHours(0, 0, 0, 0);
-  return mon;
+// Convert a UTC date to "local" time given a timezone offset (from getTimezoneOffset())
+// getTimezoneOffset() returns minutes: UTC+12 → -720
+function toLocal(utcDate, tzOffset) {
+  return new Date(utcDate.getTime() - tzOffset * 60000);
 }
 
-// Get start of month
-function getMonthStart(date) {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
+// Get start of day in user's local timezone, returned as UTC timestamp
+function getDayStart(date, tzOffset) {
+  const local = toLocal(date, tzOffset);
+  local.setUTCHours(0, 0, 0, 0);
+  return new Date(local.getTime() + tzOffset * 60000);
 }
 
-// Get start of day
-function getDayStart(date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
+// Get the Monday of the current week in user's local timezone, returned as UTC
+function getWeekStart(date, tzOffset) {
+  const local = toLocal(date, tzOffset);
+  const day = local.getUTCDay(); // 0=Sun, 1=Mon...
+  const diff = local.getUTCDate() - day + (day === 0 ? -6 : 1);
+  local.setUTCDate(diff);
+  local.setUTCHours(0, 0, 0, 0);
+  return new Date(local.getTime() + tzOffset * 60000);
+}
+
+// Get start of month in user's local timezone, returned as UTC
+function getMonthStart(date, tzOffset) {
+  const local = toLocal(date, tzOffset);
+  local.setUTCDate(1);
+  local.setUTCHours(0, 0, 0, 0);
+  return new Date(local.getTime() + tzOffset * 60000);
+}
+
+// Get local date string (YYYY-MM-DD) for a UTC timestamp
+function getLocalDateStr(utcDate, tzOffset) {
+  const local = toLocal(utcDate, tzOffset);
+  return local.toISOString().split('T')[0];
 }
 
 // Calculate streak (consecutive days with at least one entry)
-function calculateStreak(rows) {
+function calculateStreak(rows, tzOffset) {
   if (!rows || rows.length === 0) return 0;
 
-  // Collect unique practice dates (YYYY-MM-DD)
+  // Collect unique practice dates in local timezone (YYYY-MM-DD)
   const dates = new Set();
   rows.forEach(row => {
     const ts = parseTimestamp(row[0]);
     if (ts) {
-      dates.add(ts.toISOString().split('T')[0]);
+      dates.add(getLocalDateStr(ts, tzOffset));
     }
   });
 
   const sortedDates = Array.from(dates).sort().reverse();
   if (sortedDates.length === 0) return 0;
 
-  // Check if the most recent date is today or yesterday
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
+  // Check if the most recent date is today or yesterday (in local time)
+  const now = new Date();
+  const todayStr = getLocalDateStr(now, tzOffset);
+  const yesterday = new Date(now.getTime() - 86400000);
+  const yesterdayStr = getLocalDateStr(yesterday, tzOffset);
 
-  const mostRecent = new Date(sortedDates[0]);
-  mostRecent.setHours(0, 0, 0, 0);
-
-  if (mostRecent < yesterday) return 0;
+  if (sortedDates[0] !== todayStr && sortedDates[0] !== yesterdayStr) return 0;
 
   let streak = 1;
   for (let i = 1; i < sortedDates.length; i++) {
@@ -178,9 +189,10 @@ module.exports = async (req, res) => {
         : rows;
 
       const now = new Date();
-      const todayStart = getDayStart(now);
-      const weekStart = getWeekStart(now);
-      const monthStart = getMonthStart(now);
+      const tzOffset = parseInt(req.query.tz) || 0; // from getTimezoneOffset()
+      const todayStart = getDayStart(now, tzOffset);
+      const weekStart = getWeekStart(now, tzOffset);
+      const monthStart = getMonthStart(now, tzOffset);
 
       // Parse all entries
       const entries = data.map(row => ({
@@ -221,7 +233,7 @@ module.exports = async (req, res) => {
       });
 
       // Streak
-      const streak = calculateStreak(data);
+      const streak = calculateStreak(data, tzOffset);
 
       // Last practice entry
       const lastPractice = entries.find(e => e.type === 'practice');
@@ -249,11 +261,8 @@ module.exports = async (req, res) => {
       // Week daily breakdown (Mon=0 through Sun=6)
       const weekDays = [];
       for (let i = 0; i < 7; i++) {
-        const dayDate = new Date(weekStart);
-        dayDate.setDate(dayDate.getDate() + i);
-        const dayStart = getDayStart(dayDate);
-        const dayEnd = new Date(dayStart);
-        dayEnd.setDate(dayEnd.getDate() + 1);
+        const dayStart = new Date(weekStart.getTime() + i * 86400000);
+        const dayEnd = new Date(dayStart.getTime() + 86400000);
 
         const dayEntries = entries.filter(e =>
           e.timestamp >= dayStart && e.timestamp < dayEnd
@@ -261,10 +270,12 @@ module.exports = async (req, res) => {
         const dayMinutes = dayEntries.reduce((sum, e) => sum + e.minutes, 0);
         const hasGig = dayEntries.some(e => e.type === 'gig');
         const isFuture = dayStart > now;
-        const isToday = dayStart.toDateString() === now.toDateString();
+        const todayLocalStr = getLocalDateStr(now, tzOffset);
+        const dayLocalStr = getLocalDateStr(dayStart, tzOffset);
+        const isToday = dayLocalStr === todayLocalStr;
 
         weekDays.push({
-          date: dayDate.toISOString().split('T')[0],
+          date: dayLocalStr,
           dayLabel: ['m', 't', 'w', 't', 'f', 's', 's'][i],
           minutes: dayMinutes,
           intensity: getIntensity(dayMinutes),
@@ -275,20 +286,20 @@ module.exports = async (req, res) => {
       }
 
       // Contribution grid data (full year, 52 weeks × 7 days)
-      // Start from the first Monday of the year (or last Monday of previous year)
-      const yearStart = new Date(now.getFullYear(), 0, 1);
-      const firstMonday = new Date(yearStart);
-      const dayOfWeek = firstMonday.getDay();
-      // Adjust to previous Monday
-      firstMonday.setDate(firstMonday.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      const localNow = toLocal(now, tzOffset);
+      const yearNum = localNow.getUTCFullYear();
+      // Find first Monday on or before Jan 1 of this year (in local time)
+      const jan1Local = new Date(Date.UTC(yearNum, 0, 1));
+      const jan1Day = jan1Local.getUTCDay();
+      const firstMondayLocal = new Date(jan1Local);
+      firstMondayLocal.setUTCDate(firstMondayLocal.getUTCDate() - (jan1Day === 0 ? 6 : jan1Day - 1));
+      // Convert back to UTC for comparison
+      const gridStart = new Date(firstMondayLocal.getTime() + tzOffset * 60000);
 
       const gridData = [];
       for (let i = 0; i < 52 * 7; i++) {
-        const cellDate = new Date(firstMonday);
-        cellDate.setDate(cellDate.getDate() + i);
-        const cellStart = getDayStart(cellDate);
-        const cellEnd = new Date(cellStart);
-        cellEnd.setDate(cellEnd.getDate() + 1);
+        const cellStart = new Date(gridStart.getTime() + i * 86400000);
+        const cellEnd = new Date(cellStart.getTime() + 86400000);
 
         const cellEntries = entries.filter(e =>
           e.timestamp >= cellStart && e.timestamp < cellEnd
@@ -298,7 +309,7 @@ module.exports = async (req, res) => {
         const isFuture = cellStart > now;
 
         gridData.push({
-          date: cellDate.toISOString().split('T')[0],
+          date: getLocalDateStr(cellStart, tzOffset),
           minutes: cellMinutes,
           intensity: isFuture ? -1 : getIntensity(cellMinutes),
           hasGig: hasGig && !isFuture,
@@ -307,8 +318,7 @@ module.exports = async (req, res) => {
 
       // Weekly average (last 4 complete weeks)
       let weekAvgMinutes = 0;
-      const fourWeeksAgo = new Date(weekStart);
-      fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
+      const fourWeeksAgo = new Date(weekStart.getTime() - 28 * 86400000);
       const last4WeekEntries = entries.filter(e =>
         e.timestamp >= fourWeeksAgo && e.timestamp < weekStart
       );
