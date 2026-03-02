@@ -38,8 +38,8 @@ html, body {
 body {
   max-width: 480px;
   margin: 0 auto;
-  padding: 16px 20px 100px;
-  padding-top: env(safe-area-inset-top, 16px);
+  padding: 20px 24px 100px;
+  padding-top: env(safe-area-inset-top, 20px);
 }
 
 /* ─── Header ─── */
@@ -47,18 +47,18 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   padding-top: 8px;
 }
 
 .app-name {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.5px;
 }
 
 .header-link {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--dim);
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -75,13 +75,13 @@ body {
 
 .tabs button {
   font-family: inherit;
-  font-size: 10px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--dim);
   background: none;
   border: none;
-  padding: 7px 14px 7px 0;
+  padding: 9px 16px 9px 0;
   border-bottom: 1.5px solid transparent;
   margin-bottom: -1px;
   cursor: pointer;
@@ -95,19 +95,19 @@ body {
 /* ─── Divider ─── */
 .divider {
   color: var(--rule);
-  font-size: 10px;
-  margin: 18px 0;
+  font-size: 11px;
+  margin: 22px 0;
   overflow: hidden;
   white-space: nowrap;
   user-select: none;
 }
 
 .section-label {
-  font-size: 9px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--dim);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 /* ─── Tab Content ─── */
@@ -119,35 +119,35 @@ body {
 /* ═══════════════════════════════════════ */
 
 .home-greeting {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 400;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .home-date {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--dim);
-  margin-bottom: 22px;
+  margin-bottom: 26px;
 }
 
 /* Week visualisation */
 .week-viz {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   justify-content: center;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .week-viz .day-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .week-viz .day-cell {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border-radius: 3px;
 }
 
@@ -161,7 +161,7 @@ body {
 }
 
 .week-viz .day-name {
-  font-size: 8px;
+  font-size: 10px;
   color: var(--dim);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -171,16 +171,16 @@ body {
 .status-line {
   display: flex;
   align-items: center;
-  padding: 9px 0;
+  padding: 11px 0;
   border-bottom: 1px solid #eae7e0;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .status-line .dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  margin-right: 10px;
+  margin-right: 12px;
   flex-shrink: 0;
 }
 
@@ -193,9 +193,9 @@ body {
 .status-line .dot.grey { background: #bbb; }
 
 .status-line .status-label {
-  width: 74px;
+  width: 90px;
   color: var(--dim);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .status-line .status-value { flex: 1; }
@@ -208,20 +208,20 @@ body {
   color: var(--bg);
   border: none;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  padding: 14px;
+  padding: 16px;
   cursor: pointer;
   text-align: center;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .home-footer {
   text-align: center;
-  font-size: 9px;
+  font-size: 11px;
   color: #bbb;
-  margin-top: 20px;
+  margin-top: 24px;
   line-height: 1.7;
   font-style: italic;
 }
@@ -241,8 +241,8 @@ body {
   background: transparent;
   border: 1px solid var(--rule);
   font-family: inherit;
-  font-size: 11px;
-  padding: 13px 6px;
+  font-size: 13px;
+  padding: 15px 6px;
   text-align: center;
   color: var(--fg);
   cursor: pointer;
@@ -260,11 +260,11 @@ body {
   background: transparent;
   border: 1px solid var(--gig);
   font-family: inherit;
-  font-size: 11px;
-  padding: 13px 6px;
+  font-size: 13px;
+  padding: 15px 6px;
   text-align: center;
   color: var(--gig);
-  margin-bottom: 20px;
+  margin-bottom: 22px;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
@@ -280,10 +280,10 @@ body {
   background: transparent;
   border: 1px solid var(--gig);
   font-family: inherit;
-  font-size: 11px;
-  padding: 9px 10px;
+  font-size: 13px;
+  padding: 11px 12px;
   color: var(--fg);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   display: none;
 }
 
@@ -301,12 +301,12 @@ body {
 }
 
 .dur-btn {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   border: 1px solid var(--rule);
   background: transparent;
   font-family: inherit;
-  font-size: 18px;
+  font-size: 20px;
   color: var(--fg);
   display: flex;
   align-items: center;
@@ -315,14 +315,14 @@ body {
 }
 
 .dur-display {
-  font-size: 32px;
+  font-size: 38px;
   font-weight: 300;
-  min-width: 100px;
+  min-width: 110px;
   text-align: center;
 }
 
 .dur-display span {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--dim);
   font-weight: 400;
 }
@@ -330,16 +330,16 @@ body {
 .quick-mins {
   display: flex;
   justify-content: center;
-  gap: 7px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 18px;
 }
 
 .quick-mins button {
   font-family: inherit;
-  font-size: 9px;
+  font-size: 11px;
   color: var(--dim);
   border: 1px solid #ddd;
-  padding: 3px 9px;
+  padding: 5px 11px;
   background: transparent;
   cursor: pointer;
   transition: border-color 0.15s;
@@ -356,10 +356,10 @@ body {
   background: transparent;
   border: 1px solid var(--rule);
   font-family: inherit;
-  font-size: 11px;
-  padding: 9px 10px;
+  font-size: 13px;
+  padding: 11px 12px;
   color: var(--fg);
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   resize: none;
 }
 
@@ -373,10 +373,10 @@ body {
   color: var(--bg);
   border: none;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  padding: 13px;
+  padding: 15px;
   cursor: pointer;
   transition: opacity 0.15s;
 }
@@ -394,8 +394,8 @@ body {
 .today-entry {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
-  padding: 5px 0;
+  font-size: 13px;
+  padding: 7px 0;
   border-bottom: 1px solid #eae7e0;
 }
 
@@ -406,8 +406,8 @@ body {
 .today-total {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
-  padding: 7px 0 0;
+  font-size: 13px;
+  padding: 9px 0 0;
   font-weight: 600;
 }
 
@@ -417,41 +417,41 @@ body {
 
 .stats-big {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .stats-big .stat-num {
-  font-size: 44px;
+  font-size: 52px;
   font-weight: 300;
   line-height: 1;
 }
 
 .stats-big .stat-unit {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--dim);
   text-transform: uppercase;
   letter-spacing: 2px;
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 .stats-row {
   display: flex;
   justify-content: space-around;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .stat-item .stat-item-num {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 400;
 }
 
 .stat-item .stat-item-label {
-  font-size: 8px;
+  font-size: 10px;
   color: var(--dim);
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 /* Grid header */
@@ -465,7 +465,7 @@ body {
 .grid-header .section-label { margin-bottom: 0; }
 
 .share-link {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--dim);
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -479,7 +479,7 @@ body {
 .grid-months {
   display: flex;
   justify-content: space-between;
-  font-size: 7px;
+  font-size: 9px;
   color: var(--dim);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -515,14 +515,14 @@ body {
   align-items: center;
   justify-content: flex-end;
   gap: 3px;
-  margin-top: 5px;
-  font-size: 7px;
+  margin-top: 6px;
+  font-size: 9px;
   color: var(--dim);
 }
 
 .grid-legend .swatch {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 1px;
 }
 
@@ -532,20 +532,20 @@ body {
 .cat-bar-row {
   display: flex;
   align-items: center;
-  margin-bottom: 7px;
+  margin-bottom: 9px;
 }
 
 .cat-bar-label {
-  width: 72px;
+  width: 82px;
   color: var(--dim);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .cat-bar-track {
   flex: 1;
-  height: 5px;
+  height: 6px;
   background: var(--int-0);
-  margin: 0 8px;
+  margin: 0 10px;
 }
 
 .cat-bar-fill {
@@ -557,15 +557,15 @@ body {
 .cat-bar-fill.top { background: var(--green); }
 
 .cat-bar-hours {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--dim);
-  width: 30px;
+  width: 34px;
   text-align: right;
 }
 
 /* Gig entries */
 .gig-entry {
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid #eae7e0;
 }
 
@@ -573,39 +573,39 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .gig-entry .gig-venue {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
 }
 
 .gig-entry .gig-date {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--dim);
 }
 
 .gig-entry .gig-detail {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--dim);
 }
 
 .gig-dot {
   display: inline-block;
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   background: var(--gig);
   border-radius: 50%;
-  margin-right: 6px;
+  margin-right: 7px;
   vertical-align: middle;
 }
 
 .stats-footer {
   text-align: center;
-  font-size: 9px;
+  font-size: 11px;
   color: #bbb;
-  margin-top: 10px;
+  margin-top: 14px;
   line-height: 1.6;
 }
 
@@ -628,9 +628,9 @@ body {
 }
 
 .reflect-prompt {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--fg);
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   line-height: 1.5;
 }
 
@@ -639,8 +639,8 @@ body {
   background: transparent;
   border: 1px solid var(--rule);
   font-family: inherit;
-  font-size: 11px;
-  padding: 12px;
+  font-size: 13px;
+  padding: 14px;
   color: var(--fg);
   resize: none;
   line-height: 1.5;
@@ -650,14 +650,14 @@ body {
 .reflect-input:focus { outline: none; border-color: var(--fg); }
 
 .skip-link {
-  font-size: 9px;
+  font-size: 11px;
   color: var(--dim);
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
   text-align: right;
   display: block;
-  margin-top: 8px;
+  margin-top: 10px;
   background: none;
   border: none;
   font-family: inherit;
@@ -726,10 +726,10 @@ body {
   color: var(--bg);
   border: none;
   font-family: inherit;
-  font-size: 11px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  padding: 13px;
+  padding: 15px;
   cursor: pointer;
 }
 
@@ -864,10 +864,10 @@ body {
   background: transparent;
   border: 1px solid var(--rule);
   font-family: inherit;
-  font-size: 9px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  padding: 10px;
+  padding: 12px;
   color: var(--fg);
   text-align: center;
   cursor: pointer;
@@ -881,9 +881,9 @@ body {
 
 .share-size {
   text-align: center;
-  font-size: 9px;
+  font-size: 11px;
   color: var(--dim);
-  margin-top: 12px;
+  margin-top: 14px;
 }
 
 /* ─── Toast ─── */
@@ -895,9 +895,9 @@ body {
   background: var(--fg);
   color: var(--bg);
   font-family: inherit;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
-  padding: 10px 20px;
+  padding: 12px 24px;
   opacity: 0;
   transition: opacity 0.3s, transform 0.3s;
   pointer-events: none;
@@ -1109,7 +1109,7 @@ input:focus, textarea:focus, button:focus { outline: none; }
 // CONFIG
 // ═══════════════════════════════════════════
 const API_URL = '/api/practice-log';
-const API_SECRET = 'kallanpracticelog92'; // Set via env or replace
+const API_SECRET = 'REPLACE_WITH_YOUR_SECRET'; // Set via env or replace
 
 const INTENSITY_COLORS = ['#e8e5de', '#c8dfc0', '#7db868', '#3d8b2a', '#1a5c0e'];
 const GIG_COLOR = '#e07a2f';
@@ -1269,7 +1269,7 @@ function renderLog() {
   entriesEl.innerHTML = '';
 
   if (!appData.today || appData.today.entries.length === 0) {
-    entriesEl.innerHTML = '<div style="font-size:10px;color:var(--dim);padding:8px 0;">no entries yet today</div>';
+    entriesEl.innerHTML = '<div style="font-size:12px;color:var(--dim);padding:10px 0;">no entries yet today</div>';
     return;
   }
 
@@ -1377,7 +1377,7 @@ function renderStats() {
       gigsEl.appendChild(entry);
     });
   } else {
-    gigsEl.innerHTML = '<div style="font-size:10px;color:var(--dim);padding:8px 0;">no gigs logged yet</div>';
+    gigsEl.innerHTML = '<div style="font-size:12px;color:var(--dim);padding:10px 0;">no gigs logged yet</div>';
   }
 }
 
