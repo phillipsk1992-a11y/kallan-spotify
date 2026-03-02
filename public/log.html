@@ -1569,9 +1569,9 @@ function renderWeekCard(ctx, reflection) {
   const contentW = CW - pad * 2;
 
   // ── Subtitle ──
-  let y = 230;
+  let y = 210;
   drawSubLabel(ctx, 'WEEK IN PRACTICE', y);
-  y += 120;
+  y += 170;
 
   // ── Big number ──
   const weekHrs = (appData.week.totalMinutes / 60).toFixed(1);
@@ -1586,7 +1586,7 @@ function renderWeekCard(ctx, reflection) {
   ctx.letterSpacing = '5px';
   ctx.fillText('HOURS', CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 70;
+  y += 60;
 
   // ── Day grid ──
   const cellGap = 12;
@@ -1658,9 +1658,9 @@ function renderWeekCard(ctx, reflection) {
 
   if (cats.length > 0 && totalMins > 0) {
     const donutCenterX = CW / 2;
-    const donutCenterY = y + 200;
-    const outerR = 180;
-    const innerR = 115;
+    const donutCenterY = y + 230;
+    const outerR = 210;
+    const innerR = 135;
 
     // Donut colors — muted palette
     const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
@@ -1682,25 +1682,25 @@ function renderWeekCard(ctx, reflection) {
     });
 
     // Center text — total minutes
-    ctx.font = `300 48px ${mono}`;
+    ctx.font = `300 56px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
     const totalStr = totalMins >= 60
       ? Math.floor(totalMins / 60) + 'h ' + (totalMins % 60 > 0 ? (totalMins % 60) + 'm' : '')
       : totalMins + 'm';
-    ctx.fillText(totalStr.trim(), donutCenterX, donutCenterY + 8);
+    ctx.fillText(totalStr.trim(), donutCenterX, donutCenterY + 10);
     ctx.font = `300 18px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.letterSpacing = '3px';
-    ctx.fillText('TOTAL', donutCenterX, donutCenterY + 36);
+    ctx.fillText('TOTAL', donutCenterX, donutCenterY + 42);
     ctx.letterSpacing = '0px';
 
-    y = donutCenterY + outerR + 50;
+    y = donutCenterY + outerR + 60;
 
     // Legend — two columns
-    const legendX = pad + 40;
-    const legendColW = (contentW - 80) / 2;
-    const legendRowH = 44;
+    const legendX = pad + 30;
+    const legendColW = (contentW - 60) / 2;
+    const legendRowH = 52;
 
     cats.forEach((cat, i) => {
       const col = i % 2;
@@ -1711,27 +1711,27 @@ function renderWeekCard(ctx, reflection) {
       // Color dot
       ctx.fillStyle = donutColors[i % donutColors.length];
       ctx.beginPath();
-      ctx.arc(lx, ly, 7, 0, Math.PI * 2);
+      ctx.arc(lx, ly, 8, 0, Math.PI * 2);
       ctx.fill();
 
       // Category name
-      ctx.font = `400 22px ${mono}`;
+      ctx.font = `500 24px ${mono}`;
       ctx.fillStyle = FG_COLOR;
       ctx.textAlign = 'left';
-      ctx.fillText(cat[0], lx + 20, ly + 7);
+      ctx.fillText(cat[0], lx + 24, ly + 8);
 
       // Minutes
       const mins = cat[1];
       const hrsStr = mins >= 60
         ? parseFloat((mins / 60).toFixed(1)) + 'h'
         : mins + 'm';
-      ctx.font = `400 20px ${mono}`;
+      ctx.font = `400 22px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
-      ctx.fillText(hrsStr, lx + legendColW - 20, ly + 7);
+      ctx.fillText(hrsStr, lx + legendColW - 10, ly + 8);
     });
 
-    y += Math.ceil(cats.length / 2) * legendRowH + 20;
+    y += Math.ceil(cats.length / 2) * legendRowH + 30;
   }
 
   y = drawReflection(ctx, reflection, y, gridWidth);
@@ -1747,20 +1747,20 @@ function renderMonthCard(ctx, reflection) {
 
   const pad = 100;
   const contentW = CW - pad * 2;
-  let y = 220;
+  let y = 210;
 
   // Subtitle with month name
   const monthName = (appData.month.name || 'THIS MONTH').toUpperCase();
   drawSubLabel(ctx, monthName + ' ' + new Date().getFullYear(), y);
-  y += 130;
+  y += 170;
 
   // Big number
   const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
-  ctx.font = `200 220px ${mono}`;
+  ctx.font = `200 200px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(monthHrs.toString(), CW / 2, y);
-  y += 50;
+  y += 45;
 
   ctx.font = `300 24px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
@@ -1839,19 +1839,19 @@ function renderYearCard(ctx, reflection) {
 
   const pad = 100;
   const contentW = CW - pad * 2;
-  let y = 220;
+  let y = 210;
 
   // Subtitle
   drawSubLabel(ctx, 'THE LONG GAME', y);
-  y += 130;
+  y += 170;
 
   // Year hours
   const yearHrs = Math.round((appData.year ? appData.year.totalMinutes : 0) / 60);
-  ctx.font = `200 220px ${mono}`;
+  ctx.font = `200 200px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(yearHrs.toString(), CW / 2, y);
-  y += 50;
+  y += 45;
 
   ctx.font = `300 24px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
