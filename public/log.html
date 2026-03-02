@@ -269,13 +269,6 @@ body {
   transition: background 0.15s, color 0.15s;
 }
 
-.gig-btn::before {
-  content: '\25C6';
-  margin-right: 6px;
-  font-size: 7px;
-  vertical-align: middle;
-}
-
 .gig-btn.selected {
   background: var(--gig);
   color: var(--bg);
@@ -499,6 +492,7 @@ body {
   display: grid;
   grid-template-columns: repeat(52, 1fr);
   grid-template-rows: repeat(7, 1fr);
+  grid-auto-flow: column;
   gap: 2px;
 }
 
@@ -975,7 +969,7 @@ input:focus, textarea:focus, button:focus { outline: none; }
     <button class="cat-btn" data-cat="tunes">tunes</button>
     <button class="cat-btn" data-cat="theory">theory</button>
   </div>
-  <button class="gig-btn" id="gig-btn">log a gig</button>
+  <button class="gig-btn" id="gig-btn">&#9670; log a gig</button>
   <input type="text" class="venue-field" id="venue-field" placeholder="venue name">
 
   <div class="section-label">Duration</div>
@@ -1137,7 +1131,7 @@ let currentView = 'main'; // main | share | card
 // ═══════════════════════════════════════════
 async function fetchStats() {
   try {
-    const resp = await fetch(API_URL, {
+    const resp = await fetch(API_URL + '?tz=' + new Date().getTimezoneOffset(), {
       headers: { 'x-api-secret': API_SECRET }
     });
     if (!resp.ok) {
