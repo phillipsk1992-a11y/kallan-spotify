@@ -55,18 +55,24 @@ body {
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.5px;
-  position: relative;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .app-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--green);
-  position: absolute;
-  top: -4px;
-  left: 5px;
+  flex-shrink: 0;
+  margin-top: 4px;
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
 }
 
 .header-link {
@@ -1522,24 +1528,22 @@ function drawHeader(ctx) {
   const logoText = 'woodshed';
   ctx.font = `600 34px ${mono}`;
   ctx.letterSpacing = '1px';
-  ctx.textAlign = 'center';
+  ctx.textAlign = 'left';
   const textW = ctx.measureText(logoText).width;
+  const dotR = 6;
+  const dotGap = 8;
+  const totalW = dotR * 2 + dotGap + textW;
+  const startX = (CW - totalW) / 2;
 
-  // Draw logo text centered
-  ctx.fillStyle = FG_COLOR;
-  ctx.fillText(logoText, CW / 2, 122);
-
-  // Green dot centered above the 'w'
-  // 'w' is the first character — find its center
-  const textStartX = CW / 2 - textW / 2;
-  const wWidth = ctx.measureText('w').width;
-  const wCenterX = textStartX + wWidth / 2;
-
+  // Green accent dot — vertically centered with text x-height
   ctx.fillStyle = '#1db954';
   ctx.beginPath();
-  ctx.arc(wCenterX, 80, 6, 0, Math.PI * 2);
+  ctx.arc(startX + dotR, 115, dotR, 0, Math.PI * 2);
   ctx.fill();
 
+  // Logo text
+  ctx.fillStyle = FG_COLOR;
+  ctx.fillText(logoText, startX + dotR * 2 + dotGap, 122);
   ctx.letterSpacing = '0px';
 
   // Thin rule
@@ -1608,22 +1612,22 @@ function drawFooterWm(ctx) {
   const dotText = 'woodshed';
   ctx.font = `300 18px ${mono}`;
   ctx.letterSpacing = '4px';
-  ctx.textAlign = 'center';
+  ctx.textAlign = 'left';
   const wmW = ctx.measureText(dotText).width;
+  const dotR = 3.5;
+  const dotGap = 8;
+  const totalW = dotR * 2 + dotGap + wmW;
+  const startX = (CW - totalW) / 2;
 
-  // Find center of 'w'
-  const wWidth = ctx.measureText('w').width;
-  const textStartX = CW / 2 - wmW / 2;
-  const wCenterX = textStartX + wWidth / 2;
-
-  // Green dot above the w
+  // Green dot
   ctx.fillStyle = 'rgba(29,185,84,0.35)';
   ctx.beginPath();
-  ctx.arc(wCenterX, wmY - 20, 3.5, 0, Math.PI * 2);
+  ctx.arc(startX + dotR, wmY - 5, dotR, 0, Math.PI * 2);
   ctx.fill();
 
+  // Text
   ctx.fillStyle = '#c0bdb6';
-  ctx.fillText(dotText, CW / 2, wmY);
+  ctx.fillText(dotText, startX + dotR * 2 + dotGap, wmY);
   ctx.letterSpacing = '0px';
 }
 
@@ -1823,86 +1827,226 @@ function renderMonthCard(ctx, reflection) {
 
   const pad = 100;
   const contentW = CW - pad * 2;
-  let y = 210;
 
-  // Subtitle with month name
+  // ── Subtitle ──
+  let y = 280;
   const monthName = (appData.month.name || 'THIS MONTH').toUpperCase();
   drawSubLabel(ctx, monthName + ' ' + new Date().getFullYear(), y);
-  y += 170;
+  y += 180;
 
-  // Big number
+  // ── Big number ──
   const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
-  ctx.font = `200 200px ${mono}`;
+  ctx.font = `200 160px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(monthHrs.toString(), CW / 2, y);
   y += 45;
 
-  ctx.font = `300 24px ${mono}`;
+  ctx.font = `300 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
   ctx.fillText('HOURS', CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 100;
+  y += 80;
 
-  // Category bars
-  const barX = pad;
-  const barMaxW = contentW;
-  const barH = 28;
-  const barGap = 56;
-  const breakdown = appData.categoryBreakdownMonth || appData.categoryBreakdown || {};
-  const cats = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
-  const maxMins = cats.length > 0 ? cats[0][1] : 1;
+  // ── Calendar grid ──
+  const now = new Date();
+  const yr = now.getFullYear();
+  const mo = now.getMonth();
+  const daysInMonth = new Date(yr, mo + 1, 0).getDate();
+  let startDow = new Date(yr, mo, 1).getDay() - 1; // Mon=0
+  if (startDow < 0) startDow = 6;
 
-  cats.forEach((cat, i) => {
-    const catName = cat[0];
-    const mins = cat[1];
-    const hrs = parseFloat((mins / 60).toFixed(1));
-    const barW = Math.max((mins / maxMins) * barMaxW, 6);
-    const cy = y + i * (barH + barGap);
+  const totalSlots = startDow + daysInMonth;
+  const calRows = Math.ceil(totalSlots / 7);
 
-    // Category name + hours on same line
-    ctx.font = `500 24px ${mono}`;
-    ctx.fillStyle = FG_COLOR;
-    ctx.textAlign = 'left';
-    ctx.fillText(catName, barX, cy - 8);
+  // Map day-of-month to grid index
+  const jan1 = new Date(yr, 0, 1);
+  let jan1Dow = jan1.getDay() - 1;
+  if (jan1Dow < 0) jan1Dow = 6;
+  const gridStart = new Date(jan1);
+  gridStart.setDate(gridStart.getDate() - jan1Dow);
 
-    ctx.font = `400 22px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
-    ctx.textAlign = 'right';
-    ctx.fillText(hrs + 'h', barX + barMaxW, cy - 8);
+  function gridIndexForDay(d) {
+    const date = new Date(yr, mo, d);
+    const diff = Math.floor((date - gridStart) / 86400000);
+    if (diff < 0 || diff >= 364) return -1;
+    return diff;
+  }
 
-    // Track
-    ctx.fillStyle = '#e8e5de';
-    roundRect(ctx, barX, cy, barMaxW, barH, 6);
-    ctx.fill();
+  const cellGap = 8;
+  const cellSize = 80;
+  const calW = 7 * cellSize + 6 * cellGap;
+  const calX = (CW - calW) / 2;
 
-    // Fill
-    ctx.fillStyle = i === 0 ? '#1db954' : FG_COLOR;
-    roundRect(ctx, barX, cy, barW, barH, 6);
-    ctx.fill();
-  });
-
-  y += cats.length * (barH + barGap) + 30;
-
-  // Divider
-  ctx.strokeStyle = '#ddd';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(pad, y);
-  ctx.lineTo(CW - pad, y);
-  ctx.stroke();
-  y += 50;
-
-  // Week hours + streak
-  const weekHrs = parseFloat((appData.week.totalMinutes / 60).toFixed(1));
-  ctx.font = `300 24px ${mono}`;
+  // Day headers
+  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  ctx.font = `400 20px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'center';
-  ctx.fillText(`${weekHrs}h this week \u00B7 ${appData.streak} day streak`, CW / 2, y);
-  y += 60;
+  dayLabels.forEach((label, i) => {
+    ctx.fillText(label, calX + i * (cellSize + cellGap) + cellSize / 2, y);
+  });
+  y += 16;
 
-  y = drawReflection(ctx, reflection, y, contentW);
+  let dayNum = 1;
+  let activeDays = 0;
+  let calGigs = 0;
+
+  for (let row = 0; row < calRows; row++) {
+    for (let col = 0; col < 7; col++) {
+      const slot = row * 7 + col;
+      if (slot < startDow || dayNum > daysInMonth) continue;
+
+      const cx = calX + col * (cellSize + cellGap);
+      const cy = y + row * (cellSize + cellGap);
+      const isFuture = new Date(yr, mo, dayNum) > now;
+
+      let intensity = 0;
+      let hasGig = false;
+      const gi = gridIndexForDay(dayNum);
+      if (gi >= 0 && gi < appData.grid.length) {
+        intensity = appData.grid[gi].intensity;
+        hasGig = appData.grid[gi].hasGig;
+      }
+
+      if (intensity > 0 || hasGig) activeDays++;
+      if (hasGig) calGigs++;
+
+      if (isFuture) {
+        ctx.fillStyle = '#e8e5de';
+      } else if (hasGig) {
+        ctx.fillStyle = GIG_COLOR;
+      } else {
+        ctx.fillStyle = INTENSITY_COLORS[Math.max(0, intensity)] || INTENSITY_COLORS[0];
+      }
+
+      if (hasGig && !isFuture) {
+        ctx.beginPath();
+        ctx.arc(cx + cellSize / 2, cy + cellSize / 2, cellSize / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        roundRect(ctx, cx, cy, cellSize, cellSize, 8);
+        ctx.fill();
+      }
+
+      // Day number
+      const isLight = intensity <= 1 && !hasGig;
+      ctx.font = `500 22px ${mono}`;
+      ctx.fillStyle = isFuture
+        ? 'rgba(0,0,0,0.15)'
+        : isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.85)';
+      ctx.textAlign = 'center';
+      ctx.fillText(dayNum.toString(), cx + cellSize / 2, cy + cellSize / 2 + 8);
+
+      dayNum++;
+    }
+  }
+
+  y += calRows * (cellSize + cellGap) + 30;
+
+  // Stats line
+  ctx.font = `400 22px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'left';
+  const gigStr = calGigs > 0 ? ` \u00B7 ${calGigs} gig${calGigs !== 1 ? 's' : ''}` : '';
+  ctx.fillText(`${activeDays} days practiced${gigStr}`, calX, y);
+  ctx.textAlign = 'right';
+  ctx.fillText(`${appData.streak} day streak`, calX + calW, y);
+  y += 80;
+
+  // ── Donut chart (practice categories only) ──
+  const breakdown = appData.categoryBreakdownMonth || {};
+  const cats = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
+  const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
+
+  if (cats.length > 0 && totalMins > 0) {
+    const donutCenterX = CW / 2;
+    const donutCenterY = y + 170;
+    const outerR = 160;
+    const innerR = 105;
+
+    const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
+
+    let startAngle = -Math.PI / 2;
+    cats.forEach((cat, i) => {
+      const fraction = cat[1] / totalMins;
+      const endAngle = startAngle + fraction * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(donutCenterX, donutCenterY, outerR, startAngle, endAngle);
+      ctx.arc(donutCenterX, donutCenterY, innerR, endAngle, startAngle, true);
+      ctx.closePath();
+      ctx.fillStyle = donutColors[i % donutColors.length];
+      ctx.fill();
+      startAngle = endAngle;
+    });
+
+    // Center text
+    ctx.font = `300 46px ${mono}`;
+    ctx.fillStyle = FG_COLOR;
+    ctx.textAlign = 'center';
+    const totalStr = totalMins >= 60
+      ? Math.floor(totalMins / 60) + 'h ' + (totalMins % 60 > 0 ? (totalMins % 60) + 'm' : '')
+      : totalMins + 'm';
+    ctx.fillText(totalStr.trim(), donutCenterX, donutCenterY + 8);
+    ctx.font = `300 16px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.letterSpacing = '3px';
+    ctx.fillText('PRACTICE', donutCenterX, donutCenterY + 36);
+    ctx.letterSpacing = '0px';
+
+    y = donutCenterY + outerR + 70;
+
+    // Legend — two columns
+    const legendGap = 80;
+    const legendColW = (contentW - legendGap) / 2;
+    const legendX1 = pad;
+    const legendX2 = pad + legendColW + legendGap;
+    const legendRowH = 48;
+
+    cats.forEach((cat, i) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const lx = col === 0 ? legendX1 : legendX2;
+      const ly = y + row * legendRowH;
+
+      ctx.fillStyle = donutColors[i % donutColors.length];
+      ctx.beginPath();
+      ctx.arc(lx, ly, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.font = `500 22px ${mono}`;
+      ctx.fillStyle = FG_COLOR;
+      ctx.textAlign = 'left';
+      ctx.fillText(cat[0], lx + 22, ly + 7);
+
+      const mins = cat[1];
+      const hrsStr = mins >= 60
+        ? parseFloat((mins / 60).toFixed(1)) + 'h'
+        : mins + 'm';
+      ctx.font = `400 20px ${mono}`;
+      ctx.fillStyle = DIM_COLOR;
+      ctx.textAlign = 'right';
+      ctx.fillText(hrsStr, lx + legendColW, ly + 7);
+    });
+
+    y += Math.ceil(cats.length / 2) * legendRowH + 30;
+  }
+
+  // Gig callout if gigs this month
+  if (appData.month.gigCount > 0) {
+    ctx.font = `400 22px ${mono}`;
+    ctx.fillStyle = GIG_COLOR;
+    ctx.textAlign = 'center';
+    ctx.fillText('\u25C6 ' + appData.month.gigCount + ' gig' + (appData.month.gigCount !== 1 ? 's' : '') + ' this month', CW / 2, y);
+    y += 40;
+  }
+
+  // Reflection
+  const footerZone = CH - 120;
+  if (reflection && y < footerZone - 100) {
+    y = drawReflection(ctx, reflection, y, calW);
+  }
   drawFooterWm(ctx);
 }
 
