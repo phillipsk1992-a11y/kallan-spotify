@@ -2101,43 +2101,69 @@ function renderYearCard(ctx, reflection) {
   });
   y += colH + 60;
 
-  // ── Contribution grid — bigger cells ──
+  // ── Contribution grid — current half of year ──
   if (appData.grid && appData.grid.length > 0) {
-    const cols = 52;
+    const now = new Date();
+    const isSecondHalf = now.getMonth() >= 6;
+    const halfStartMonth = isSecondHalf ? 6 : 0;
+    const halfEndMonth = isSecondHalf ? 11 : 5;
+    const halfLabels = isSecondHalf
+      ? ['J', 'A', 'S', 'O', 'N', 'D']
+      : ['J', 'F', 'M', 'A', 'M', 'J'];
+
+    // Calculate grid index range for this half
+    const yr = now.getFullYear();
+    const jan1 = new Date(yr, 0, 1);
+    let jan1Dow = jan1.getDay() - 1;
+    if (jan1Dow < 0) jan1Dow = 6;
+    const gridStart = new Date(jan1);
+    gridStart.setDate(gridStart.getDate() - jan1Dow);
+
+    const halfStartDate = new Date(yr, halfStartMonth, 1);
+    const halfEndDate = new Date(yr, halfEndMonth + 1, 0); // last day of end month
+    const startIdx = Math.max(0, Math.floor((halfStartDate - gridStart) / 86400000));
+    const endIdx = Math.min(appData.grid.length - 1, Math.floor((halfEndDate - gridStart) / 86400000));
+
+    // Slice to weeks
+    const startWeek = Math.floor(startIdx / 7);
+    const endWeek = Math.floor(endIdx / 7);
+    const cols = endWeek - startWeek + 1;
     const rows = 7;
-    const cellGap = 3;
+    const cellGap = 4;
     const cellSize = Math.floor((contentW - (cols - 1) * cellGap) / cols);
     const gridW = cols * cellSize + (cols - 1) * cellGap;
     const gridXStart = (CW - gridW) / 2;
 
     // Month labels
-    const monthLabels = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
     ctx.font = `400 16px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.textAlign = 'center';
-    monthLabels.forEach((m, mi) => {
-      const mx = gridXStart + (mi / 12) * gridW + gridW / 24;
+    halfLabels.forEach((m, mi) => {
+      const mx = gridXStart + (mi / halfLabels.length) * gridW + gridW / (halfLabels.length * 2);
       ctx.fillText(m, mx, y);
     });
     y += 18;
 
     // Grid cells
-    for (let i = 0; i < Math.min(appData.grid.length, cols * rows); i++) {
-      const col = Math.floor(i / rows);
-      const row = i % rows;
-      const cell = appData.grid[i];
-      const cx = gridXStart + col * (cellSize + cellGap);
-      const cy = y + row * (cellSize + cellGap);
+    for (let week = startWeek; week <= endWeek; week++) {
+      for (let row = 0; row < rows; row++) {
+        const i = week * 7 + row;
+        if (i < 0 || i >= appData.grid.length) continue;
+        const cell = appData.grid[i];
+        const col = week - startWeek;
+        const cx = gridXStart + col * (cellSize + cellGap);
+        const cy = y + row * (cellSize + cellGap);
 
-      if (cell.hasGig) {
-        ctx.fillStyle = GIG_COLOR;
-      } else if (cell.intensity === -1) {
-        ctx.fillStyle = '#eae7e0';
-      } else {
-        ctx.fillStyle = INTENSITY_COLORS[cell.intensity] || INTENSITY_COLORS[0];
+        if (cell.hasGig) {
+          ctx.fillStyle = GIG_COLOR;
+        } else if (cell.intensity === -1) {
+          ctx.fillStyle = '#eae7e0';
+        } else {
+          ctx.fillStyle = INTENSITY_COLORS[cell.intensity] || INTENSITY_COLORS[0];
+        }
+        roundRect(ctx, cx, cy, cellSize, cellSize, 2);
+        ctx.fill();
       }
-      roundRect(ctx, cx, cy, cellSize, cellSize, 2);
-      ctx.fill();
     }
 
     y += rows * (cellSize + cellGap) + 24;
