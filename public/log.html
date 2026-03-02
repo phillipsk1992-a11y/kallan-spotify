@@ -1541,42 +1541,54 @@ function drawLabel(ctx, text, y) {
 // ═══════════════════════════════════════════
 function renderWeekCard(ctx, reflection) {
   clearCanvas(ctx);
-  let y = 320;
+  const CW = 1080, CH = 1920;
 
-  drawLabel(ctx, 'GUITAR \u00B7 WEEK IN PRACTICE', y);
-  y += 120;
+  // Vertically center content - estimate total height
+  let y = 380;
 
+  // Label
+  ctx.font = `300 26px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '6px';
+  ctx.fillText('GUITAR \u00B7 WEEK IN PRACTICE', CW / 2, y);
+  ctx.letterSpacing = '0px';
+  y += 160;
+
+  // Big number - more space from label
   const weekHrs = (appData.week.totalMinutes / 60).toFixed(1);
-  ctx.font = `200 180px ${mono}`;
+  ctx.font = `200 200px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(weekHrs, CW / 2, y);
-  y += 30;
+  y += 50;
 
-  ctx.font = `300 26px ${mono}`;
+  ctx.font = `300 24px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
-  ctx.fillText('HOURS THIS WEEK', CW / 2, y);
+  ctx.fillText('HOURS', CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 80;
+  y += 100;
 
-  const cellSize = 100;
-  const cellGap = 16;
+  // Day grid - larger cells
+  const cellSize = 110;
+  const cellGap = 14;
   const gridWidth = 7 * cellSize + 6 * cellGap;
   const gridX = (CW - gridWidth) / 2;
 
+  // Day labels
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  ctx.font = `400 22px ${mono}`;
+  ctx.font = `400 24px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   dayLabels.forEach((label, i) => {
     const cx = gridX + i * (cellSize + cellGap) + cellSize / 2;
     ctx.fillText(label, cx, y);
   });
-  y += 24;
+  y += 28;
 
+  let activeDays = 0;
+  let weekGigs = 0;
   if (appData.week && appData.week.days) {
-    let activeDays = 0;
-    let weekGigs = 0;
     appData.week.days.forEach((day, i) => {
       const cx = gridX + i * (cellSize + cellGap);
       const cy = y;
@@ -1602,31 +1614,33 @@ function renderWeekCard(ctx, reflection) {
 
       if (!day.isFuture && day.minutes > 0) {
         const isLight = day.intensity <= 1 && !day.hasGig;
-        ctx.font = `500 26px ${mono}`;
-        ctx.fillStyle = isLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.9)';
+        ctx.font = `500 28px ${mono}`;
+        ctx.fillStyle = isLight ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.9)';
         ctx.textAlign = 'center';
-        ctx.fillText(day.minutes.toString(), cx + cellSize / 2, cy + cellSize / 2 + 9);
+        ctx.fillText(day.minutes.toString(), cx + cellSize / 2, cy + cellSize / 2 + 10);
       }
     });
-    y += cellSize + 30;
+  }
+  y += cellSize + 36;
 
-    ctx.font = `400 22px ${mono}`;
+  // Footer stats
+  ctx.font = `400 24px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'left';
+  const gigStr = weekGigs > 0 ? ` \u00B7 ${weekGigs} gig${weekGigs !== 1 ? 's' : ''}` : '';
+  ctx.fillText(`${activeDays} of 7 days${gigStr}`, gridX, y);
+  ctx.textAlign = 'right';
+  ctx.fillText(`${appData.streak} day streak`, gridX + gridWidth, y);
+  y += 70;
+
+  // Top category
+  const topCat = appData.week.topCategory;
+  if (topCat) {
+    ctx.textAlign = 'center';
+    ctx.font = `300 28px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
-    ctx.textAlign = 'left';
-    const gigStr = weekGigs > 0 ? ` \u00B7 ${weekGigs} gig${weekGigs !== 1 ? 's' : ''}` : '';
-    ctx.fillText(`${activeDays} of 7 days${gigStr}`, gridX, y);
-    ctx.textAlign = 'right';
-    ctx.fillText(`${appData.streak} day streak`, gridX + gridWidth, y);
+    ctx.fillText(`mostly ${topCat} this week`, CW / 2, y);
     y += 60;
-
-    const topCat = appData.week.topCategory;
-    if (topCat) {
-      ctx.textAlign = 'center';
-      ctx.font = `300 26px ${mono}`;
-      ctx.fillStyle = DIM_COLOR;
-      ctx.fillText(`mostly ${topCat} this week`, CW / 2, y);
-      y += 50;
-    }
   }
 
   y = drawReflection(ctx, reflection, y, gridWidth);
@@ -1638,29 +1652,38 @@ function renderWeekCard(ctx, reflection) {
 // ═══════════════════════════════════════════
 function renderGrindCard(ctx, reflection) {
   clearCanvas(ctx);
-  let y = 280;
+  const CW = 1080, CH = 1920;
+  let y = 380;
 
-  drawLabel(ctx, 'GUITAR \u00B7 THE GRIND', y);
-  y += 100;
+  // Label
+  ctx.font = `300 26px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '6px';
+  ctx.fillText('GUITAR \u00B7 THE GRIND', CW / 2, y);
+  ctx.letterSpacing = '0px';
+  y += 160;
 
+  // Month hours
   const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
-  ctx.font = `200 160px ${mono}`;
+  ctx.font = `200 200px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(monthHrs.toString(), CW / 2, y);
-  y += 30;
+  y += 50;
 
-  ctx.font = `300 26px ${mono}`;
+  ctx.font = `300 24px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
   ctx.fillText('HOURS IN ' + (appData.month.name || '--').toUpperCase(), CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 100;
+  y += 110;
 
-  const barX = 140;
-  const barMaxW = CW - 280;
-  const barH = 24;
-  const barGap = 60;
+  // Category bars - wider, more spaced
+  const barX = 120;
+  const barMaxW = CW - 240;
+  const barH = 30;
+  const barGap = 68;
   const breakdown = appData.categoryBreakdownMonth || appData.categoryBreakdown || {};
   const cats = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
   const maxMins = cats.length > 0 ? cats[0][1] : 1;
@@ -1669,32 +1692,46 @@ function renderGrindCard(ctx, reflection) {
     const catName = cat[0];
     const mins = cat[1];
     const hrs = parseFloat((mins / 60).toFixed(1));
-    const barW = Math.max((mins / maxMins) * barMaxW, 4);
+    const barW = Math.max((mins / maxMins) * barMaxW, 6);
     const cy = y + i * (barH + barGap);
 
+    // Category name
+    ctx.font = `400 26px ${mono}`;
+    ctx.fillStyle = FG_COLOR;
+    ctx.textAlign = 'left';
+    ctx.fillText(catName, barX, cy - 10);
+
+    // Hours on right
     ctx.font = `400 24px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
-    ctx.textAlign = 'left';
-    ctx.fillText(catName, barX, cy - 8);
-
-    ctx.fillStyle = '#e8e5de';
-    roundRect(ctx, barX, cy, barMaxW, barH, 4);
-    ctx.fill();
-
-    ctx.fillStyle = i === 0 ? '#1db954' : FG_COLOR;
-    roundRect(ctx, barX, cy, barW, barH, 4);
-    ctx.fill();
-
-    ctx.font = `400 22px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
     ctx.textAlign = 'right';
-    ctx.fillText(hrs + 'h', CW - barX, cy + barH - 4);
+    ctx.fillText(hrs + 'h', CW - barX, cy - 10);
+
+    // Track
+    ctx.fillStyle = '#e8e5de';
+    roundRect(ctx, barX, cy, barMaxW, barH, 6);
+    ctx.fill();
+
+    // Fill
+    ctx.fillStyle = i === 0 ? '#1db954' : FG_COLOR;
+    roundRect(ctx, barX, cy, barW, barH, 6);
+    ctx.fill();
   });
 
-  y += cats.length * (barH + barGap) + 30;
+  y += cats.length * (barH + barGap) + 40;
 
+  // Divider
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(barX, y);
+  ctx.lineTo(CW - barX, y);
+  ctx.stroke();
+  y += 50;
+
+  // Week + streak
   const weekHrs = parseFloat((appData.week.totalMinutes / 60).toFixed(1));
-  ctx.font = `300 24px ${mono}`;
+  ctx.font = `300 26px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(`${weekHrs}h this week \u00B7 ${appData.streak} day streak`, CW / 2, y);
@@ -1709,70 +1746,94 @@ function renderGrindCard(ctx, reflection) {
 // ═══════════════════════════════════════════
 function renderStreakCard(ctx, reflection) {
   clearCanvas(ctx);
-  let y = 280;
+  const CW = 1080, CH = 1920;
+  let y = 340;
 
-  drawLabel(ctx, 'GUITAR \u00B7 THE LONG GAME', y);
-  y += 100;
+  // Label
+  ctx.font = `300 26px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '6px';
+  ctx.fillText('GUITAR \u00B7 THE LONG GAME', CW / 2, y);
+  ctx.letterSpacing = '0px';
+  y += 160;
 
+  // Year hours
   const yearHrs = Math.round((appData.year ? appData.year.totalMinutes : 0) / 60);
-  ctx.font = `200 160px ${mono}`;
+  ctx.font = `200 200px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(yearHrs.toString(), CW / 2, y);
-  y += 30;
+  y += 50;
 
-  ctx.font = `300 26px ${mono}`;
+  ctx.font = `300 24px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
   ctx.fillText('HOURS IN ' + new Date().getFullYear(), CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 80;
+  y += 100;
 
-  // Three stat columns
+  // Three stat columns - boxed style
   const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
   const weekHrs = parseFloat((appData.week.totalMinutes / 60).toFixed(1));
-  const statY = y;
-  const colW = CW / 3;
+  const colW = 280;
+  const colGap = 20;
+  const totalColW = 3 * colW + 2 * colGap;
+  const colX = (CW - totalColW) / 2;
+  const colH = 120;
+
   const statItems = [
     { num: weekHrs.toString(), label: 'THIS WEEK' },
     { num: appData.streak.toString(), label: 'DAY STREAK' },
     { num: monthHrs.toString(), label: 'IN ' + (appData.month.name || '--').toUpperCase() },
   ];
+
   statItems.forEach((s, i) => {
-    const cx = colW / 2 + i * colW;
-    ctx.font = `300 48px ${mono}`;
+    const sx = colX + i * (colW + colGap);
+    // Box outline
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 1;
+    roundRect(ctx, sx, y, colW, colH, 6);
+    ctx.stroke();
+
+    // Number
+    ctx.font = `300 44px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
-    ctx.fillText(s.num, cx, statY);
-    ctx.font = `300 18px ${mono}`;
+    ctx.fillText(s.num, sx + colW / 2, y + 50);
+
+    // Label
+    ctx.font = `300 16px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
-    ctx.letterSpacing = '3px';
-    ctx.fillText(s.label, cx, statY + 28);
+    ctx.letterSpacing = '2px';
+    ctx.fillText(s.label, sx + colW / 2, y + 82);
     ctx.letterSpacing = '0px';
   });
-  y = statY + 80;
+  y += colH + 70;
 
-  // Contribution grid
+  // Contribution grid - larger
   if (appData.grid && appData.grid.length > 0) {
-    const gridPad = 80;
+    const gridPad = 60;
     const availW = CW - gridPad * 2;
     const cols = 52;
     const rows = 7;
-    const cellGap = 2;
+    const cellGap = 3;
     const cellSize = Math.floor((availW - (cols - 1) * cellGap) / cols);
     const gridW = cols * cellSize + (cols - 1) * cellGap;
     const gridXStart = (CW - gridW) / 2;
 
+    // Month labels
     const monthLabels = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
-    ctx.font = `400 16px ${mono}`;
+    ctx.font = `400 18px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.textAlign = 'center';
     monthLabels.forEach((m, mi) => {
       const mx = gridXStart + (mi / 12) * gridW + gridW / 24;
       ctx.fillText(m, mx, y);
     });
-    y += 16;
+    y += 20;
 
+    // Grid cells
     for (let i = 0; i < Math.min(appData.grid.length, cols * rows); i++) {
       const col = Math.floor(i / rows);
       const row = i % rows;
@@ -1787,28 +1848,48 @@ function renderStreakCard(ctx, reflection) {
       } else {
         ctx.fillStyle = INTENSITY_COLORS[cell.intensity] || INTENSITY_COLORS[0];
       }
-      ctx.fillRect(cx, cy, cellSize, cellSize);
+      roundRect(ctx, cx, cy, cellSize, cellSize, 2);
+      ctx.fill();
     }
 
-    y += rows * (cellSize + cellGap) + 24;
+    y += rows * (cellSize + cellGap) + 28;
 
-    // Legend
-    ctx.font = `400 16px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
+    // Legend - cleaner layout
+    const legendX = gridXStart + gridW;
+    ctx.font = `400 18px ${mono}`;
     ctx.textAlign = 'right';
-    ctx.fillText('less', gridXStart + gridW - 90, y);
-    const legendColors = [INTENSITY_COLORS[0], INTENSITY_COLORS[1], INTENSITY_COLORS[2], INTENSITY_COLORS[3], INTENSITY_COLORS[4]];
-    legendColors.forEach((c, ci) => {
-      ctx.fillStyle = c;
-      ctx.fillRect(gridXStart + gridW - 80 + ci * 14, y - 10, 10, 10);
-    });
+
+    // "less □□□□□ more · ● gig"
+    const legendItems = [INTENSITY_COLORS[0], INTENSITY_COLORS[1], INTENSITY_COLORS[2], INTENSITY_COLORS[3], INTENSITY_COLORS[4]];
+    const swatchSize = 12;
+    const swatchGap = 4;
+    const legendTotalW = 40 + legendItems.length * (swatchSize + swatchGap) + 40 + 20 + swatchSize + 30;
+    const lx = (CW - legendTotalW) / 2;
+
     ctx.fillStyle = DIM_COLOR;
     ctx.textAlign = 'left';
-    ctx.fillText('more', gridXStart + gridW - 80 + 5 * 14 + 4, y);
-    ctx.fillStyle = GIG_COLOR;
-    ctx.fillRect(gridXStart + gridW - 80 + 5 * 14 + 50, y - 10, 10, 10);
+    ctx.fillText('less', lx, y);
+
+    legendItems.forEach((c, ci) => {
+      ctx.fillStyle = c;
+      roundRect(ctx, lx + 42 + ci * (swatchSize + swatchGap), y - swatchSize + 2, swatchSize, swatchSize, 2);
+      ctx.fill();
+    });
+
+    const afterSwatches = lx + 42 + legendItems.length * (swatchSize + swatchGap) + 6;
     ctx.fillStyle = DIM_COLOR;
-    ctx.fillText('gig', gridXStart + gridW - 80 + 5 * 14 + 66, y);
+    ctx.fillText('more', afterSwatches, y);
+
+    ctx.fillStyle = DIM_COLOR;
+    ctx.fillText('\u00B7', afterSwatches + 50, y);
+
+    ctx.fillStyle = GIG_COLOR;
+    roundRect(ctx, afterSwatches + 62, y - swatchSize + 2, swatchSize, swatchSize, 2);
+    ctx.fill();
+
+    ctx.fillStyle = DIM_COLOR;
+    ctx.fillText('gig', afterSwatches + 62 + swatchSize + 6, y);
+
     y += 50;
   }
 
