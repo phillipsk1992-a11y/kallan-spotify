@@ -2031,7 +2031,7 @@ function renderMonthCard(ctx, reflection) {
   // Reflection
   const footerZone = CH - 120;
   if (reflection && y < footerZone - 100) {
-    y = drawReflection(ctx, reflection, y, calW);
+    y = drawReflection(ctx, reflection, y, contentW);
   }
   drawFooterWm(ctx);
 }
