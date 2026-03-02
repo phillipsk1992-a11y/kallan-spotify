@@ -1272,7 +1272,7 @@ function renderStats() {
   const legendEl = document.getElementById('breakdown-legend');
   legendEl.innerHTML = '';
 
-  const categories = appData.categoryBreakdownMonth || {};
+  const categories = appData.categoryBreakdown || {};
   const sorted = Object.entries(categories).sort((a, b) => b[1] - a[1]);
   const totalMins = sorted.reduce((sum, c) => sum + c[1], 0);
   const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
@@ -1320,7 +1320,7 @@ function renderStats() {
     dCtx.font = '300 8px "IBM Plex Mono", monospace';
     dCtx.fillStyle = '#999';
     dCtx.letterSpacing = '2px';
-    dCtx.fillText('THIS MONTH', cx, cy + 18);
+    dCtx.fillText('ALL TIME', cx, cy + 18);
     dCtx.letterSpacing = '0px';
 
     // Legend rows
