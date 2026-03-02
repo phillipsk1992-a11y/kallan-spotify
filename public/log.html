@@ -2133,11 +2133,15 @@ function renderYearCard(ctx, reflection) {
     const monthGap = 10; // extra gap between months
 
     // Figure out which columns have a month boundary before them
+    // Use Thursday of each week to determine month ownership (ISO standard)
     const monthBreaks = new Set();
+    function weekThursday(week) {
+      return new Date(gridStart.getTime() + (week * 7 + 3) * 86400000);
+    }
     for (let week = startWeek + 1; week <= endWeek; week++) {
-      const prevDate = new Date(gridStart.getTime() + (week * 7 - 1) * 86400000);
-      const currDate = new Date(gridStart.getTime() + (week * 7) * 86400000);
-      if (prevDate.getMonth() !== currDate.getMonth()) {
+      const prevThu = weekThursday(week - 1);
+      const currThu = weekThursday(week);
+      if (prevThu.getMonth() !== currThu.getMonth()) {
         monthBreaks.add(week - startWeek);
       }
     }
@@ -2158,23 +2162,29 @@ function renderYearCard(ctx, reflection) {
     const gridW = colX[cols - 1] + cellSize;
     const gridXStart = (CW - gridW) / 2;
 
-    // Month labels — position at center of each month's columns
+    // Month labels — derive from Thursday of each column's week
     ctx.font = `500 22px ${mono}`;
     ctx.fillStyle = '#555555';
     ctx.textAlign = 'center';
-    let labelMonth = halfStartMonth;
+    const monthNames = ['J','F','M','A','M','J','J','A','S','O','N','D'];
+    let prevLabelMonth = -1;
     let monthColStart = 0;
+    
     for (let c = 0; c <= cols; c++) {
       const isEnd = c === cols;
-      const isBreak = monthBreaks.has(c);
-      if (isBreak || isEnd) {
-        // Center label between monthColStart and c-1
+      let currMonth = -1;
+      if (!isEnd) {
+        const thu = weekThursday(startWeek + c);
+        currMonth = thu.getMonth();
+      }
+      
+      if (isEnd || (c > 0 && monthBreaks.has(c))) {
+        // Draw label for the previous month group
         const midX = (colX[monthColStart] + colX[c - 1] + cellSize) / 2;
-        const mLabel = ['J','F','M','A','M','J','J','A','S','O','N','D'][labelMonth];
-        ctx.fillText(mLabel, gridXStart + midX, y);
-        labelMonth++;
+        ctx.fillText(monthNames[prevLabelMonth], gridXStart + midX, y);
         monthColStart = c;
       }
+      if (!isEnd) prevLabelMonth = currMonth;
     }
     y += 22;
 
