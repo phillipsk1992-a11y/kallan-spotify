@@ -1526,11 +1526,11 @@ function fmtMin(totalMin) {
 
 function drawHeader(ctx) {
   const logoText = 'woodshed';
-  ctx.font = `600 34px ${mono}`;
+  ctx.font = `600 42px ${mono}`;
   ctx.letterSpacing = '1px';
   ctx.textAlign = 'left';
   const textW = ctx.measureText(logoText).width;
-  const dotR = 6;
+  const dotR = 7;
   const dotGap = 8;
   const totalW = dotR * 2 + dotGap + textW;
   const startX = (CW - totalW) / 2;
@@ -1543,15 +1543,15 @@ function drawHeader(ctx) {
 
   // Logo text
   ctx.fillStyle = FG_COLOR;
-  ctx.fillText(logoText, startX + dotR * 2 + dotGap, 122);
+  ctx.fillText(logoText, startX + dotR * 2 + dotGap, 124);
   ctx.letterSpacing = '0px';
 
   // Thin rule
   ctx.strokeStyle = '#ddd';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(100, 150);
-  ctx.lineTo(CW - 100, 150);
+  ctx.moveTo(100, 155);
+  ctx.lineTo(CW - 100, 155);
   ctx.stroke();
 }
 
@@ -1610,11 +1610,11 @@ function drawSubLabel(ctx, text, y) {
 function drawFooterWm(ctx) {
   const wmY = CH - 80;
   const dotText = 'woodshed';
-  ctx.font = `300 18px ${mono}`;
-  ctx.letterSpacing = '4px';
+  ctx.font = `300 22px ${mono}`;
+  ctx.letterSpacing = '5px';
   ctx.textAlign = 'left';
   const wmW = ctx.measureText(dotText).width;
-  const dotR = 3.5;
+  const dotR = 4;
   const dotGap = 8;
   const totalW = dotR * 2 + dotGap + wmW;
   const startX = (CW - totalW) / 2;
