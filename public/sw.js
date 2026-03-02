@@ -1,5 +1,5 @@
 // sw.js — Woodshed Service Worker
-const CACHE_NAME = 'woodshed-v5';
+const CACHE_NAME = 'woodshed-v6';
 const STATIC_ASSETS = [
   '/log.html',
   '/manifest.json',
