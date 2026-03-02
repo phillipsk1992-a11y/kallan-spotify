@@ -1574,9 +1574,9 @@ function renderWeekCard(ctx, reflection) {
   const contentW = CW - pad * 2;
 
   // ── Subtitle ──
-  let y = 320;
+  let y = 290;
   drawSubLabel(ctx, 'WEEK IN PRACTICE', y);
-  y += 220;
+  y += 190;
 
   // ── Big number ──
   const weekHrs = (appData.week.totalMinutes / 60).toFixed(1);
@@ -1584,14 +1584,14 @@ function renderWeekCard(ctx, reflection) {
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(weekHrs, CW / 2, y);
-  y += 55;
+  y += 50;
 
   ctx.font = `300 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
   ctx.fillText('HOURS', CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 110;
+  y += 100;
 
   // ── Day grid ──
   const cellGap = 12;
@@ -1644,7 +1644,7 @@ function renderWeekCard(ctx, reflection) {
       }
     });
   }
-  y += cellSize + 50;
+  y += cellSize + 45;
 
   // Stats line
   ctx.font = `400 22px ${mono}`;
@@ -1654,7 +1654,7 @@ function renderWeekCard(ctx, reflection) {
   ctx.fillText(`${activeDays} of 7 days${gigStr}`, gridX, y);
   ctx.textAlign = 'right';
   ctx.fillText(`${appData.streak} day streak`, gridX + gridWidth, y);
-  y += 130;
+  y += 110;
 
   // ── Donut chart ──
   const breakdown = appData.categoryBreakdownWeek || {};
@@ -1663,9 +1663,9 @@ function renderWeekCard(ctx, reflection) {
 
   if (cats.length > 0 && totalMins > 0) {
     const donutCenterX = CW / 2;
-    const donutCenterY = y + 240;
-    const outerR = 210;
-    const innerR = 135;
+    const donutCenterY = y + 210;
+    const outerR = 200;
+    const innerR = 130;
 
     // Donut colors — muted palette
     const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
@@ -1687,7 +1687,7 @@ function renderWeekCard(ctx, reflection) {
     });
 
     // Center text — total minutes
-    ctx.font = `300 56px ${mono}`;
+    ctx.font = `300 52px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
     const totalStr = totalMins >= 60
@@ -1700,14 +1700,14 @@ function renderWeekCard(ctx, reflection) {
     ctx.fillText('TOTAL', donutCenterX, donutCenterY + 42);
     ctx.letterSpacing = '0px';
 
-    y = donutCenterY + outerR + 110;
+    y = donutCenterY + outerR + 80;
 
     // Legend — two columns with proper center gap
     const legendGap = 80;
     const legendColW = (contentW - legendGap) / 2;
     const legendX1 = pad;
     const legendX2 = pad + legendColW + legendGap;
-    const legendRowH = 60;
+    const legendRowH = 55;
 
     cats.forEach((cat, i) => {
       const col = i % 2;
@@ -1738,10 +1738,14 @@ function renderWeekCard(ctx, reflection) {
       ctx.fillText(hrsStr, lx + legendColW, ly + 8);
     });
 
-    y += Math.ceil(cats.length / 2) * legendRowH + 60;
+    y += Math.ceil(cats.length / 2) * legendRowH + 40;
   }
 
-  y = drawReflection(ctx, reflection, y, gridWidth);
+  // Reflection — but cap it so it doesn't collide with footer
+  const footerZone = CH - 120; // watermark at CH-80, leave 40px buffer
+  if (reflection && y < footerZone - 100) {
+    y = drawReflection(ctx, reflection, y, gridWidth);
+  }
   drawFooterWm(ctx);
 }
 
