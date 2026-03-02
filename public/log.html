@@ -55,6 +55,18 @@ body {
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.5px;
+  position: relative;
+  display: inline-block;
+}
+
+.app-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  position: absolute;
+  top: -4px;
+  left: 5px;
 }
 
 .header-link {
@@ -820,7 +832,7 @@ input:focus, textarea:focus, button:focus { outline: none; }
 
 <!-- App Header -->
 <div class="app-header">
-  <div class="app-name">woodshed</div>
+  <div class="app-name"><span class="app-dot"></span>woodshed</div>
   <div class="header-link" id="header-link" style="display:none;"></div>
 </div>
 
@@ -1507,26 +1519,35 @@ function fmtMin(totalMin) {
 }
 
 function drawHeader(ctx) {
-  // Green accent dot
+  const logoText = 'woodshed';
+  ctx.font = `600 34px ${mono}`;
+  ctx.letterSpacing = '1px';
+  ctx.textAlign = 'center';
+  const textW = ctx.measureText(logoText).width;
+
+  // Draw logo text centered
+  ctx.fillStyle = FG_COLOR;
+  ctx.fillText(logoText, CW / 2, 122);
+
+  // Green dot centered above the 'w'
+  // 'w' is the first character — find its center
+  const textStartX = CW / 2 - textW / 2;
+  const wWidth = ctx.measureText('w').width;
+  const wCenterX = textStartX + wWidth / 2;
+
   ctx.fillStyle = '#1db954';
   ctx.beginPath();
-  ctx.arc(100, 112, 6, 0, Math.PI * 2);
+  ctx.arc(wCenterX, 80, 6, 0, Math.PI * 2);
   ctx.fill();
 
-  // Logo text
-  ctx.font = `600 28px ${mono}`;
-  ctx.fillStyle = FG_COLOR;
-  ctx.textAlign = 'left';
-  ctx.letterSpacing = '1px';
-  ctx.fillText('woodshed', 118, 120);
   ctx.letterSpacing = '0px';
 
   // Thin rule
   ctx.strokeStyle = '#ddd';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(100, 145);
-  ctx.lineTo(CW - 100, 145);
+  ctx.moveTo(100, 150);
+  ctx.lineTo(CW - 100, 150);
   ctx.stroke();
 }
 
@@ -1584,18 +1605,24 @@ function drawSubLabel(ctx, text, y) {
 
 function drawFooterWm(ctx) {
   const wmY = CH - 80;
-  // Green accent dot
-  ctx.fillStyle = 'rgba(29,185,84,0.35)';
   const dotText = 'woodshed';
   ctx.font = `300 18px ${mono}`;
   ctx.letterSpacing = '4px';
+  ctx.textAlign = 'center';
   const wmW = ctx.measureText(dotText).width;
+
+  // Find center of 'w'
+  const wWidth = ctx.measureText('w').width;
+  const textStartX = CW / 2 - wmW / 2;
+  const wCenterX = textStartX + wWidth / 2;
+
+  // Green dot above the w
+  ctx.fillStyle = 'rgba(29,185,84,0.35)';
   ctx.beginPath();
-  ctx.arc(CW / 2 - wmW / 2 - 14, wmY - 5, 4, 0, Math.PI * 2);
+  ctx.arc(wCenterX, wmY - 20, 3.5, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = '#c0bdb6';
-  ctx.textAlign = 'center';
   ctx.fillText(dotText, CW / 2, wmY);
   ctx.letterSpacing = '0px';
 }
