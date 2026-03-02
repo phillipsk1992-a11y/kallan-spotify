@@ -10,10 +10,20 @@ const SHEET_NAME = process.env.SHEET_NAME || 'Sheet1';
 const API_SECRET = process.env.PRACTICE_LOG_SECRET;
 
 function getAuth() {
+  const email = process.env.GOOGLE_SERVICE_EMAIL;
+  const key = process.env.GOOGLE_PRIVATE_KEY;
+
+  if (!email || !key) {
+    const missing = [];
+    if (!email) missing.push('GOOGLE_SERVICE_EMAIL');
+    if (!key) missing.push('GOOGLE_PRIVATE_KEY');
+    throw new Error('Missing env vars: ' + missing.join(', ') + '. Available: ' + Object.keys(process.env).filter(k => k.includes('GOOGLE')).join(', '));
+  }
+
   const auth = new google.auth.GoogleAuth({
     credentials: {
-      client_email: process.env.GOOGLE_SERVICE_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      client_email: email,
+      private_key: key.replace(/\\n/g, '\n'),
     },
     scopes: SCOPES,
   });
