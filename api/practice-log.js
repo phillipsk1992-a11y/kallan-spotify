@@ -259,6 +259,15 @@ module.exports = async (req, res) => {
       // This month totals
       const monthTotalMinutes = monthEntries.reduce((sum, e) => sum + e.minutes, 0);
       const monthGigCount = monthEntries.filter(e => e.type === 'gig').length;
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const currentMonth = monthNames[toLocal(now, tzOffset).getUTCMonth()];
+
+      // This year totals
+      const localNowForYear = toLocal(now, tzOffset);
+      const yearStartLocal = new Date(Date.UTC(localNowForYear.getUTCFullYear(), 0, 1));
+      const yearStartUTC = new Date(yearStartLocal.getTime() + tzOffset * 60000);
+      const yearEntries = entries.filter(e => e.timestamp >= yearStartUTC);
+      const yearTotalMinutes = yearEntries.reduce((sum, e) => sum + e.minutes, 0);
 
       // Week daily breakdown (Mon=0 through Sun=6)
       const weekDays = [];
@@ -362,6 +371,10 @@ module.exports = async (req, res) => {
         month: {
           totalMinutes: monthTotalMinutes,
           gigCount: monthGigCount,
+          name: currentMonth,
+        },
+        year: {
+          totalMinutes: yearTotalMinutes,
         },
         streak,
         weekAvgHours: parseFloat((weekAvgMinutes / 60).toFixed(1)),
