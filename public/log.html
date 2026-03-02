@@ -428,7 +428,7 @@ body {
 }
 
 .stats-top-row .stat-item-num {
-  font-size: 36px;
+  font-size: 28px;
   font-weight: 300;
 }
 
@@ -892,15 +892,15 @@ input:focus, textarea:focus, button:focus { outline: none; }
   <div class="stats-row stats-top-row">
     <div class="stat-item">
       <div class="stat-item-num" id="week-hours">--</div>
-      <div class="stat-item-label">hours this week</div>
+      <div class="stat-item-label">this week</div>
     </div>
     <div class="stat-item">
       <div class="stat-item-num" id="month-hours">--</div>
-      <div class="stat-item-label" id="month-label">hours in --</div>
+      <div class="stat-item-label" id="month-label">in --</div>
     </div>
     <div class="stat-item">
       <div class="stat-item-num" id="year-hours">--</div>
-      <div class="stat-item-label">hours this year</div>
+      <div class="stat-item-label">this year</div>
     </div>
   </div>
 
@@ -947,17 +947,17 @@ input:focus, textarea:focus, button:focus { outline: none; }
       <span class="card-type-icon">&#9632;</span>
       <span class="card-type-name">week</span>
     </button>
-    <button class="card-type-btn" data-card="grind">
+    <button class="card-type-btn" data-card="month">
       <span class="card-type-icon">&#9612;</span>
-      <span class="card-type-name">grind</span>
+      <span class="card-type-name">month</span>
     </button>
-    <button class="card-type-btn" data-card="streak">
+    <button class="card-type-btn" data-card="year">
       <span class="card-type-icon">&#9617;</span>
-      <span class="card-type-name">long game</span>
+      <span class="card-type-name">year</span>
     </button>
   </div>
 
-  <div class="card-type-desc" id="card-type-desc">your week at a glance</div>
+  <div class="card-type-desc" id="card-type-desc">i showed up</div>
 
   <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
 
@@ -1182,18 +1182,16 @@ function renderLog() {
 
 // ─── Stats Tab ───
 function renderStats() {
-  // Week hours
-  const weekHrs = parseFloat((appData.week.totalMinutes / 60).toFixed(1));
-  document.getElementById('week-hours').textContent = weekHrs;
+  // Week
+  document.getElementById('week-hours').textContent = formatMinutes(appData.week.totalMinutes);
 
-  // Month hours with month name
-  const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
-  document.getElementById('month-hours').textContent = monthHrs;
-  document.getElementById('month-label').textContent = 'hours in ' + (appData.month.name || '--');
+  // Month with month name
+  document.getElementById('month-hours').textContent = formatMinutes(appData.month.totalMinutes);
+  document.getElementById('month-label').textContent = 'in ' + (appData.month.name || '--');
 
-  // Year hours
-  const yearHrs = Math.round((appData.year ? appData.year.totalMinutes : 0) / 60);
-  document.getElementById('year-hours').textContent = yearHrs;
+  // Year
+  const yearMin = appData.year ? appData.year.totalMinutes : 0;
+  document.getElementById('year-hours').textContent = formatMinutes(yearMin);
 
   // Year label
   document.getElementById('grid-year').textContent = new Date().getFullYear();
@@ -1401,9 +1399,9 @@ document.getElementById('log-btn').addEventListener('click', async () => {
 // ═══════════════════════════════════════════
 let selectedCardType = 'week';
 const cardDescriptions = {
-  week: 'your week at a glance',
-  grind: 'what you worked on',
-  streak: 'the big picture',
+  week: 'i showed up',
+  month: 'what i worked on',
+  year: 'the long game',
 };
 
 // Card type selector
@@ -1459,10 +1457,10 @@ function generateCard() {
 
   if (selectedCardType === 'week') {
     renderWeekCard(ctx, reflection);
-  } else if (selectedCardType === 'grind') {
-    renderGrindCard(ctx, reflection);
-  } else if (selectedCardType === 'streak') {
-    renderStreakCard(ctx, reflection);
+  } else if (selectedCardType === 'month') {
+    renderMonthCard(ctx, reflection);
+  } else if (selectedCardType === 'year') {
+    renderYearCard(ctx, reflection);
   }
 
   // Show canvas preview
@@ -1484,6 +1482,7 @@ function showMainView() {
   switchTab('stats');
 }
 
+
 // ═══════════════════════════════════════════
 // CANVAS HELPERS
 // ═══════════════════════════════════════════
@@ -1495,26 +1494,39 @@ function clearCanvas(ctx) {
   ctx.fillRect(0, 0, CW, CH);
 }
 
-function drawWatermark(ctx, y) {
-  const wy = y || CH - 140;
-  ctx.font = `300 22px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
-  ctx.textAlign = 'center';
-  ctx.letterSpacing = '5px';
-  ctx.fillText('WOODSHED', CW / 2, wy);
+function fmtMin(totalMin) {
+  if (totalMin < 60) return totalMin + 'm';
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
+}
+
+function drawHeader(ctx) {
+  ctx.font = `600 28px ${mono}`;
+  ctx.fillStyle = FG_COLOR;
+  ctx.textAlign = 'left';
   ctx.letterSpacing = '0px';
+  ctx.fillText('woodshed', 100, 120);
+
+  // Thin rule
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(100, 145);
+  ctx.lineTo(CW - 100, 145);
+  ctx.stroke();
 }
 
 function drawReflection(ctx, reflection, y, maxWidth) {
   if (!reflection) return y;
-  y += 20;
+  y += 30;
   ctx.strokeStyle = '#ddd';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo((CW - maxWidth) / 2, y);
   ctx.lineTo((CW + maxWidth) / 2, y);
   ctx.stroke();
-  y += 50;
+  y += 55;
 
   ctx.font = `italic 30px ${mono}`;
   ctx.fillStyle = FG_COLOR;
@@ -1527,7 +1539,7 @@ function drawReflection(ctx, reflection, y, maxWidth) {
   return y + lines.length * 46 + 20;
 }
 
-function drawLabel(ctx, text, y) {
+function drawSubLabel(ctx, text, y) {
   ctx.font = `300 24px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'center';
@@ -1536,28 +1548,34 @@ function drawLabel(ctx, text, y) {
   ctx.letterSpacing = '0px';
 }
 
+function drawFooterWm(ctx) {
+  ctx.font = `300 18px ${mono}`;
+  ctx.fillStyle = '#c0bdb6';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '4px';
+  ctx.fillText('woodshed', CW / 2, CH - 80);
+  ctx.letterSpacing = '0px';
+}
+
 // ═══════════════════════════════════════════
-// CARD 1: WEEK IN REVIEW
+// ═══════════════════════════════════════════
+// CARD 1: WEEK — "I showed up"
 // ═══════════════════════════════════════════
 function renderWeekCard(ctx, reflection) {
   clearCanvas(ctx);
-  const CW = 1080, CH = 1920;
+  drawHeader(ctx);
 
-  // Vertically center content - estimate total height
-  let y = 380;
+  const pad = 100;
+  const contentW = CW - pad * 2;
+  let y = 220;
 
-  // Label
-  ctx.font = `300 26px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
-  ctx.textAlign = 'center';
-  ctx.letterSpacing = '6px';
-  ctx.fillText('GUITAR \u00B7 WEEK IN PRACTICE', CW / 2, y);
-  ctx.letterSpacing = '0px';
-  y += 160;
+  // Subtitle
+  drawSubLabel(ctx, 'WEEK IN PRACTICE', y);
+  y += 130;
 
-  // Big number - more space from label
+  // Big number
   const weekHrs = (appData.week.totalMinutes / 60).toFixed(1);
-  ctx.font = `200 200px ${mono}`;
+  ctx.font = `200 220px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(weekHrs, CW / 2, y);
@@ -1568,23 +1586,24 @@ function renderWeekCard(ctx, reflection) {
   ctx.letterSpacing = '5px';
   ctx.fillText('HOURS', CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 100;
+  y += 90;
 
-  // Day grid - larger cells
-  const cellSize = 110;
-  const cellGap = 14;
+  // Big day cells — fill the width
+  const cellGap = 12;
+  const cellSize = Math.floor((contentW - 6 * cellGap) / 7);
   const gridWidth = 7 * cellSize + 6 * cellGap;
   const gridX = (CW - gridWidth) / 2;
 
   // Day labels
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  ctx.font = `400 24px ${mono}`;
+  ctx.font = `400 26px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'center';
   dayLabels.forEach((label, i) => {
     const cx = gridX + i * (cellSize + cellGap) + cellSize / 2;
     ctx.fillText(label, cx, y);
   });
-  y += 28;
+  y += 20;
 
   let activeDays = 0;
   let weekGigs = 0;
@@ -1608,22 +1627,23 @@ function renderWeekCard(ctx, reflection) {
         ctx.arc(cx + cellSize / 2, cy + cellSize / 2, cellSize / 2, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        roundRect(ctx, cx, cy, cellSize, cellSize, 8);
+        roundRect(ctx, cx, cy, cellSize, cellSize, 10);
         ctx.fill();
       }
 
+      // Minutes inside cell
       if (!day.isFuture && day.minutes > 0) {
         const isLight = day.intensity <= 1 && !day.hasGig;
-        ctx.font = `500 28px ${mono}`;
+        ctx.font = `500 32px ${mono}`;
         ctx.fillStyle = isLight ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.9)';
         ctx.textAlign = 'center';
-        ctx.fillText(day.minutes.toString(), cx + cellSize / 2, cy + cellSize / 2 + 10);
+        ctx.fillText(day.minutes.toString(), cx + cellSize / 2, cy + cellSize / 2 + 11);
       }
     });
   }
-  y += cellSize + 36;
+  y += cellSize + 40;
 
-  // Footer stats
+  // Stats line
   ctx.font = `400 24px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'left';
@@ -1631,42 +1651,41 @@ function renderWeekCard(ctx, reflection) {
   ctx.fillText(`${activeDays} of 7 days${gigStr}`, gridX, y);
   ctx.textAlign = 'right';
   ctx.fillText(`${appData.streak} day streak`, gridX + gridWidth, y);
-  y += 70;
+  y += 60;
 
   // Top category
   const topCat = appData.week.topCategory;
   if (topCat) {
     ctx.textAlign = 'center';
-    ctx.font = `300 28px ${mono}`;
+    ctx.font = `300 26px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
-    ctx.fillText(`mostly ${topCat} this week`, CW / 2, y);
-    y += 60;
+    ctx.fillText(`mostly ${topCat}`, CW / 2, y);
+    y += 50;
   }
 
   y = drawReflection(ctx, reflection, y, gridWidth);
-  drawWatermark(ctx);
+  drawFooterWm(ctx);
 }
 
 // ═══════════════════════════════════════════
-// CARD 2: THE GRIND (category breakdown)
+// CARD 2: MONTH — "What I worked on"
 // ═══════════════════════════════════════════
-function renderGrindCard(ctx, reflection) {
+function renderMonthCard(ctx, reflection) {
   clearCanvas(ctx);
-  const CW = 1080, CH = 1920;
-  let y = 380;
+  drawHeader(ctx);
 
-  // Label
-  ctx.font = `300 26px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
-  ctx.textAlign = 'center';
-  ctx.letterSpacing = '6px';
-  ctx.fillText('GUITAR \u00B7 THE GRIND', CW / 2, y);
-  ctx.letterSpacing = '0px';
-  y += 160;
+  const pad = 100;
+  const contentW = CW - pad * 2;
+  let y = 220;
 
-  // Month hours
+  // Subtitle with month name
+  const monthName = (appData.month.name || 'THIS MONTH').toUpperCase();
+  drawSubLabel(ctx, monthName + ' ' + new Date().getFullYear(), y);
+  y += 130;
+
+  // Big number
   const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
-  ctx.font = `200 200px ${mono}`;
+  ctx.font = `200 220px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(monthHrs.toString(), CW / 2, y);
@@ -1675,15 +1694,15 @@ function renderGrindCard(ctx, reflection) {
   ctx.font = `300 24px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
-  ctx.fillText('HOURS IN ' + (appData.month.name || '--').toUpperCase(), CW / 2, y);
+  ctx.fillText('HOURS', CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 110;
+  y += 100;
 
-  // Category bars - wider, more spaced
-  const barX = 120;
-  const barMaxW = CW - 240;
-  const barH = 30;
-  const barGap = 68;
+  // Category bars
+  const barX = pad;
+  const barMaxW = contentW;
+  const barH = 28;
+  const barGap = 56;
   const breakdown = appData.categoryBreakdownMonth || appData.categoryBreakdown || {};
   const cats = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
   const maxMins = cats.length > 0 ? cats[0][1] : 1;
@@ -1695,17 +1714,16 @@ function renderGrindCard(ctx, reflection) {
     const barW = Math.max((mins / maxMins) * barMaxW, 6);
     const cy = y + i * (barH + barGap);
 
-    // Category name
-    ctx.font = `400 26px ${mono}`;
+    // Category name + hours on same line
+    ctx.font = `500 24px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'left';
-    ctx.fillText(catName, barX, cy - 10);
+    ctx.fillText(catName, barX, cy - 8);
 
-    // Hours on right
-    ctx.font = `400 24px ${mono}`;
+    ctx.font = `400 22px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.textAlign = 'right';
-    ctx.fillText(hrs + 'h', CW - barX, cy - 10);
+    ctx.fillText(hrs + 'h', barX + barMaxW, cy - 8);
 
     // Track
     ctx.fillStyle = '#e8e5de';
@@ -1718,49 +1736,47 @@ function renderGrindCard(ctx, reflection) {
     ctx.fill();
   });
 
-  y += cats.length * (barH + barGap) + 40;
+  y += cats.length * (barH + barGap) + 30;
 
   // Divider
   ctx.strokeStyle = '#ddd';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(barX, y);
-  ctx.lineTo(CW - barX, y);
+  ctx.moveTo(pad, y);
+  ctx.lineTo(CW - pad, y);
   ctx.stroke();
   y += 50;
 
-  // Week + streak
+  // Week hours + streak
   const weekHrs = parseFloat((appData.week.totalMinutes / 60).toFixed(1));
-  ctx.font = `300 26px ${mono}`;
+  ctx.font = `300 24px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(`${weekHrs}h this week \u00B7 ${appData.streak} day streak`, CW / 2, y);
   y += 60;
 
-  y = drawReflection(ctx, reflection, y, barMaxW);
-  drawWatermark(ctx);
+  y = drawReflection(ctx, reflection, y, contentW);
+  drawFooterWm(ctx);
 }
 
 // ═══════════════════════════════════════════
-// CARD 3: THE LONG GAME (year + grid)
+// CARD 3: YEAR — "The long game"
 // ═══════════════════════════════════════════
-function renderStreakCard(ctx, reflection) {
+function renderYearCard(ctx, reflection) {
   clearCanvas(ctx);
-  const CW = 1080, CH = 1920;
-  let y = 340;
+  drawHeader(ctx);
 
-  // Label
-  ctx.font = `300 26px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
-  ctx.textAlign = 'center';
-  ctx.letterSpacing = '6px';
-  ctx.fillText('GUITAR \u00B7 THE LONG GAME', CW / 2, y);
-  ctx.letterSpacing = '0px';
-  y += 160;
+  const pad = 100;
+  const contentW = CW - pad * 2;
+  let y = 220;
+
+  // Subtitle
+  drawSubLabel(ctx, 'THE LONG GAME', y);
+  y += 130;
 
   // Year hours
   const yearHrs = Math.round((appData.year ? appData.year.totalMinutes : 0) / 60);
-  ctx.font = `200 200px ${mono}`;
+  ctx.font = `200 220px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(yearHrs.toString(), CW / 2, y);
@@ -1771,16 +1787,15 @@ function renderStreakCard(ctx, reflection) {
   ctx.letterSpacing = '5px';
   ctx.fillText('HOURS IN ' + new Date().getFullYear(), CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 100;
+  y += 90;
 
-  // Three stat columns - boxed style
+  // Three stat boxes
   const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
   const weekHrs = parseFloat((appData.week.totalMinutes / 60).toFixed(1));
-  const colW = 280;
-  const colGap = 20;
-  const totalColW = 3 * colW + 2 * colGap;
-  const colX = (CW - totalColW) / 2;
-  const colH = 120;
+  const colGap = 16;
+  const colW = Math.floor((contentW - 2 * colGap) / 3);
+  const colH = 110;
+  const colX = pad;
 
   const statItems = [
     { num: weekHrs.toString(), label: 'THIS WEEK' },
@@ -1790,48 +1805,44 @@ function renderStreakCard(ctx, reflection) {
 
   statItems.forEach((s, i) => {
     const sx = colX + i * (colW + colGap);
-    // Box outline
+
     ctx.strokeStyle = '#ddd';
     ctx.lineWidth = 1;
-    roundRect(ctx, sx, y, colW, colH, 6);
+    roundRect(ctx, sx, y, colW, colH, 8);
     ctx.stroke();
 
-    // Number
-    ctx.font = `300 44px ${mono}`;
+    ctx.font = `300 42px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
-    ctx.fillText(s.num, sx + colW / 2, y + 50);
+    ctx.fillText(s.num, sx + colW / 2, y + 48);
 
-    // Label
-    ctx.font = `300 16px ${mono}`;
+    ctx.font = `300 15px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.letterSpacing = '2px';
-    ctx.fillText(s.label, sx + colW / 2, y + 82);
+    ctx.fillText(s.label, sx + colW / 2, y + 78);
     ctx.letterSpacing = '0px';
   });
-  y += colH + 70;
+  y += colH + 60;
 
-  // Contribution grid - larger
+  // Contribution grid
   if (appData.grid && appData.grid.length > 0) {
-    const gridPad = 60;
-    const availW = CW - gridPad * 2;
     const cols = 52;
     const rows = 7;
     const cellGap = 3;
-    const cellSize = Math.floor((availW - (cols - 1) * cellGap) / cols);
+    const cellSize = Math.floor((contentW - (cols - 1) * cellGap) / cols);
     const gridW = cols * cellSize + (cols - 1) * cellGap;
     const gridXStart = (CW - gridW) / 2;
 
     // Month labels
     const monthLabels = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
-    ctx.font = `400 18px ${mono}`;
+    ctx.font = `400 16px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.textAlign = 'center';
     monthLabels.forEach((m, mi) => {
       const mx = gridXStart + (mi / 12) * gridW + gridW / 24;
       ctx.fillText(m, mx, y);
     });
-    y += 20;
+    y += 18;
 
     // Grid cells
     for (let i = 0; i < Math.min(appData.grid.length, cols * rows); i++) {
@@ -1848,53 +1859,59 @@ function renderStreakCard(ctx, reflection) {
       } else {
         ctx.fillStyle = INTENSITY_COLORS[cell.intensity] || INTENSITY_COLORS[0];
       }
-      roundRect(ctx, cx, cy, cellSize, cellSize, 2);
+      roundRect(ctx, cx, cy, cellSize, cellSize, 1);
       ctx.fill();
     }
 
-    y += rows * (cellSize + cellGap) + 28;
+    y += rows * (cellSize + cellGap) + 24;
 
-    // Legend - cleaner layout
-    const legendX = gridXStart + gridW;
-    ctx.font = `400 18px ${mono}`;
-    ctx.textAlign = 'right';
-
-    // "less □□□□□ more · ● gig"
-    const legendItems = [INTENSITY_COLORS[0], INTENSITY_COLORS[1], INTENSITY_COLORS[2], INTENSITY_COLORS[3], INTENSITY_COLORS[4]];
+    // Legend — centered
     const swatchSize = 12;
     const swatchGap = 4;
-    const legendTotalW = 40 + legendItems.length * (swatchSize + swatchGap) + 40 + 20 + swatchSize + 30;
-    const lx = (CW - legendTotalW) / 2;
+    const legendColors = [INTENSITY_COLORS[0], INTENSITY_COLORS[1], INTENSITY_COLORS[2], INTENSITY_COLORS[3], INTENSITY_COLORS[4]];
+    // "less ■■■■■ more · ■ gig"
+    ctx.font = `400 16px ${mono}`;
+    const lessW = ctx.measureText('less ').width;
+    const moreW = ctx.measureText(' more').width;
+    const dotW = ctx.measureText(' \u00B7 ').width;
+    const gigW = ctx.measureText(' gig').width;
+    const swatchesW = legendColors.length * (swatchSize + swatchGap);
+    const gigSwatchW = swatchSize;
+    const totalLegendW = lessW + swatchesW + moreW + dotW + gigSwatchW + gigW;
+    let lx = (CW - totalLegendW) / 2;
 
     ctx.fillStyle = DIM_COLOR;
     ctx.textAlign = 'left';
     ctx.fillText('less', lx, y);
+    lx += lessW;
 
-    legendItems.forEach((c, ci) => {
+    legendColors.forEach((c, ci) => {
       ctx.fillStyle = c;
-      roundRect(ctx, lx + 42 + ci * (swatchSize + swatchGap), y - swatchSize + 2, swatchSize, swatchSize, 2);
+      roundRect(ctx, lx + ci * (swatchSize + swatchGap), y - swatchSize + 3, swatchSize, swatchSize, 2);
       ctx.fill();
     });
-
-    const afterSwatches = lx + 42 + legendItems.length * (swatchSize + swatchGap) + 6;
-    ctx.fillStyle = DIM_COLOR;
-    ctx.fillText('more', afterSwatches, y);
+    lx += swatchesW;
 
     ctx.fillStyle = DIM_COLOR;
-    ctx.fillText('\u00B7', afterSwatches + 50, y);
+    ctx.fillText(' more', lx, y);
+    lx += moreW;
+
+    ctx.fillText(' \u00B7 ', lx, y);
+    lx += dotW;
 
     ctx.fillStyle = GIG_COLOR;
-    roundRect(ctx, afterSwatches + 62, y - swatchSize + 2, swatchSize, swatchSize, 2);
+    roundRect(ctx, lx, y - swatchSize + 3, swatchSize, swatchSize, 2);
     ctx.fill();
+    lx += gigSwatchW;
 
     ctx.fillStyle = DIM_COLOR;
-    ctx.fillText('gig', afterSwatches + 62 + swatchSize + 6, y);
+    ctx.fillText(' gig', lx, y);
 
     y += 50;
   }
 
-  y = drawReflection(ctx, reflection, y, CW - 160);
-  drawWatermark(ctx);
+  y = drawReflection(ctx, reflection, y, contentW);
+  drawFooterWm(ctx);
 }
 
 // Save / Share
