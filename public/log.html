@@ -550,38 +550,52 @@ body {
 .grid-legend .swatch.gig-swatch { border-radius: 50%; }
 
 /* Category bars */
-.cat-bar-row {
+.breakdown-wrap {
   display: flex;
   align-items: center;
-  margin-bottom: 9px;
+  gap: 20px;
+  padding: 16px 0;
 }
 
-.cat-bar-label {
-  width: 82px;
-  color: var(--dim);
-  font-size: 12px;
+#breakdown-donut {
+  flex-shrink: 0;
 }
 
-.cat-bar-track {
+.breakdown-legend {
   flex: 1;
-  height: 6px;
-  background: var(--int-0);
-  margin: 0 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.cat-bar-fill {
-  height: 100%;
-  background: var(--fg);
-  transition: width 0.4s ease;
+.breakdown-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.cat-bar-fill.top { background: var(--green); }
+.breakdown-legend-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-.cat-bar-hours {
-  font-size: 11px;
+.breakdown-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.breakdown-legend-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+.breakdown-legend-hrs {
+  font-size: 12px;
   color: var(--dim);
-  width: 34px;
-  text-align: right;
 }
 
 /* Gig entries */
@@ -956,7 +970,10 @@ input:focus, textarea:focus, button:focus { outline: none; }
 
   <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
   <div class="section-label">Breakdown</div>
-  <div id="category-bars"></div>
+  <div id="category-breakdown" class="breakdown-wrap">
+    <canvas id="breakdown-donut" width="160" height="160"></canvas>
+    <div id="breakdown-legend" class="breakdown-legend"></div>
+  </div>
 
   <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
   <div class="section-label">Recent Gigs</div>
@@ -1249,25 +1266,86 @@ function renderStats() {
     });
   }
 
-  // Category breakdown
-  const barsEl = document.getElementById('category-bars');
-  barsEl.innerHTML = '';
+  // Category breakdown — donut chart
+  const donutCanvas = document.getElementById('breakdown-donut');
+  const dCtx = donutCanvas.getContext('2d');
+  const legendEl = document.getElementById('breakdown-legend');
+  legendEl.innerHTML = '';
+
   const categories = appData.categoryBreakdownMonth || {};
   const sorted = Object.entries(categories).sort((a, b) => b[1] - a[1]);
-  const maxMins = sorted.length > 0 ? sorted[0][1] : 1;
+  const totalMins = sorted.reduce((sum, c) => sum + c[1], 0);
+  const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
 
-  sorted.forEach(([ cat, mins ], i) => {
-    const pct = Math.round((mins / maxMins) * 100);
-    const hrs = Math.round(mins / 60);
-    const row = document.createElement('div');
-    row.className = 'cat-bar-row';
-    row.innerHTML = `
-      <span class="cat-bar-label">${cat}</span>
-      <div class="cat-bar-track"><div class="cat-bar-fill${i === 0 ? ' top' : ''}" style="width:${pct}%;"></div></div>
-      <span class="cat-bar-hours">${hrs}h</span>
-    `;
-    barsEl.appendChild(row);
-  });
+  // Scale canvas for retina
+  const dpr = window.devicePixelRatio || 1;
+  const size = 160;
+  donutCanvas.width = size * dpr;
+  donutCanvas.height = size * dpr;
+  donutCanvas.style.width = size + 'px';
+  donutCanvas.style.height = size + 'px';
+  dCtx.scale(dpr, dpr);
+
+  const cx = size / 2;
+  const cy = size / 2;
+  const outerR = 75;
+  const innerR = 48;
+
+  // Clear
+  dCtx.clearRect(0, 0, size, size);
+
+  if (sorted.length > 0 && totalMins > 0) {
+    // Draw donut segments
+    let startAngle = -Math.PI / 2;
+    sorted.forEach((cat, i) => {
+      const fraction = cat[1] / totalMins;
+      const endAngle = startAngle + fraction * Math.PI * 2;
+      dCtx.beginPath();
+      dCtx.arc(cx, cy, outerR, startAngle, endAngle);
+      dCtx.arc(cx, cy, innerR, endAngle, startAngle, true);
+      dCtx.closePath();
+      dCtx.fillStyle = donutColors[i % donutColors.length];
+      dCtx.fill();
+      startAngle = endAngle;
+    });
+
+    // Center text
+    const totalStr = totalMins >= 60
+      ? Math.floor(totalMins / 60) + 'h ' + (totalMins % 60 > 0 ? (totalMins % 60) + 'm' : '')
+      : totalMins + 'm';
+    dCtx.font = '300 20px "IBM Plex Mono", monospace';
+    dCtx.fillStyle = '#1a1a1a';
+    dCtx.textAlign = 'center';
+    dCtx.fillText(totalStr.trim(), cx, cy + 4);
+    dCtx.font = '300 8px "IBM Plex Mono", monospace';
+    dCtx.fillStyle = '#999';
+    dCtx.letterSpacing = '2px';
+    dCtx.fillText('THIS MONTH', cx, cy + 18);
+    dCtx.letterSpacing = '0px';
+
+    // Legend rows
+    sorted.forEach((cat, i) => {
+      const mins = cat[1];
+      const hrsStr = mins >= 60
+        ? parseFloat((mins / 60).toFixed(1)) + 'h'
+        : mins + 'm';
+      const row = document.createElement('div');
+      row.className = 'breakdown-legend-row';
+      row.innerHTML = `
+        <div class="breakdown-legend-left">
+          <div class="breakdown-legend-dot" style="background:${donutColors[i % donutColors.length]}"></div>
+          <span class="breakdown-legend-name">${cat[0]}</span>
+        </div>
+        <span class="breakdown-legend-hrs">${hrsStr}</span>
+      `;
+      legendEl.appendChild(row);
+    });
+  } else {
+    dCtx.font = '300 12px "IBM Plex Mono", monospace';
+    dCtx.fillStyle = '#999';
+    dCtx.textAlign = 'center';
+    dCtx.fillText('no data', cx, cy + 4);
+  }
 
   // Recent gigs
   const gigsEl = document.getElementById('recent-gigs');
