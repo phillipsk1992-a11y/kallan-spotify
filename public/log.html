@@ -270,7 +270,7 @@ body {
 }
 
 .gig-btn::before {
-  content: '\u25C6';
+  content: '\25C6';
   margin-right: 6px;
   font-size: 7px;
   vertical-align: middle;
@@ -1115,7 +1115,7 @@ input:focus, textarea:focus, button:focus { outline: none; }
 // CONFIG
 // ═══════════════════════════════════════════
 const API_URL = '/api/practice-log';
-const API_SECRET = 'kallanpracticelog92'; // Set via env or replace
+const API_SECRET = 'REPLACE_WITH_YOUR_SECRET'; // Set via env or replace
 
 const INTENSITY_COLORS = ['#e8e5de', '#c8dfc0', '#7db868', '#3d8b2a', '#1a5c0e'];
 const GIG_COLOR = '#e07a2f';
@@ -1140,11 +1140,17 @@ async function fetchStats() {
     const resp = await fetch(API_URL, {
       headers: { 'x-api-secret': API_SECRET }
     });
-    if (!resp.ok) throw new Error('API error');
+    if (!resp.ok) {
+      const body = await resp.text();
+      console.error(`API ${resp.status}: ${body}`);
+      showToast(`api error: ${resp.status}`);
+      return;
+    }
     appData = await resp.json();
     renderAll();
   } catch (err) {
     console.error('Failed to fetch stats:', err);
+    showToast('could not reach api');
   }
 }
 
