@@ -661,58 +661,69 @@ body {
 
 /* Preview */
 .preview-label {
-  font-size: 8px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--dim);
   margin-bottom: 8px;
 }
 
-.mini-preview {
+/* Card type selector */
+.card-type-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.card-type-btn {
+  flex: 1;
+  background: transparent;
   border: 1px solid var(--rule);
-  padding: 14px 16px;
-  opacity: 0.7;
-  margin-bottom: 16px;
+  font-family: inherit;
+  padding: 14px 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--fg);
 }
 
-.mini-preview .mp-instrument {
-  font-size: 7px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--dim);
-  margin-bottom: 6px;
+.card-type-btn.selected {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
 }
 
-.mini-preview .mp-big {
-  font-size: 24px;
-  font-weight: 300;
+.card-type-icon {
+  font-size: 18px;
   line-height: 1;
 }
 
-.mini-preview .mp-unit {
-  font-size: 8px;
-  color: var(--dim);
-  margin-bottom: 8px;
+.card-type-name {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
 }
 
-.mini-preview .mp-quote {
-  font-size: 9px;
-  font-style: italic;
-  color: var(--fg);
-  border-top: 1px solid #e8e5de;
-  padding-top: 8px;
-  margin-top: 4px;
-  line-height: 1.5;
-  display: none;
-}
-
-.mini-preview .mp-wm {
-  font-size: 7px;
+.card-type-desc {
+  font-size: 12px;
   color: var(--dim);
   text-align: center;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-top: 8px;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+/* Card preview */
+.card-preview-container {
+  margin-bottom: 16px;
+}
+
+.card-preview-container canvas {
+  width: 100%;
+  border: 1px solid var(--rule);
 }
 
 .generate-btn {
@@ -731,121 +742,6 @@ body {
 /* Card view */
 #card-view { display: none; }
 #card-view.active { display: block; }
-
-.card-frame {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.share-card {
-  width: 100%;
-  border: 1px solid var(--rule);
-  padding: 28px 24px;
-}
-
-.card-instrument {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 2.5px;
-  color: var(--dim);
-  margin-bottom: 20px;
-}
-
-.card-big {
-  font-size: 48px;
-  font-weight: 300;
-  line-height: 1;
-  margin-bottom: 2px;
-}
-
-.card-unit {
-  font-size: 10px;
-  color: var(--dim);
-  margin-bottom: 16px;
-}
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
-  margin-bottom: 6px;
-}
-
-.card-grid .day-label {
-  font-size: 7px;
-  color: var(--dim);
-  text-align: center;
-  text-transform: uppercase;
-  padding-bottom: 2px;
-}
-
-.card-grid .grid-cell {
-  aspect-ratio: 1;
-  border-radius: 2px;
-  position: relative;
-}
-
-.card-grid .grid-cell.gig-cell { border-radius: 50%; }
-
-.card-grid .grid-cell .cell-min {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 8px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.85);
-}
-
-.card-grid .grid-cell.light-cell .cell-min { color: rgba(0,0,0,0.35); }
-
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  font-size: 8px;
-  color: var(--dim);
-  margin-bottom: 16px;
-}
-
-.card-context {
-  font-size: 10px;
-  color: var(--dim);
-  text-align: center;
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
-
-.card-context em {
-  color: var(--fg);
-  font-style: normal;
-  font-weight: 500;
-}
-
-.card-reflection {
-  border-top: 1px solid #e8e5de;
-  padding-top: 14px;
-  margin-top: 2px;
-  margin-bottom: 16px;
-  display: none;
-}
-
-.card-reflection .card-quote {
-  font-size: 11px;
-  font-style: italic;
-  color: var(--fg);
-  line-height: 1.6;
-}
-
-.card-watermark {
-  font-size: 8px;
-  color: var(--dim);
-  text-align: center;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
 
 /* Share actions */
 .share-actions {
@@ -1012,7 +908,7 @@ input:focus, textarea:focus, button:focus { outline: none; }
 
   <div class="grid-header">
     <div class="section-label" id="grid-year">2026</div>
-    <button class="share-link" id="share-week-btn">share week &#8599;</button>
+    <button class="share-link" id="share-week-btn">share &#8599;</button>
   </div>
   <div class="grid-months">
     <span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span>
@@ -1044,42 +940,39 @@ input:focus, textarea:focus, button:focus { outline: none; }
 
 <!-- ═══════════════════════════════════ SHARE FLOW ═══════════════════════════════════ -->
 <div id="share-view">
-  <div class="section-label">Share your week</div>
-  <div class="reflect-prompt">Anything worth<br>remembering this week?</div>
+  <div class="section-label">Share your progress</div>
+
+  <div class="card-type-selector">
+    <button class="card-type-btn selected" data-card="week">
+      <span class="card-type-icon">&#9632;</span>
+      <span class="card-type-name">week</span>
+    </button>
+    <button class="card-type-btn" data-card="grind">
+      <span class="card-type-icon">&#9612;</span>
+      <span class="card-type-name">grind</span>
+    </button>
+    <button class="card-type-btn" data-card="streak">
+      <span class="card-type-icon">&#9617;</span>
+      <span class="card-type-name">long game</span>
+    </button>
+  </div>
+
+  <div class="card-type-desc" id="card-type-desc">your week at a glance</div>
+
+  <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+
+  <div class="reflect-prompt">Anything worth<br>remembering?</div>
   <textarea class="reflect-input" id="reflect-input" rows="3" placeholder="optional -- skip if nothing comes to mind"></textarea>
   <button class="skip-link" id="skip-reflect">skip &#8594;</button>
 
   <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
-
-  <div class="preview-label">Preview</div>
-  <div class="mini-preview" id="mini-preview">
-    <div class="mp-instrument">guitar &middot; week in practice</div>
-    <div class="mp-big" id="mp-hours">--</div>
-    <div class="mp-unit">hours this week</div>
-    <div class="mp-quote" id="mp-quote"></div>
-    <div class="mp-wm">woodshed</div>
-  </div>
 
   <button class="generate-btn" id="generate-btn">generate card</button>
 </div>
 
 <!-- ═══════════════════════════════════ CARD VIEW ═══════════════════════════════════ -->
 <div id="card-view">
-  <div class="share-card" id="share-card-el">
-    <div class="card-instrument">guitar &middot; week in practice</div>
-    <div class="card-big" id="card-hours">--</div>
-    <div class="card-unit">hours this week</div>
-    <div class="card-grid" id="card-grid"></div>
-    <div class="card-footer">
-      <span id="card-days-info">-- of 7 days</span>
-      <span id="card-streak">-- day streak</span>
-    </div>
-    <div class="card-context" id="card-context"></div>
-    <div class="card-reflection" id="card-reflection">
-      <div class="card-quote" id="card-quote"></div>
-    </div>
-    <div class="card-watermark">woodshed</div>
-  </div>
+  <div class="card-preview-container" id="card-preview-container"></div>
 
   <div class="share-actions">
     <button class="share-action-btn" id="save-image-btn">save image</button>
@@ -1506,6 +1399,23 @@ document.getElementById('log-btn').addEventListener('click', async () => {
 // ═══════════════════════════════════════════
 // SHARE FLOW
 // ═══════════════════════════════════════════
+let selectedCardType = 'week';
+const cardDescriptions = {
+  week: 'your week at a glance',
+  grind: 'what you worked on',
+  streak: 'the big picture',
+};
+
+// Card type selector
+document.querySelectorAll('.card-type-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.card-type-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCardType = btn.dataset.card;
+    document.getElementById('card-type-desc').textContent = cardDescriptions[selectedCardType];
+  });
+});
+
 document.getElementById('share-week-btn').addEventListener('click', () => {
   showShareView();
 });
@@ -1517,31 +1427,10 @@ function showShareView() {
   document.getElementById('share-view').classList.add('active');
   document.getElementById('card-view').classList.remove('active');
 
-  // Header
   const link = document.getElementById('header-link');
   link.style.display = 'inline';
   link.textContent = '\u2190 stats';
   link.onclick = () => showMainView();
-
-  // Update preview
-  if (appData) {
-    const hrs = (appData.week.totalMinutes / 60).toFixed(1);
-    document.getElementById('mp-hours').textContent = hrs;
-  }
-
-  // Wire up reflect input
-  document.getElementById('reflect-input').addEventListener('input', updatePreviewQuote);
-}
-
-function updatePreviewQuote() {
-  const text = document.getElementById('reflect-input').value.trim();
-  const quoteEl = document.getElementById('mp-quote');
-  if (text) {
-    quoteEl.textContent = '"' + text + '"';
-    quoteEl.style.display = 'block';
-  } else {
-    quoteEl.style.display = 'none';
-  }
 }
 
 document.getElementById('skip-reflect').addEventListener('click', () => {
@@ -1565,76 +1454,25 @@ function generateCard() {
   if (!appData) return;
 
   const reflection = document.getElementById('reflect-input').value.trim();
-  const weekHrs = (appData.week.totalMinutes / 60).toFixed(1);
+  const canvas = document.getElementById('share-canvas');
+  const ctx = canvas.getContext('2d');
 
-  // Card hours
-  document.getElementById('card-hours').textContent = weekHrs;
-
-  // Card grid (7 days)
-  const gridEl = document.getElementById('card-grid');
-  gridEl.innerHTML = '';
-  const dayLabels = ['m', 't', 'w', 't', 'f', 's', 's'];
-  dayLabels.forEach(l => {
-    const dl = document.createElement('div');
-    dl.className = 'day-label';
-    dl.textContent = l;
-    gridEl.appendChild(dl);
-  });
-
-  let activeDays = 0;
-  let weekGigs = 0;
-  appData.week.days.forEach(day => {
-    const cell = document.createElement('div');
-    cell.className = 'grid-cell';
-    if (day.isFuture) {
-      cell.style.background = '#e8e5de';
-    } else {
-      if (day.hasGig) {
-        cell.classList.add('gig-cell');
-        cell.style.background = GIG_COLOR;
-        weekGigs++;
-      } else {
-        cell.style.background = INTENSITY_COLORS[day.intensity] || INTENSITY_COLORS[0];
-      }
-      if (day.minutes > 0) activeDays++;
-      if (day.intensity <= 1 && !day.hasGig) {
-        cell.classList.add('light-cell');
-      }
-    }
-
-    if (!day.isFuture && day.minutes > 0) {
-      const minEl = document.createElement('div');
-      minEl.className = 'cell-min';
-      minEl.textContent = day.minutes;
-      cell.appendChild(minEl);
-    }
-    gridEl.appendChild(cell);
-  });
-
-  // Footer
-  const gigStr = weekGigs > 0 ? ` \u00B7 ${weekGigs} gig${weekGigs !== 1 ? 's' : ''}` : '';
-  document.getElementById('card-days-info').textContent = `${activeDays} of 7 days${gigStr}`;
-  document.getElementById('card-streak').textContent = `${appData.streak} day streak`;
-
-  // Context
-  const topCat = appData.week.topCategory;
-  if (topCat) {
-    document.getElementById('card-context').innerHTML = `mostly <em>${topCat}</em> this week`;
-  } else {
-    document.getElementById('card-context').textContent = '';
+  if (selectedCardType === 'week') {
+    renderWeekCard(ctx, reflection);
+  } else if (selectedCardType === 'grind') {
+    renderGrindCard(ctx, reflection);
+  } else if (selectedCardType === 'streak') {
+    renderStreakCard(ctx, reflection);
   }
 
-  // Reflection
-  const refEl = document.getElementById('card-reflection');
-  if (reflection) {
-    refEl.style.display = 'block';
-    document.getElementById('card-quote').textContent = '"' + reflection + '"';
-  } else {
-    refEl.style.display = 'none';
-  }
-
-  // Render canvas for saving
-  renderShareCanvas(weekHrs, activeDays, weekGigs, reflection, topCat);
+  // Show canvas preview
+  const container = document.getElementById('card-preview-container');
+  container.innerHTML = '';
+  const preview = document.createElement('canvas');
+  preview.width = 1080;
+  preview.height = 1920;
+  preview.getContext('2d').drawImage(canvas, 0, 0);
+  container.appendChild(preview);
 }
 
 function showMainView() {
@@ -1647,63 +1485,98 @@ function showMainView() {
 }
 
 // ═══════════════════════════════════════════
-// CANVAS RENDERING (1080×1920)
+// CANVAS HELPERS
 // ═══════════════════════════════════════════
-function renderShareCanvas(weekHrs, activeDays, weekGigs, reflection, topCat) {
-  const canvas = document.getElementById('share-canvas');
-  const ctx = canvas.getContext('2d');
-  const W = 1080, H = 1920;
+const CW = 1080, CH = 1920;
+const mono = "'IBM Plex Mono', monospace";
 
-  // Background
+function clearCanvas(ctx) {
   ctx.fillStyle = BG_COLOR;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0, 0, CW, CH);
+}
 
-  // Use system monospace as fallback (IBM Plex Mono if loaded)
-  const mono = "'IBM Plex Mono', monospace";
+function drawWatermark(ctx, y) {
+  const wy = y || CH - 140;
+  ctx.font = `300 22px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '5px';
+  ctx.fillText('WOODSHED', CW / 2, wy);
+  ctx.letterSpacing = '0px';
+}
 
-  let y = 320;
+function drawReflection(ctx, reflection, y, maxWidth) {
+  if (!reflection) return y;
+  y += 20;
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo((CW - maxWidth) / 2, y);
+  ctx.lineTo((CW + maxWidth) / 2, y);
+  ctx.stroke();
+  y += 50;
 
-  // Instrument label
+  ctx.font = `italic 30px ${mono}`;
+  ctx.fillStyle = FG_COLOR;
+  ctx.textAlign = 'center';
+  const quoteText = '\u201C' + reflection + '\u201D';
+  const lines = getWrappedLines(ctx, quoteText, maxWidth);
+  lines.forEach((line, i) => {
+    ctx.fillText(line, CW / 2, y + i * 46);
+  });
+  return y + lines.length * 46 + 20;
+}
+
+function drawLabel(ctx, text, y) {
   ctx.font = `300 24px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'center';
   ctx.letterSpacing = '6px';
-  ctx.fillText('GUITAR \u00B7 WEEK IN PRACTICE', W / 2, y);
+  ctx.fillText(text, CW / 2, y);
   ctx.letterSpacing = '0px';
+}
+
+// ═══════════════════════════════════════════
+// CARD 1: WEEK IN REVIEW
+// ═══════════════════════════════════════════
+function renderWeekCard(ctx, reflection) {
+  clearCanvas(ctx);
+  let y = 320;
+
+  drawLabel(ctx, 'GUITAR \u00B7 WEEK IN PRACTICE', y);
   y += 120;
 
-  // Big number
+  const weekHrs = (appData.week.totalMinutes / 60).toFixed(1);
   ctx.font = `200 180px ${mono}`;
   ctx.fillStyle = FG_COLOR;
-  ctx.fillText(weekHrs, W / 2, y);
+  ctx.textAlign = 'center';
+  ctx.fillText(weekHrs, CW / 2, y);
   y += 30;
 
-  // Unit
   ctx.font = `300 26px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
-  ctx.fillText('HOURS THIS WEEK', W / 2, y);
+  ctx.fillText('HOURS THIS WEEK', CW / 2, y);
   ctx.letterSpacing = '0px';
   y += 80;
 
-  // Day grid
   const cellSize = 100;
   const cellGap = 16;
   const gridWidth = 7 * cellSize + 6 * cellGap;
-  const gridX = (W - gridWidth) / 2;
+  const gridX = (CW - gridWidth) / 2;
 
-  // Day labels
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  ctx.font = `400 20px ${mono}`;
+  ctx.font = `400 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   dayLabels.forEach((label, i) => {
     const cx = gridX + i * (cellSize + cellGap) + cellSize / 2;
     ctx.fillText(label, cx, y);
   });
-  y += 20;
+  y += 24;
 
-  // Cells
-  if (appData && appData.week && appData.week.days) {
+  if (appData.week && appData.week.days) {
+    let activeDays = 0;
+    let weekGigs = 0;
     appData.week.days.forEach((day, i) => {
       const cx = gridX + i * (cellSize + cellGap);
       const cy = y;
@@ -1712,102 +1585,270 @@ function renderShareCanvas(weekHrs, activeDays, weekGigs, reflection, topCat) {
         ctx.fillStyle = '#e8e5de';
       } else if (day.hasGig) {
         ctx.fillStyle = GIG_COLOR;
+        weekGigs++;
       } else {
         ctx.fillStyle = INTENSITY_COLORS[day.intensity] || INTENSITY_COLORS[0];
       }
+      if (day.minutes > 0) activeDays++;
 
       if (day.hasGig && !day.isFuture) {
-        // Circle for gig
         ctx.beginPath();
         ctx.arc(cx + cellSize / 2, cy + cellSize / 2, cellSize / 2, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        // Rounded rect
         roundRect(ctx, cx, cy, cellSize, cellSize, 8);
         ctx.fill();
       }
 
-      // Minutes label
       if (!day.isFuture && day.minutes > 0) {
         const isLight = day.intensity <= 1 && !day.hasGig;
-        ctx.font = `500 24px ${mono}`;
-        ctx.fillStyle = isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.85)';
-        ctx.fillText(day.minutes.toString(), cx + cellSize / 2, cy + cellSize / 2 + 8);
+        ctx.font = `500 26px ${mono}`;
+        ctx.fillStyle = isLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.9)';
+        ctx.textAlign = 'center';
+        ctx.fillText(day.minutes.toString(), cx + cellSize / 2, cy + cellSize / 2 + 9);
       }
     });
-  }
-  y += cellSize + 24;
+    y += cellSize + 30;
 
-  // Footer line
-  ctx.font = `400 22px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
-  ctx.textAlign = 'left';
-  const gigStr = weekGigs > 0 ? ` \u00B7 ${weekGigs} gig${weekGigs !== 1 ? 's' : ''}` : '';
-  ctx.fillText(`${activeDays} of 7 days${gigStr}`, gridX, y);
-  ctx.textAlign = 'right';
-  ctx.fillText(`${appData.streak} day streak`, gridX + gridWidth, y);
-  y += 60;
-
-  // Context
-  ctx.textAlign = 'center';
-  if (topCat) {
-    ctx.font = `300 26px ${mono}`;
+    ctx.font = `400 22px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
-    const beforeText = 'mostly ';
-    const afterText = ' this week';
-    const catText = topCat;
-
-    // Measure
-    const beforeW = ctx.measureText(beforeText).width;
-    ctx.font = `500 26px ${mono}`;
-    const catW = ctx.measureText(catText).width;
-    ctx.font = `300 26px ${mono}`;
-    const afterW = ctx.measureText(afterText).width;
-    const totalW = beforeW + catW + afterW;
-    const startX = (W - totalW) / 2;
-
-    ctx.fillText(beforeText, startX + beforeW / 2, y);
-    ctx.font = `500 26px ${mono}`;
-    ctx.fillStyle = FG_COLOR;
-    ctx.fillText(catText, startX + beforeW + catW / 2, y);
-    ctx.font = `300 26px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
-    ctx.fillText(afterText, startX + beforeW + catW + afterW / 2, y);
+    ctx.textAlign = 'left';
+    const gigStr = weekGigs > 0 ? ` \u00B7 ${weekGigs} gig${weekGigs !== 1 ? 's' : ''}` : '';
+    ctx.fillText(`${activeDays} of 7 days${gigStr}`, gridX, y);
+    ctx.textAlign = 'right';
+    ctx.fillText(`${appData.streak} day streak`, gridX + gridWidth, y);
     y += 60;
+
+    const topCat = appData.week.topCategory;
+    if (topCat) {
+      ctx.textAlign = 'center';
+      ctx.font = `300 26px ${mono}`;
+      ctx.fillStyle = DIM_COLOR;
+      ctx.fillText(`mostly ${topCat} this week`, CW / 2, y);
+      y += 50;
+    }
   }
 
-  // Reflection
-  if (reflection) {
-    y += 10;
-    // Divider line
-    ctx.strokeStyle = '#e8e5de';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(gridX, y);
-    ctx.lineTo(gridX + gridWidth, y);
-    ctx.stroke();
-    y += 40;
-
-    ctx.font = `italic 28px ${mono}`;
-    ctx.fillStyle = FG_COLOR;
-    ctx.textAlign = 'center';
-    const quoteText = '"' + reflection + '"';
-    wrapText(ctx, quoteText, W / 2, y, gridWidth, 42);
-    // Estimate wrapped height
-    const lines = getWrappedLines(ctx, quoteText, gridWidth);
-    y += lines.length * 42 + 30;
-  }
-
-  // Watermark
-  y = Math.max(y + 40, H - 200);
-  ctx.font = `300 20px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
-  ctx.textAlign = 'center';
-  ctx.letterSpacing = '4px';
-  ctx.fillText('WOODSHED', W / 2, y);
-  ctx.letterSpacing = '0px';
+  y = drawReflection(ctx, reflection, y, gridWidth);
+  drawWatermark(ctx);
 }
 
+// ═══════════════════════════════════════════
+// CARD 2: THE GRIND (category breakdown)
+// ═══════════════════════════════════════════
+function renderGrindCard(ctx, reflection) {
+  clearCanvas(ctx);
+  let y = 280;
+
+  drawLabel(ctx, 'GUITAR \u00B7 THE GRIND', y);
+  y += 100;
+
+  const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
+  ctx.font = `200 160px ${mono}`;
+  ctx.fillStyle = FG_COLOR;
+  ctx.textAlign = 'center';
+  ctx.fillText(monthHrs.toString(), CW / 2, y);
+  y += 30;
+
+  ctx.font = `300 26px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.letterSpacing = '5px';
+  ctx.fillText('HOURS IN ' + (appData.month.name || '--').toUpperCase(), CW / 2, y);
+  ctx.letterSpacing = '0px';
+  y += 100;
+
+  const barX = 140;
+  const barMaxW = CW - 280;
+  const barH = 24;
+  const barGap = 60;
+  const breakdown = appData.categoryBreakdownMonth || appData.categoryBreakdown || {};
+  const cats = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
+  const maxMins = cats.length > 0 ? cats[0][1] : 1;
+
+  cats.forEach((cat, i) => {
+    const catName = cat[0];
+    const mins = cat[1];
+    const hrs = parseFloat((mins / 60).toFixed(1));
+    const barW = Math.max((mins / maxMins) * barMaxW, 4);
+    const cy = y + i * (barH + barGap);
+
+    ctx.font = `400 24px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.textAlign = 'left';
+    ctx.fillText(catName, barX, cy - 8);
+
+    ctx.fillStyle = '#e8e5de';
+    roundRect(ctx, barX, cy, barMaxW, barH, 4);
+    ctx.fill();
+
+    ctx.fillStyle = i === 0 ? '#1db954' : FG_COLOR;
+    roundRect(ctx, barX, cy, barW, barH, 4);
+    ctx.fill();
+
+    ctx.font = `400 22px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.textAlign = 'right';
+    ctx.fillText(hrs + 'h', CW - barX, cy + barH - 4);
+  });
+
+  y += cats.length * (barH + barGap) + 30;
+
+  const weekHrs = parseFloat((appData.week.totalMinutes / 60).toFixed(1));
+  ctx.font = `300 24px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'center';
+  ctx.fillText(`${weekHrs}h this week \u00B7 ${appData.streak} day streak`, CW / 2, y);
+  y += 60;
+
+  y = drawReflection(ctx, reflection, y, barMaxW);
+  drawWatermark(ctx);
+}
+
+// ═══════════════════════════════════════════
+// CARD 3: THE LONG GAME (year + grid)
+// ═══════════════════════════════════════════
+function renderStreakCard(ctx, reflection) {
+  clearCanvas(ctx);
+  let y = 280;
+
+  drawLabel(ctx, 'GUITAR \u00B7 THE LONG GAME', y);
+  y += 100;
+
+  const yearHrs = Math.round((appData.year ? appData.year.totalMinutes : 0) / 60);
+  ctx.font = `200 160px ${mono}`;
+  ctx.fillStyle = FG_COLOR;
+  ctx.textAlign = 'center';
+  ctx.fillText(yearHrs.toString(), CW / 2, y);
+  y += 30;
+
+  ctx.font = `300 26px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.letterSpacing = '5px';
+  ctx.fillText('HOURS IN ' + new Date().getFullYear(), CW / 2, y);
+  ctx.letterSpacing = '0px';
+  y += 80;
+
+  // Three stat columns
+  const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
+  const weekHrs = parseFloat((appData.week.totalMinutes / 60).toFixed(1));
+  const statY = y;
+  const colW = CW / 3;
+  const statItems = [
+    { num: weekHrs.toString(), label: 'THIS WEEK' },
+    { num: appData.streak.toString(), label: 'DAY STREAK' },
+    { num: monthHrs.toString(), label: 'IN ' + (appData.month.name || '--').toUpperCase() },
+  ];
+  statItems.forEach((s, i) => {
+    const cx = colW / 2 + i * colW;
+    ctx.font = `300 48px ${mono}`;
+    ctx.fillStyle = FG_COLOR;
+    ctx.textAlign = 'center';
+    ctx.fillText(s.num, cx, statY);
+    ctx.font = `300 18px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.letterSpacing = '3px';
+    ctx.fillText(s.label, cx, statY + 28);
+    ctx.letterSpacing = '0px';
+  });
+  y = statY + 80;
+
+  // Contribution grid
+  if (appData.grid && appData.grid.length > 0) {
+    const gridPad = 80;
+    const availW = CW - gridPad * 2;
+    const cols = 52;
+    const rows = 7;
+    const cellGap = 2;
+    const cellSize = Math.floor((availW - (cols - 1) * cellGap) / cols);
+    const gridW = cols * cellSize + (cols - 1) * cellGap;
+    const gridXStart = (CW - gridW) / 2;
+
+    const monthLabels = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
+    ctx.font = `400 16px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.textAlign = 'center';
+    monthLabels.forEach((m, mi) => {
+      const mx = gridXStart + (mi / 12) * gridW + gridW / 24;
+      ctx.fillText(m, mx, y);
+    });
+    y += 16;
+
+    for (let i = 0; i < Math.min(appData.grid.length, cols * rows); i++) {
+      const col = Math.floor(i / rows);
+      const row = i % rows;
+      const cell = appData.grid[i];
+      const cx = gridXStart + col * (cellSize + cellGap);
+      const cy = y + row * (cellSize + cellGap);
+
+      if (cell.hasGig) {
+        ctx.fillStyle = GIG_COLOR;
+      } else if (cell.intensity === -1) {
+        ctx.fillStyle = '#eae7e0';
+      } else {
+        ctx.fillStyle = INTENSITY_COLORS[cell.intensity] || INTENSITY_COLORS[0];
+      }
+      ctx.fillRect(cx, cy, cellSize, cellSize);
+    }
+
+    y += rows * (cellSize + cellGap) + 24;
+
+    // Legend
+    ctx.font = `400 16px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.textAlign = 'right';
+    ctx.fillText('less', gridXStart + gridW - 90, y);
+    const legendColors = [INTENSITY_COLORS[0], INTENSITY_COLORS[1], INTENSITY_COLORS[2], INTENSITY_COLORS[3], INTENSITY_COLORS[4]];
+    legendColors.forEach((c, ci) => {
+      ctx.fillStyle = c;
+      ctx.fillRect(gridXStart + gridW - 80 + ci * 14, y - 10, 10, 10);
+    });
+    ctx.fillStyle = DIM_COLOR;
+    ctx.textAlign = 'left';
+    ctx.fillText('more', gridXStart + gridW - 80 + 5 * 14 + 4, y);
+    ctx.fillStyle = GIG_COLOR;
+    ctx.fillRect(gridXStart + gridW - 80 + 5 * 14 + 50, y - 10, 10, 10);
+    ctx.fillStyle = DIM_COLOR;
+    ctx.fillText('gig', gridXStart + gridW - 80 + 5 * 14 + 66, y);
+    y += 50;
+  }
+
+  y = drawReflection(ctx, reflection, y, CW - 160);
+  drawWatermark(ctx);
+}
+
+// Save / Share
+document.getElementById('save-image-btn').addEventListener('click', () => {
+  const canvas = document.getElementById('share-canvas');
+  const link = document.createElement('a');
+  link.download = `woodshed-${selectedCardType}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('image saved');
+});
+
+document.getElementById('share-btn').addEventListener('click', async () => {
+  const canvas = document.getElementById('share-canvas');
+  try {
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const file = new File([blob], `woodshed-${selectedCardType}.png`, { type: 'image/png' });
+    if (navigator.share && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file] });
+    } else {
+      const link = document.createElement('a');
+      link.download = `woodshed-${selectedCardType}.png`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      showToast('image saved (share not supported)');
+    }
+  } catch (err) {
+    console.log('Share cancelled or failed');
+  }
+});
+
+
+// ═══════════════════════════════════════════
+// CANVAS DRAWING UTILS
+// ═══════════════════════════════════════════
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -1845,36 +1886,6 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
     ctx.fillText(line, x, y + i * lineHeight);
   });
 }
-
-// Save / Share
-document.getElementById('save-image-btn').addEventListener('click', () => {
-  const canvas = document.getElementById('share-canvas');
-  const link = document.createElement('a');
-  link.download = 'woodshed-week.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
-  showToast('image saved');
-});
-
-document.getElementById('share-btn').addEventListener('click', async () => {
-  const canvas = document.getElementById('share-canvas');
-  try {
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-    const file = new File([blob], 'woodshed-week.png', { type: 'image/png' });
-    if (navigator.share && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file] });
-    } else {
-      // Fallback: download
-      const link = document.createElement('a');
-      link.download = 'woodshed-week.png';
-      link.href = URL.createObjectURL(blob);
-      link.click();
-      showToast('image saved (share not supported)');
-    }
-  } catch (err) {
-    console.log('Share cancelled or failed');
-  }
-});
 
 // ═══════════════════════════════════════════
 // HELPERS
