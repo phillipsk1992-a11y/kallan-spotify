@@ -5,15 +5,15 @@
 const { google } = require('googleapis');
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
-const SHEET_ID = process.env.google_sheet_id;
+const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 const SHEET_NAME = process.env.SHEET_NAME || 'Sheet1';
 const API_SECRET = process.env.PRACTICE_LOG_SECRET;
 
 function getAuth() {
   const auth = new google.auth.GoogleAuth({
     credentials: {
-      client_email: process.env.google_service_email,
-      private_key: process.env.google_private_key.replace(/\\n/g, '\n'),
+      client_email: process.env.GOOGLE_SERVICE_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
     },
     scopes: SCOPES,
   });
