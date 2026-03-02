@@ -1088,7 +1088,7 @@ function renderHome() {
   const now = new Date();
   const options = { weekday: 'long', month: 'long', day: 'numeric' };
   const dateStr = now.toLocaleDateString('en-US', options);
-  const streakStr = appData.streak > 0 ? ` \u00B7 Day ${appData.streak} of your streak` : '';
+  const streakStr = appData.streak > 0 ? ` · Day ${appData.streak} of your streak` : '';
   document.getElementById('home-date').textContent = dateStr + streakStr;
 
   // Week visualisation
@@ -1128,28 +1128,28 @@ function renderHome() {
   if (appData.lastPractice) {
     const ts = new Date(appData.lastPractice.timestamp);
     const ago = timeAgo(ts);
-    addStatusLine(statusEl, 'green', 'practiced', `${ago} \u00B7 ${appData.lastPractice.minutes}m ${appData.lastPractice.category}`);
+    addStatusLine(statusEl, 'green', 'practiced', `${ago} · ${appData.lastPractice.minutes}m ${appData.lastPractice.category}`);
   }
 
   // Last gig
   if (appData.lastGig) {
     const ts = new Date(appData.lastGig.timestamp);
     const ago = timeAgo(ts);
-    addStatusLine(statusEl, 'orange', 'gigged', `${ago} \u00B7 ${appData.lastGig.venue || 'gig'} \u00B7 ${appData.lastGig.minutes}m`);
+    addStatusLine(statusEl, 'orange', 'gigged', `${ago} · ${appData.lastGig.venue || 'gig'} · ${appData.lastGig.minutes}m`);
   }
 
   // This week
   if (appData.week) {
     const hrs = formatHours(appData.week.totalMinutes);
     const sessions = appData.week.sessionCount;
-    addStatusLine(statusEl, 'grey', 'this week', `${hrs} \u00B7 ${sessions} sessions`);
+    addStatusLine(statusEl, 'grey', 'this week', `${hrs} · ${sessions} sessions`);
   }
 
   // This month
   if (appData.month) {
     const hrs = formatHours(appData.month.totalMinutes);
     const gigs = appData.month.gigCount;
-    addStatusLine(statusEl, 'grey', 'this month', `${hrs} \u00B7 ${gigs} gig${gigs !== 1 ? 's' : ''}`);
+    addStatusLine(statusEl, 'grey', 'this month', `${hrs} · ${gigs} gig${gigs !== 1 ? 's' : ''}`);
   }
 }
 
@@ -1179,7 +1179,7 @@ function renderLog() {
     row.className = 'today-entry';
     if (e.type === 'gig') {
       row.innerHTML = `
-        <span class="entry-gig">\u25C6 ${e.venue || 'gig'}</span>
+        <span class="entry-gig">◆ ${e.venue || 'gig'}</span>
         <span class="entry-dur">${e.minutes}m</span>
       `;
     } else {
@@ -1275,7 +1275,7 @@ function renderStats() {
           <span class="gig-venue"><span class="gig-dot"></span>${g.venue || 'Gig'}</span>
           <span class="gig-date">${dateStr}</span>
         </div>
-        <div class="gig-detail">${g.notes ? g.notes + ' \u00B7 ' : ''}${durStr}</div>
+        <div class="gig-detail">${g.notes ? g.notes + ' · ' : ''}${durStr}</div>
       `;
       gigsEl.appendChild(entry);
     });
@@ -1445,7 +1445,7 @@ function showShareView() {
 
   const link = document.getElementById('header-link');
   link.style.display = 'inline';
-  link.textContent = '\u2190 stats';
+  link.textContent = '← stats';
   link.onclick = () => showMainView();
 }
 
@@ -1464,7 +1464,7 @@ function generateCard() {
   document.getElementById('card-view').classList.add('active');
 
   const link = document.getElementById('header-link');
-  link.textContent = '\u2190 back';
+  link.textContent = '← back';
   link.onclick = () => showShareView();
 
   if (!appData) return;
@@ -1569,7 +1569,7 @@ function drawReflection(ctx, reflection, y, maxWidth) {
   ctx.font = `italic 30px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
-  const quoteText = '\u201C' + reflection + '\u201D';
+  const quoteText = '“' + reflection + '”';
   const lines = getWrappedLines(ctx, quoteText, maxWidth);
   lines.forEach((line, i) => {
     ctx.fillText(line, CW / 2, y + i * 46);
@@ -1719,7 +1719,7 @@ function renderWeekCard(ctx, reflection) {
   ctx.font = `400 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'left';
-  const gigStr = weekGigs > 0 ? ` \u00B7 ${weekGigs} gig${weekGigs !== 1 ? 's' : ''}` : '';
+  const gigStr = weekGigs > 0 ? ` · ${weekGigs} gig${weekGigs !== 1 ? 's' : ''}` : '';
   ctx.fillText(`${activeDays} of 7 days${gigStr}`, gridX, y);
   ctx.textAlign = 'right';
   ctx.fillText(`${appData.streak} day streak`, gridX + gridWidth, y);
@@ -1829,38 +1829,37 @@ function renderMonthCard(ctx, reflection) {
   const contentW = CW - pad * 2;
 
   // ── Subtitle ──
-  let y = 280;
+  let y = 270;
   const monthName = (appData.month.name || 'THIS MONTH').toUpperCase();
   drawSubLabel(ctx, monthName + ' ' + new Date().getFullYear(), y);
-  y += 180;
+  y += 170;
 
   // ── Big number ──
   const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
-  ctx.font = `200 160px ${mono}`;
+  ctx.font = `200 150px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(monthHrs.toString(), CW / 2, y);
-  y += 45;
+  y += 42;
 
   ctx.font = `300 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
   ctx.fillText('HOURS', CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 80;
+  y += 70;
 
   // ── Calendar grid ──
   const now = new Date();
   const yr = now.getFullYear();
   const mo = now.getMonth();
   const daysInMonth = new Date(yr, mo + 1, 0).getDate();
-  let startDow = new Date(yr, mo, 1).getDay() - 1; // Mon=0
+  let startDow = new Date(yr, mo, 1).getDay() - 1;
   if (startDow < 0) startDow = 6;
 
   const totalSlots = startDow + daysInMonth;
   const calRows = Math.ceil(totalSlots / 7);
 
-  // Map day-of-month to grid index
   const jan1 = new Date(yr, 0, 1);
   let jan1Dow = jan1.getDay() - 1;
   if (jan1Dow < 0) jan1Dow = 6;
@@ -1874,20 +1873,19 @@ function renderMonthCard(ctx, reflection) {
     return diff;
   }
 
-  const cellGap = 8;
-  const cellSize = 80;
+  const cellGap = 7;
+  const cellSize = 65;
   const calW = 7 * cellSize + 6 * cellGap;
   const calX = (CW - calW) / 2;
 
-  // Day headers
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  ctx.font = `400 20px ${mono}`;
+  ctx.font = `400 18px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'center';
   dayLabels.forEach((label, i) => {
     ctx.fillText(label, calX + i * (cellSize + cellGap) + cellSize / 2, y);
   });
-  y += 16;
+  y += 14;
 
   let dayNum = 1;
   let activeDays = 0;
@@ -1926,34 +1924,38 @@ function renderMonthCard(ctx, reflection) {
         ctx.arc(cx + cellSize / 2, cy + cellSize / 2, cellSize / 2, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        roundRect(ctx, cx, cy, cellSize, cellSize, 8);
+        roundRect(ctx, cx, cy, cellSize, cellSize, 6);
         ctx.fill();
       }
 
-      // Day number
       const isLight = intensity <= 1 && !hasGig;
-      ctx.font = `500 22px ${mono}`;
+      ctx.font = `500 18px ${mono}`;
       ctx.fillStyle = isFuture
         ? 'rgba(0,0,0,0.15)'
         : isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.85)';
       ctx.textAlign = 'center';
-      ctx.fillText(dayNum.toString(), cx + cellSize / 2, cy + cellSize / 2 + 8);
+      ctx.fillText(dayNum.toString(), cx + cellSize / 2, cy + cellSize / 2 + 6);
 
       dayNum++;
     }
   }
 
-  y += calRows * (cellSize + cellGap) + 30;
+  y += calRows * (cellSize + cellGap) + 28;
 
-  // Stats line
+  // Stats line — gigs folded in as orange text
   ctx.font = `400 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'left';
-  const gigStr = calGigs > 0 ? ` \u00B7 ${calGigs} gig${calGigs !== 1 ? 's' : ''}` : '';
-  ctx.fillText(`${activeDays} days practiced${gigStr}`, calX, y);
+  ctx.fillText(`${activeDays} days practiced`, calX, y);
+  if (calGigs > 0) {
+    const dpW = ctx.measureText(`${activeDays} days practiced `).width;
+    ctx.fillStyle = GIG_COLOR;
+    ctx.fillText(`◆ ${calGigs}`, calX + dpW + 8, y);
+  }
+  ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'right';
   ctx.fillText(`${appData.streak} day streak`, calX + calW, y);
-  y += 80;
+  y += 70;
 
   // ── Donut chart (practice categories only) ──
   const breakdown = appData.categoryBreakdownMonth || {};
@@ -1962,9 +1964,9 @@ function renderMonthCard(ctx, reflection) {
 
   if (cats.length > 0 && totalMins > 0) {
     const donutCenterX = CW / 2;
-    const donutCenterY = y + 170;
-    const outerR = 160;
-    const innerR = 105;
+    const donutCenterY = y + 140;
+    const outerR = 135;
+    const innerR = 88;
 
     const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
 
@@ -1982,27 +1984,27 @@ function renderMonthCard(ctx, reflection) {
     });
 
     // Center text
-    ctx.font = `300 46px ${mono}`;
+    ctx.font = `300 40px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
     const totalStr = totalMins >= 60
       ? Math.floor(totalMins / 60) + 'h ' + (totalMins % 60 > 0 ? (totalMins % 60) + 'm' : '')
       : totalMins + 'm';
     ctx.fillText(totalStr.trim(), donutCenterX, donutCenterY + 8);
-    ctx.font = `300 16px ${mono}`;
+    ctx.font = `300 14px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.letterSpacing = '3px';
-    ctx.fillText('PRACTICE', donutCenterX, donutCenterY + 36);
+    ctx.fillText('PRACTICE', donutCenterX, donutCenterY + 32);
     ctx.letterSpacing = '0px';
 
-    y = donutCenterY + outerR + 70;
+    y = donutCenterY + outerR + 55;
 
     // Legend — two columns
     const legendGap = 80;
     const legendColW = (contentW - legendGap) / 2;
     const legendX1 = pad;
     const legendX2 = pad + legendColW + legendGap;
-    const legendRowH = 48;
+    const legendRowH = 44;
 
     cats.forEach((cat, i) => {
       const col = i % 2;
@@ -2012,34 +2014,25 @@ function renderMonthCard(ctx, reflection) {
 
       ctx.fillStyle = donutColors[i % donutColors.length];
       ctx.beginPath();
-      ctx.arc(lx, ly, 7, 0, Math.PI * 2);
+      ctx.arc(lx, ly, 6, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.font = `500 22px ${mono}`;
+      ctx.font = `500 20px ${mono}`;
       ctx.fillStyle = FG_COLOR;
       ctx.textAlign = 'left';
-      ctx.fillText(cat[0], lx + 22, ly + 7);
+      ctx.fillText(cat[0], lx + 20, ly + 6);
 
       const mins = cat[1];
       const hrsStr = mins >= 60
         ? parseFloat((mins / 60).toFixed(1)) + 'h'
         : mins + 'm';
-      ctx.font = `400 20px ${mono}`;
+      ctx.font = `400 18px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
-      ctx.fillText(hrsStr, lx + legendColW, ly + 7);
+      ctx.fillText(hrsStr, lx + legendColW, ly + 6);
     });
 
     y += Math.ceil(cats.length / 2) * legendRowH + 30;
-  }
-
-  // Gig callout if gigs this month
-  if (appData.month.gigCount > 0) {
-    ctx.font = `400 22px ${mono}`;
-    ctx.fillStyle = GIG_COLOR;
-    ctx.textAlign = 'center';
-    ctx.fillText('\u25C6 ' + appData.month.gigCount + ' gig' + (appData.month.gigCount !== 1 ? 's' : '') + ' this month', CW / 2, y);
-    y += 40;
   }
 
   // Reflection
@@ -2164,7 +2157,7 @@ function renderYearCard(ctx, reflection) {
     ctx.font = `400 16px ${mono}`;
     const lessW = ctx.measureText('less ').width;
     const moreW = ctx.measureText(' more').width;
-    const dotW = ctx.measureText(' \u00B7 ').width;
+    const dotW = ctx.measureText(' · ').width;
     const gigW = ctx.measureText(' gig').width;
     const swatchesW = legendColors.length * (swatchSize + swatchGap);
     const gigSwatchW = swatchSize;
@@ -2187,7 +2180,7 @@ function renderYearCard(ctx, reflection) {
     ctx.fillText(' more', lx, y);
     lx += moreW;
 
-    ctx.fillText(' \u00B7 ', lx, y);
+    ctx.fillText(' · ', lx, y);
     lx += dotW;
 
     ctx.fillStyle = GIG_COLOR;
