@@ -2135,14 +2135,14 @@ function renderYearCard(ctx, reflection) {
     const gridXStart = (CW - gridW) / 2;
 
     // Month labels
-    ctx.font = `400 16px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
+    ctx.font = `500 22px ${mono}`;
+    ctx.fillStyle = '#555555';
     ctx.textAlign = 'center';
     halfLabels.forEach((m, mi) => {
       const mx = gridXStart + (mi / halfLabels.length) * gridW + gridW / (halfLabels.length * 2);
       ctx.fillText(m, mx, y);
     });
-    y += 18;
+    y += 22;
 
     // Grid cells
     for (let week = startWeek; week <= endWeek; week++) {
