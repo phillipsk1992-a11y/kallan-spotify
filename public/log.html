@@ -415,30 +415,25 @@ body {
 /* STATS TAB                              */
 /* ═══════════════════════════════════════ */
 
-.stats-big {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.stats-big .stat-num {
-  font-size: 52px;
-  font-weight: 300;
-  line-height: 1;
-}
-
-.stats-big .stat-unit {
-  font-size: 12px;
-  color: var(--dim);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-top: 4px;
-}
-
 .stats-row {
   display: flex;
   justify-content: space-around;
   text-align: center;
   margin-bottom: 24px;
+}
+
+.stats-top-row {
+  padding-top: 12px;
+  margin-bottom: 28px;
+}
+
+.stats-top-row .stat-item-num {
+  font-size: 36px;
+  font-weight: 300;
+}
+
+.stats-top-row .stat-item-label {
+  font-size: 10px;
 }
 
 .stat-item .stat-item-num {
@@ -998,23 +993,18 @@ input:focus, textarea:focus, button:focus { outline: none; }
 
 <!-- ═══════════════════════════════════ STATS ═══════════════════════════════════ -->
 <div class="tab-content" id="tab-stats">
-  <div class="stats-big">
-    <div class="stat-num" id="month-hours">--</div>
-    <div class="stat-unit">hours this month</div>
-  </div>
-
-  <div class="stats-row">
+  <div class="stats-row stats-top-row">
     <div class="stat-item">
-      <div class="stat-item-num" id="week-avg">--</div>
-      <div class="stat-item-label">hrs / week</div>
+      <div class="stat-item-num" id="week-hours">--</div>
+      <div class="stat-item-label">hours this week</div>
     </div>
     <div class="stat-item">
-      <div class="stat-item-num" id="streak-count">--</div>
-      <div class="stat-item-label">day streak</div>
+      <div class="stat-item-num" id="month-hours">--</div>
+      <div class="stat-item-label" id="month-label">hours in --</div>
     </div>
     <div class="stat-item">
-      <div class="stat-item-num" id="gig-count">--</div>
-      <div class="stat-item-label">gigs</div>
+      <div class="stat-item-num" id="year-hours">--</div>
+      <div class="stat-item-label">hours this year</div>
     </div>
   </div>
 
@@ -1299,14 +1289,18 @@ function renderLog() {
 
 // ─── Stats Tab ───
 function renderStats() {
-  // Month hours
-  const monthHrs = Math.round(appData.month.totalMinutes / 60);
-  document.getElementById('month-hours').textContent = monthHrs;
+  // Week hours
+  const weekHrs = parseFloat((appData.week.totalMinutes / 60).toFixed(1));
+  document.getElementById('week-hours').textContent = weekHrs;
 
-  // Row stats
-  document.getElementById('week-avg').textContent = appData.weekAvgHours;
-  document.getElementById('streak-count').textContent = appData.streak;
-  document.getElementById('gig-count').textContent = appData.totalGigCount;
+  // Month hours with month name
+  const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
+  document.getElementById('month-hours').textContent = monthHrs;
+  document.getElementById('month-label').textContent = 'hours in ' + (appData.month.name || '--');
+
+  // Year hours
+  const yearHrs = Math.round((appData.year ? appData.year.totalMinutes : 0) / 60);
+  document.getElementById('year-hours').textContent = yearHrs;
 
   // Year label
   document.getElementById('grid-year').textContent = new Date().getFullYear();
