@@ -2,402 +2,1935 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Practice Log</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Practice">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎸</text></svg>">
+<meta name="theme-color" content="#f5f2eb">
+<link rel="manifest" href="/manifest.json">
+<title>woodshed</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-  :root {
-    --bg: #f5f2eb;
-    --fg: #1a1a1a;
-    --dim: #888;
-    --rule: #ccc;
-    --accent: #d44;
-    --spotify: #1db954;
-  }
+:root {
+  --bg: #f5f2eb;
+  --fg: #1a1a1a;
+  --dim: #888;
+  --rule: #ccc;
+  --green: #1db954;
+  --gig: #e07a2f;
+  --int-0: #e8e5de;
+  --int-1: #c8dfc0;
+  --int-2: #7db868;
+  --int-3: #3d8b2a;
+  --int-4: #1a5c0e;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+}
 
-  body {
-    font-family: 'IBM Plex Mono', 'Courier New', monospace;
-    background: var(--bg);
-    color: var(--fg);
-    font-size: 14px;
-    line-height: 1.7;
-    padding: 2rem 1.5rem;
-    max-width: 400px;
-    margin: 0 auto;
-    min-height: 100vh;
-    -webkit-text-size-adjust: 100%;
-  }
+body {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 20px 100px;
+  padding-top: env(safe-area-inset-top, 16px);
+}
 
-  .title {
-    font-size: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--dim);
-    margin-bottom: 1.5rem;
-    font-weight: 400;
-  }
+/* ─── Header ─── */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 20px;
+  padding-top: 8px;
+}
 
-  .log-form { margin-bottom: 2rem; }
-  .form-group { margin-bottom: 1rem; }
-  .form-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--dim);
-    margin-bottom: 0.3rem;
-    display: block;
-  }
+.app-name {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
 
-  .category-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 0.4rem;
-  }
-  .cat-btn {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    padding: 0.6rem 0.3rem;
-    border: 1px solid var(--rule);
-    background: transparent;
-    color: var(--dim);
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .cat-btn:hover { border-color: var(--fg); color: var(--fg); }
-  .cat-btn.selected { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.header-link {
+  font-size: 10px;
+  color: var(--dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
 
-  .minutes-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .minutes-btn {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    width: 36px;
-    height: 36px;
-    border: 1px solid var(--rule);
-    background: transparent;
-    color: var(--fg);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-  }
-  .minutes-btn:hover { background: var(--fg); color: var(--bg); }
-  .minutes-btn:active { background: var(--fg); color: var(--bg); }
-  .minutes-display {
-    font-size: 24px;
-    font-weight: 500;
-    min-width: 4rem;
-    text-align: center;
-  }
-  .minutes-unit { font-size: 12px; color: var(--dim); font-weight: 300; }
-  .quick-mins { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
-  .quick-min-btn {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    padding: 0.3rem 0.5rem;
-    border: 1px solid var(--rule);
-    background: transparent;
-    color: var(--dim);
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .quick-min-btn:hover { border-color: var(--fg); color: var(--fg); }
+/* ─── Tabs ─── */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--rule);
+}
 
-  .notes-input {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid var(--rule);
-    background: transparent;
-    color: var(--fg);
-    resize: none;
-    height: 2.5rem;
-  }
-  .notes-input::placeholder { color: var(--rule); }
-  .notes-input:focus { outline: 1px solid var(--fg); border-color: var(--fg); }
+.tabs button {
+  font-family: inherit;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--dim);
+  background: none;
+  border: none;
+  padding: 7px 14px 7px 0;
+  border-bottom: 1.5px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
 
-  .submit-btn {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    font-weight: 500;
-    width: 100%;
-    padding: 0.8rem;
-    border: 2px solid var(--fg);
-    background: var(--fg);
-    color: var(--bg);
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-top: 1rem;
-    -webkit-tap-highlight-color: transparent;
-    transition: all 0.15s;
-  }
-  .submit-btn:hover { background: transparent; color: var(--fg); }
-  .submit-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .submit-btn:disabled:hover { background: var(--fg); color: var(--bg); }
-  .submit-btn.loading { opacity: 0.6; cursor: wait; }
+.tabs button.active {
+  color: var(--fg);
+  border-bottom-color: var(--fg);
+}
 
-  .success-msg { display: none; text-align: center; padding: 1.5rem 0; }
-  .success-msg.show { display: block; }
-  .success-check { font-size: 32px; margin-bottom: 0.5rem; }
-  .success-text { font-size: 13px; color: var(--dim); font-weight: 300; }
-  .success-detail { font-size: 14px; font-weight: 500; margin-top: 0.3rem; }
+/* ─── Divider ─── */
+.divider {
+  color: var(--rule);
+  font-size: 10px;
+  margin: 18px 0;
+  overflow: hidden;
+  white-space: nowrap;
+  user-select: none;
+}
 
-  .today-section {
-    border-top: 1px solid var(--rule);
-    padding-top: 1.5rem;
-    margin-top: 1rem;
-  }
-  .today-title {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--dim);
-    margin-bottom: 0.8rem;
-  }
-  .today-entry {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    padding: 0.4rem 0;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-  }
-  .today-cat { font-weight: 500; text-transform: lowercase; }
-  .today-mins { color: var(--dim); font-weight: 300; }
-  .today-time { color: var(--dim); font-weight: 300; font-size: 11px; }
-  .today-total {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    padding-top: 0.6rem;
-    font-weight: 500;
-  }
-  .today-empty {
-    font-size: 12px;
-    color: var(--dim);
-    font-weight: 300;
-    font-style: italic;
-  }
+.section-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--dim);
+  margin-bottom: 10px;
+}
 
-  .error-msg {
-    font-size: 11px;
-    color: var(--accent);
-    margin-top: 0.5rem;
-    display: none;
-  }
-  .error-msg.show { display: block; }
+/* ─── Tab Content ─── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ═══════════════════════════════════════ */
+/* HOME TAB                               */
+/* ═══════════════════════════════════════ */
+
+.home-greeting {
+  font-size: 14px;
+  font-weight: 400;
+  margin-bottom: 3px;
+}
+
+.home-date {
+  font-size: 10px;
+  color: var(--dim);
+  margin-bottom: 22px;
+}
+
+/* Week visualisation */
+.week-viz {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.week-viz .day-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.week-viz .day-cell {
+  width: 36px;
+  height: 36px;
+  border-radius: 3px;
+}
+
+.week-viz .day-cell.future {
+  background: var(--int-0);
+  border: 1.5px dashed var(--rule);
+}
+
+.week-viz .day-cell.gig-day {
+  border-radius: 50%;
+}
+
+.week-viz .day-name {
+  font-size: 8px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Status lines */
+.status-line {
+  display: flex;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid #eae7e0;
+  font-size: 11px;
+}
+
+.status-line .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.status-line .dot.green {
+  background: var(--green);
+  box-shadow: 0 0 6px rgba(29,185,84,0.4);
+}
+
+.status-line .dot.orange { background: var(--gig); }
+.status-line .dot.grey { background: #bbb; }
+
+.status-line .status-label {
+  width: 74px;
+  color: var(--dim);
+  font-size: 10px;
+}
+
+.status-line .status-value { flex: 1; }
+
+/* Home CTA */
+.home-cta {
+  display: block;
+  width: 100%;
+  background: var(--fg);
+  color: var(--bg);
+  border: none;
+  font-family: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 14px;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 6px;
+}
+
+.home-footer {
+  text-align: center;
+  font-size: 9px;
+  color: #bbb;
+  margin-top: 20px;
+  line-height: 1.7;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════ */
+/* LOG TAB                                */
+/* ═══════════════════════════════════════ */
+
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.cat-btn {
+  background: transparent;
+  border: 1px solid var(--rule);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 13px 6px;
+  text-align: center;
+  color: var(--fg);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cat-btn.selected {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+.gig-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--gig);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 13px 6px;
+  text-align: center;
+  color: var(--gig);
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.gig-btn::before {
+  content: '\u25C6';
+  margin-right: 6px;
+  font-size: 7px;
+  vertical-align: middle;
+}
+
+.gig-btn.selected {
+  background: var(--gig);
+  color: var(--bg);
+}
+
+/* Venue field */
+.venue-field {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--gig);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 9px 10px;
+  color: var(--fg);
+  margin-bottom: 12px;
+  display: none;
+}
+
+.venue-field::placeholder { color: #d4a57a; }
+.venue-field:focus { outline: none; border-color: var(--gig); }
+.venue-field.visible { display: block; }
+
+/* Duration controls */
+.duration-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+
+.dur-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  font-family: inherit;
+  font-size: 18px;
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.dur-display {
+  font-size: 32px;
+  font-weight: 300;
+  min-width: 100px;
+  text-align: center;
+}
+
+.dur-display span {
+  font-size: 12px;
+  color: var(--dim);
+  font-weight: 400;
+}
+
+.quick-mins {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.quick-mins button {
+  font-family: inherit;
+  font-size: 9px;
+  color: var(--dim);
+  border: 1px solid #ddd;
+  padding: 3px 9px;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.quick-mins button:active {
+  border-color: var(--fg);
+  color: var(--fg);
+}
+
+/* Notes field */
+.notes-field {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--rule);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 9px 10px;
+  color: var(--fg);
+  margin-bottom: 12px;
+  resize: none;
+}
+
+.notes-field::placeholder { color: #b0ada6; }
+.notes-field:focus { outline: none; border-color: var(--fg); }
+
+/* Log button */
+.log-btn {
+  width: 100%;
+  background: var(--fg);
+  color: var(--bg);
+  border: none;
+  font-family: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 13px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.log-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.log-btn.success {
+  background: var(--int-3);
+}
+
+/* Today entries */
+.today-entry {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  padding: 5px 0;
+  border-bottom: 1px solid #eae7e0;
+}
+
+.today-entry .entry-cat { color: var(--dim); }
+.today-entry .entry-dur { font-weight: 500; }
+.today-entry .entry-gig { color: var(--gig); }
+
+.today-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  padding: 7px 0 0;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════ */
+/* STATS TAB                              */
+/* ═══════════════════════════════════════ */
+
+.stats-big {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.stats-big .stat-num {
+  font-size: 44px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.stats-big .stat-unit {
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 3px;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.stat-item .stat-item-num {
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.stat-item .stat-item-label {
+  font-size: 8px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 2px;
+}
+
+/* Grid header */
+.grid-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.grid-header .section-label { margin-bottom: 0; }
+
+.share-link {
+  font-size: 9px;
+  color: var(--dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+/* Month labels */
+.grid-months {
+  display: flex;
+  justify-content: space-between;
+  font-size: 7px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  padding: 0 1px;
+}
+
+/* Contribution grid */
+.streak-grid {
+  display: grid;
+  grid-template-columns: repeat(52, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.streak-cell {
+  aspect-ratio: 1;
+  border-radius: 1px;
+  min-width: 0;
+}
+
+.streak-cell.em { background: var(--int-0); }
+.streak-cell.lt { background: var(--int-1); }
+.streak-cell.md { background: var(--int-2); }
+.streak-cell.hv { background: var(--int-3); }
+.streak-cell.it { background: var(--int-4); }
+.streak-cell.gi { background: var(--gig); border-radius: 50%; }
+.streak-cell.future { opacity: 0.3; }
+
+.grid-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  margin-top: 5px;
+  font-size: 7px;
+  color: var(--dim);
+}
+
+.grid-legend .swatch {
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+}
+
+.grid-legend .swatch.gig-swatch { border-radius: 50%; }
+
+/* Category bars */
+.cat-bar-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 7px;
+}
+
+.cat-bar-label {
+  width: 72px;
+  color: var(--dim);
+  font-size: 10px;
+}
+
+.cat-bar-track {
+  flex: 1;
+  height: 5px;
+  background: var(--int-0);
+  margin: 0 8px;
+}
+
+.cat-bar-fill {
+  height: 100%;
+  background: var(--fg);
+  transition: width 0.4s ease;
+}
+
+.cat-bar-fill.top { background: var(--green); }
+
+.cat-bar-hours {
+  font-size: 9px;
+  color: var(--dim);
+  width: 30px;
+  text-align: right;
+}
+
+/* Gig entries */
+.gig-entry {
+  padding: 10px 0;
+  border-bottom: 1px solid #eae7e0;
+}
+
+.gig-entry .gig-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
+
+.gig-entry .gig-venue {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.gig-entry .gig-date {
+  font-size: 10px;
+  color: var(--dim);
+}
+
+.gig-entry .gig-detail {
+  font-size: 10px;
+  color: var(--dim);
+}
+
+.gig-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background: var(--gig);
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.stats-footer {
+  text-align: center;
+  font-size: 9px;
+  color: #bbb;
+  margin-top: 10px;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════ */
+/* SHARE FLOW                             */
+/* ═══════════════════════════════════════ */
+
+#share-view { display: none; }
+#share-view.active { display: block; }
+
+.share-back {
+  font-size: 10px;
+  color: var(--dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
+.reflect-prompt {
+  font-size: 12px;
+  color: var(--fg);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.reflect-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--rule);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 12px;
+  color: var(--fg);
+  resize: none;
+  line-height: 1.5;
+}
+
+.reflect-input::placeholder { color: #b0ada6; }
+.reflect-input:focus { outline: none; border-color: var(--fg); }
+
+.skip-link {
+  font-size: 9px;
+  color: var(--dim);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  text-align: right;
+  display: block;
+  margin-top: 8px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  margin-left: auto;
+}
+
+/* Preview */
+.preview-label {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+
+.mini-preview {
+  border: 1px solid var(--rule);
+  padding: 14px 16px;
+  opacity: 0.7;
+  margin-bottom: 16px;
+}
+
+.mini-preview .mp-instrument {
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--dim);
+  margin-bottom: 6px;
+}
+
+.mini-preview .mp-big {
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.mini-preview .mp-unit {
+  font-size: 8px;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+
+.mini-preview .mp-quote {
+  font-size: 9px;
+  font-style: italic;
+  color: var(--fg);
+  border-top: 1px solid #e8e5de;
+  padding-top: 8px;
+  margin-top: 4px;
+  line-height: 1.5;
+  display: none;
+}
+
+.mini-preview .mp-wm {
+  font-size: 7px;
+  color: var(--dim);
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+.generate-btn {
+  width: 100%;
+  background: var(--fg);
+  color: var(--bg);
+  border: none;
+  font-family: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 13px;
+  cursor: pointer;
+}
+
+/* Card view */
+#card-view { display: none; }
+#card-view.active { display: block; }
+
+.card-frame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.share-card {
+  width: 100%;
+  border: 1px solid var(--rule);
+  padding: 28px 24px;
+}
+
+.card-instrument {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--dim);
+  margin-bottom: 20px;
+}
+
+.card-big {
+  font-size: 48px;
+  font-weight: 300;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.card-unit {
+  font-size: 10px;
+  color: var(--dim);
+  margin-bottom: 16px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.card-grid .day-label {
+  font-size: 7px;
+  color: var(--dim);
+  text-align: center;
+  text-transform: uppercase;
+  padding-bottom: 2px;
+}
+
+.card-grid .grid-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  position: relative;
+}
+
+.card-grid .grid-cell.gig-cell { border-radius: 50%; }
+
+.card-grid .grid-cell .cell-min {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+}
+
+.card-grid .grid-cell.light-cell .cell-min { color: rgba(0,0,0,0.35); }
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  color: var(--dim);
+  margin-bottom: 16px;
+}
+
+.card-context {
+  font-size: 10px;
+  color: var(--dim);
+  text-align: center;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.card-context em {
+  color: var(--fg);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.card-reflection {
+  border-top: 1px solid #e8e5de;
+  padding-top: 14px;
+  margin-top: 2px;
+  margin-bottom: 16px;
+  display: none;
+}
+
+.card-reflection .card-quote {
+  font-size: 11px;
+  font-style: italic;
+  color: var(--fg);
+  line-height: 1.6;
+}
+
+.card-watermark {
+  font-size: 8px;
+  color: var(--dim);
+  text-align: center;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* Share actions */
+.share-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.share-action-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--rule);
+  font-family: inherit;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 10px;
+  color: var(--fg);
+  text-align: center;
+  cursor: pointer;
+}
+
+.share-action-btn.primary {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
+.share-size {
+  text-align: center;
+  font-size: 9px;
+  color: var(--dim);
+  margin-top: 12px;
+}
+
+/* ─── Toast ─── */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--fg);
+  color: var(--bg);
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 10px 20px;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ─── Loading ─── */
+.loading {
+  text-align: center;
+  font-size: 10px;
+  color: var(--dim);
+  padding: 40px 0;
+  letter-spacing: 1px;
+}
+
+/* ─── Canvas (offscreen) ─── */
+#share-canvas { display: none; }
+
+/* Focus states */
+input:focus, textarea:focus, button:focus { outline: none; }
 </style>
 </head>
 <body>
 
-<div class="title">Log Practice</div>
+<!-- App Header -->
+<div class="app-header">
+  <div class="app-name">woodshed</div>
+  <div class="header-link" id="header-link" style="display:none;"></div>
+</div>
 
-<div class="log-form" id="logForm">
-  <div class="form-group">
-    <div class="form-label">category</div>
-    <div class="category-grid">
-      <button class="cat-btn" data-cat="technique" onclick="selectCat(this)">technique</button>
-      <button class="cat-btn" data-cat="reading" onclick="selectCat(this)">reading</button>
-      <button class="cat-btn" data-cat="chords" onclick="selectCat(this)">chords</button>
-      <button class="cat-btn" data-cat="scales" onclick="selectCat(this)">scales</button>
-      <button class="cat-btn" data-cat="tunes" onclick="selectCat(this)">tunes</button>
-      <button class="cat-btn" data-cat="theory" onclick="selectCat(this)">theory</button>
+<!-- Tab Navigation -->
+<div class="tabs" id="main-tabs">
+  <button class="active" data-tab="home">home</button>
+  <button data-tab="log">log</button>
+  <button data-tab="stats">stats</button>
+</div>
+
+<!-- ═══════════════════════════════════ HOME ═══════════════════════════════════ -->
+<div class="tab-content active" id="tab-home">
+  <div class="home-greeting" id="greeting"></div>
+  <div class="home-date" id="home-date"></div>
+
+  <div class="week-viz" id="week-viz"></div>
+
+  <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+
+  <div id="status-lines"></div>
+
+  <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+
+  <button class="home-cta" id="home-cta">log session</button>
+
+  <div class="home-footer">"the woodshed is where<br>the work gets done."</div>
+</div>
+
+<!-- ═══════════════════════════════════ LOG ═══════════════════════════════════ -->
+<div class="tab-content" id="tab-log">
+  <div class="section-label">Category</div>
+  <div class="category-grid" id="cat-grid">
+    <button class="cat-btn" data-cat="technique">technique</button>
+    <button class="cat-btn" data-cat="reading">reading</button>
+    <button class="cat-btn" data-cat="chords">chords</button>
+    <button class="cat-btn" data-cat="scales">scales</button>
+    <button class="cat-btn" data-cat="tunes">tunes</button>
+    <button class="cat-btn" data-cat="theory">theory</button>
+  </div>
+  <button class="gig-btn" id="gig-btn">log a gig</button>
+  <input type="text" class="venue-field" id="venue-field" placeholder="venue name">
+
+  <div class="section-label">Duration</div>
+  <div class="duration-row">
+    <button class="dur-btn" id="dur-minus">&minus;</button>
+    <div class="dur-display"><span id="dur-value">20</span> <span>min</span></div>
+    <button class="dur-btn" id="dur-plus">+</button>
+  </div>
+  <div class="quick-mins" id="quick-mins">
+    <button data-min="5">5</button>
+    <button data-min="10">10</button>
+    <button data-min="15">15</button>
+    <button data-min="20">20</button>
+    <button data-min="30">30</button>
+    <button data-min="45">45</button>
+    <button data-min="60">60</button>
+  </div>
+
+  <textarea class="notes-field" id="notes-field" rows="1" placeholder="notes (optional)"></textarea>
+  <button class="log-btn" id="log-btn">log</button>
+
+  <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+  <div class="section-label">Today</div>
+  <div id="today-entries"></div>
+</div>
+
+<!-- ═══════════════════════════════════ STATS ═══════════════════════════════════ -->
+<div class="tab-content" id="tab-stats">
+  <div class="stats-big">
+    <div class="stat-num" id="month-hours">--</div>
+    <div class="stat-unit">hours this month</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-item-num" id="week-avg">--</div>
+      <div class="stat-item-label">hrs / week</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-item-num" id="streak-count">--</div>
+      <div class="stat-item-label">day streak</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-item-num" id="gig-count">--</div>
+      <div class="stat-item-label">gigs</div>
     </div>
   </div>
 
-  <div class="form-group">
-    <div class="form-label">minutes</div>
-    <div class="minutes-row">
-      <button class="minutes-btn" onclick="adjustMins(-1)">−</button>
-      <div>
-        <span class="minutes-display" id="minsDisplay">10</span>
-        <span class="minutes-unit">min</span>
-      </div>
-      <button class="minutes-btn" onclick="adjustMins(1)">+</button>
+  <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+
+  <div class="grid-header">
+    <div class="section-label" id="grid-year">2026</div>
+    <button class="share-link" id="share-week-btn">share week &#8599;</button>
+  </div>
+  <div class="grid-months">
+    <span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span>
+  </div>
+  <div class="streak-grid" id="streak-grid"></div>
+  <div class="grid-legend">
+    <span>less</span>
+    <div class="swatch" style="background: var(--int-0);"></div>
+    <div class="swatch" style="background: var(--int-1);"></div>
+    <div class="swatch" style="background: var(--int-2);"></div>
+    <div class="swatch" style="background: var(--int-3);"></div>
+    <div class="swatch" style="background: var(--int-4);"></div>
+    <span>more</span>
+    <span style="margin: 0 4px;">&middot;</span>
+    <div class="swatch gig-swatch" style="background: var(--gig);"></div>
+    <span>gig</span>
+  </div>
+
+  <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+  <div class="section-label">Breakdown</div>
+  <div id="category-bars"></div>
+
+  <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+  <div class="section-label">Recent Gigs</div>
+  <div id="recent-gigs"></div>
+
+  <div class="stats-footer">practice logged manually.<br>accountability through transparency.</div>
+</div>
+
+<!-- ═══════════════════════════════════ SHARE FLOW ═══════════════════════════════════ -->
+<div id="share-view">
+  <div class="section-label">Share your week</div>
+  <div class="reflect-prompt">Anything worth<br>remembering this week?</div>
+  <textarea class="reflect-input" id="reflect-input" rows="3" placeholder="optional -- skip if nothing comes to mind"></textarea>
+  <button class="skip-link" id="skip-reflect">skip &#8594;</button>
+
+  <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
+
+  <div class="preview-label">Preview</div>
+  <div class="mini-preview" id="mini-preview">
+    <div class="mp-instrument">guitar &middot; week in practice</div>
+    <div class="mp-big" id="mp-hours">--</div>
+    <div class="mp-unit">hours this week</div>
+    <div class="mp-quote" id="mp-quote"></div>
+    <div class="mp-wm">woodshed</div>
+  </div>
+
+  <button class="generate-btn" id="generate-btn">generate card</button>
+</div>
+
+<!-- ═══════════════════════════════════ CARD VIEW ═══════════════════════════════════ -->
+<div id="card-view">
+  <div class="share-card" id="share-card-el">
+    <div class="card-instrument">guitar &middot; week in practice</div>
+    <div class="card-big" id="card-hours">--</div>
+    <div class="card-unit">hours this week</div>
+    <div class="card-grid" id="card-grid"></div>
+    <div class="card-footer">
+      <span id="card-days-info">-- of 7 days</span>
+      <span id="card-streak">-- day streak</span>
     </div>
-    <div class="quick-mins">
-      <button class="quick-min-btn" onclick="setMins(5)">5</button>
-      <button class="quick-min-btn" onclick="setMins(10)">10</button>
-      <button class="quick-min-btn" onclick="setMins(15)">15</button>
-      <button class="quick-min-btn" onclick="setMins(20)">20</button>
-      <button class="quick-min-btn" onclick="setMins(30)">30</button>
-      <button class="quick-min-btn" onclick="setMins(45)">45</button>
-      <button class="quick-min-btn" onclick="setMins(60)">60</button>
+    <div class="card-context" id="card-context"></div>
+    <div class="card-reflection" id="card-reflection">
+      <div class="card-quote" id="card-quote"></div>
     </div>
+    <div class="card-watermark">woodshed</div>
   </div>
 
-  <div class="form-group">
-    <div class="form-label">notes (optional)</div>
-    <textarea class="notes-input" id="notesInput" placeholder="e.g. Page 144, jazz blues"></textarea>
+  <div class="share-actions">
+    <button class="share-action-btn" id="save-image-btn">save image</button>
+    <button class="share-action-btn primary" id="share-btn">share</button>
   </div>
-
-  <button class="submit-btn" id="submitBtn" onclick="logPractice()" disabled>Log Practice</button>
-  <div class="error-msg" id="errorMsg">Failed to log — check connection and try again</div>
+  <div class="share-size">1080 &times; 1920</div>
 </div>
 
-<div class="success-msg" id="successMsg">
-  <div class="success-check">✓</div>
-  <div class="success-text">Logged</div>
-  <div class="success-detail" id="successDetail"></div>
-  <button class="submit-btn" style="margin-top: 1.5rem; background: transparent; color: var(--fg);" onclick="resetForm()">Log Another</button>
-</div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-<div class="today-section">
-  <div class="today-title">Today — <span id="todayDate"></span></div>
-  <div id="todayEntries"><div class="today-empty">loading...</div></div>
-  <div class="today-total" id="todayTotalRow" style="display: none;">
-    <span>total</span>
-    <span id="todayTotal">0min</span>
-  </div>
-</div>
+<!-- Offscreen canvas for card generation -->
+<canvas id="share-canvas" width="1080" height="1920"></canvas>
 
 <script>
-// CONFIG - update these
-var API_BASE = 'https://kallan-spotify.vercel.app';
-var LOG_SECRET = 'kallanpracticelog92';
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+const API_URL = '/api/practice-log';
+const API_SECRET = 'REPLACE_WITH_YOUR_SECRET'; // Set via env or replace
 
-var selectedCat = null;
-var mins = 10;
+const INTENSITY_COLORS = ['#e8e5de', '#c8dfc0', '#7db868', '#3d8b2a', '#1a5c0e'];
+const GIG_COLOR = '#e07a2f';
+const BG_COLOR = '#f5f2eb';
+const FG_COLOR = '#1a1a1a';
+const DIM_COLOR = '#888888';
 
-function selectCat(btn) {
-  document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('selected'); });
-  btn.classList.add('selected');
-  selectedCat = btn.getAttribute('data-cat');
-  updateSubmit();
+// ═══════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════
+let appData = null;
+let selectedCategory = null;
+let isGigMode = false;
+let duration = 20;
+let currentView = 'main'; // main | share | card
+
+// ═══════════════════════════════════════════
+// API
+// ═══════════════════════════════════════════
+async function fetchStats() {
+  try {
+    const resp = await fetch(API_URL, {
+      headers: { 'x-api-secret': API_SECRET }
+    });
+    if (!resp.ok) throw new Error('API error');
+    appData = await resp.json();
+    renderAll();
+  } catch (err) {
+    console.error('Failed to fetch stats:', err);
+  }
 }
 
-function adjustMins(delta) {
-  mins = Math.max(1, Math.min(120, mins + delta));
-  document.getElementById('minsDisplay').textContent = mins;
+async function logEntry(category, minutes, notes, type, venue) {
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-secret': API_SECRET,
+      },
+      body: JSON.stringify({ category, minutes, notes, type, venue }),
+    });
+    if (!resp.ok) throw new Error('API error');
+    return await resp.json();
+  } catch (err) {
+    console.error('Failed to log entry:', err);
+    throw err;
+  }
 }
 
-function setMins(val) {
-  mins = val;
-  document.getElementById('minsDisplay').textContent = mins;
+// ═══════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════
+function renderAll() {
+  if (!appData) return;
+  renderHome();
+  renderLog();
+  renderStats();
 }
 
-function updateSubmit() {
-  document.getElementById('submitBtn').disabled = !selectedCat;
+// ─── Home Tab ───
+function renderHome() {
+  // Greeting
+  const hour = new Date().getHours();
+  let greet = 'Good evening.';
+  if (hour < 12) greet = 'Good morning.';
+  else if (hour < 17) greet = 'Good afternoon.';
+  document.getElementById('greeting').textContent = greet;
+
+  // Date + streak
+  const now = new Date();
+  const options = { weekday: 'long', month: 'long', day: 'numeric' };
+  const dateStr = now.toLocaleDateString('en-US', options);
+  const streakStr = appData.streak > 0 ? ` \u00B7 Day ${appData.streak} of your streak` : '';
+  document.getElementById('home-date').textContent = dateStr + streakStr;
+
+  // Week visualisation
+  const weekViz = document.getElementById('week-viz');
+  weekViz.innerHTML = '';
+  if (appData.week && appData.week.days) {
+    appData.week.days.forEach(day => {
+      const wrap = document.createElement('div');
+      wrap.className = 'day-wrap';
+
+      const cell = document.createElement('div');
+      cell.className = 'day-cell';
+      if (day.isFuture) {
+        cell.classList.add('future');
+      } else if (day.hasGig) {
+        cell.classList.add('gig-day');
+        cell.style.background = GIG_COLOR;
+      } else {
+        cell.style.background = INTENSITY_COLORS[day.intensity] || INTENSITY_COLORS[0];
+      }
+
+      const name = document.createElement('div');
+      name.className = 'day-name';
+      name.textContent = day.dayLabel;
+
+      wrap.appendChild(cell);
+      wrap.appendChild(name);
+      weekViz.appendChild(wrap);
+    });
+  }
+
+  // Status lines
+  const statusEl = document.getElementById('status-lines');
+  statusEl.innerHTML = '';
+
+  // Last practiced
+  if (appData.lastPractice) {
+    const ts = new Date(appData.lastPractice.timestamp);
+    const ago = timeAgo(ts);
+    addStatusLine(statusEl, 'green', 'practiced', `${ago} \u00B7 ${appData.lastPractice.minutes}m ${appData.lastPractice.category}`);
+  }
+
+  // Last gig
+  if (appData.lastGig) {
+    const ts = new Date(appData.lastGig.timestamp);
+    const ago = timeAgo(ts);
+    addStatusLine(statusEl, 'orange', 'gigged', `${ago} \u00B7 ${appData.lastGig.venue || 'gig'} \u00B7 ${appData.lastGig.minutes}m`);
+  }
+
+  // This week
+  if (appData.week) {
+    const hrs = formatHours(appData.week.totalMinutes);
+    const sessions = appData.week.sessionCount;
+    addStatusLine(statusEl, 'grey', 'this week', `${hrs} \u00B7 ${sessions} sessions`);
+  }
+
+  // This month
+  if (appData.month) {
+    const hrs = formatHours(appData.month.totalMinutes);
+    const gigs = appData.month.gigCount;
+    addStatusLine(statusEl, 'grey', 'this month', `${hrs} \u00B7 ${gigs} gig${gigs !== 1 ? 's' : ''}`);
+  }
 }
 
-function logPractice() {
-  var notes = document.getElementById('notesInput').value;
-  var btn = document.getElementById('submitBtn');
-  var errMsg = document.getElementById('errorMsg');
+function addStatusLine(parent, dotClass, label, value) {
+  const line = document.createElement('div');
+  line.className = 'status-line';
+  line.innerHTML = `
+    <div class="dot ${dotClass}"></div>
+    <span class="status-label">${label}</span>
+    <span class="status-value">${value}</span>
+  `;
+  parent.appendChild(line);
+}
 
-  btn.classList.add('loading');
-  btn.disabled = true;
-  btn.textContent = 'LOGGING...';
-  errMsg.classList.remove('show');
+// ─── Log Tab ───
+function renderLog() {
+  const entriesEl = document.getElementById('today-entries');
+  entriesEl.innerHTML = '';
 
-  fetch(API_BASE + '/api/practice-log', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + LOG_SECRET
-    },
-    body: JSON.stringify({
-      category: selectedCat,
-      minutes: mins,
-      notes: notes
-    })
-  })
-  .then(function(r) {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  })
-  .then(function(data) {
-    // Success
-    document.getElementById('logForm').style.display = 'none';
-    document.getElementById('successMsg').classList.add('show');
-    document.getElementById('successDetail').textContent = selectedCat + ' · ' + mins + 'min';
+  if (!appData.today || appData.today.entries.length === 0) {
+    entriesEl.innerHTML = '<div style="font-size:10px;color:var(--dim);padding:8px 0;">no entries yet today</div>';
+    return;
+  }
 
-    // Refresh today's entries
-    fetchToday();
-  })
-  .catch(function(err) {
-    console.error('Log error:', err);
-    errMsg.classList.add('show');
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    btn.textContent = 'LOG PRACTICE';
-    updateSubmit();
+  appData.today.entries.forEach(e => {
+    const row = document.createElement('div');
+    row.className = 'today-entry';
+    if (e.type === 'gig') {
+      row.innerHTML = `
+        <span class="entry-gig">\u25C6 ${e.venue || 'gig'}</span>
+        <span class="entry-dur">${e.minutes}m</span>
+      `;
+    } else {
+      row.innerHTML = `
+        <span class="entry-cat">${e.category}</span>
+        <span class="entry-dur">${e.minutes}m</span>
+      `;
+    }
+    entriesEl.appendChild(row);
+  });
+
+  // Total
+  const total = document.createElement('div');
+  total.className = 'today-total';
+  total.innerHTML = `<span>total</span><span>${formatMinutes(appData.today.totalMinutes)}</span>`;
+  entriesEl.appendChild(total);
+}
+
+// ─── Stats Tab ───
+function renderStats() {
+  // Month hours
+  const monthHrs = Math.round(appData.month.totalMinutes / 60);
+  document.getElementById('month-hours').textContent = monthHrs;
+
+  // Row stats
+  document.getElementById('week-avg').textContent = appData.weekAvgHours;
+  document.getElementById('streak-count').textContent = appData.streak;
+  document.getElementById('gig-count').textContent = appData.totalGigCount;
+
+  // Year label
+  document.getElementById('grid-year').textContent = new Date().getFullYear();
+
+  // Contribution grid
+  const gridEl = document.getElementById('streak-grid');
+  gridEl.innerHTML = '';
+  if (appData.grid) {
+    appData.grid.forEach(cell => {
+      const el = document.createElement('div');
+      el.className = 'streak-cell';
+      if (cell.hasGig) {
+        el.classList.add('gi');
+      } else if (cell.intensity === -1) {
+        el.classList.add('em', 'future');
+      } else if (cell.intensity === 0) {
+        el.classList.add('em');
+      } else if (cell.intensity === 1) {
+        el.classList.add('lt');
+      } else if (cell.intensity === 2) {
+        el.classList.add('md');
+      } else if (cell.intensity === 3) {
+        el.classList.add('hv');
+      } else {
+        el.classList.add('it');
+      }
+      gridEl.appendChild(el);
+    });
+  }
+
+  // Category breakdown
+  const barsEl = document.getElementById('category-bars');
+  barsEl.innerHTML = '';
+  const categories = appData.categoryBreakdownMonth || {};
+  const sorted = Object.entries(categories).sort((a, b) => b[1] - a[1]);
+  const maxMins = sorted.length > 0 ? sorted[0][1] : 1;
+
+  sorted.forEach(([ cat, mins ], i) => {
+    const pct = Math.round((mins / maxMins) * 100);
+    const hrs = Math.round(mins / 60);
+    const row = document.createElement('div');
+    row.className = 'cat-bar-row';
+    row.innerHTML = `
+      <span class="cat-bar-label">${cat}</span>
+      <div class="cat-bar-track"><div class="cat-bar-fill${i === 0 ? ' top' : ''}" style="width:${pct}%;"></div></div>
+      <span class="cat-bar-hours">${hrs}h</span>
+    `;
+    barsEl.appendChild(row);
+  });
+
+  // Recent gigs
+  const gigsEl = document.getElementById('recent-gigs');
+  gigsEl.innerHTML = '';
+  if (appData.recentGigs && appData.recentGigs.length > 0) {
+    appData.recentGigs.forEach(g => {
+      const d = new Date(g.timestamp);
+      const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const durStr = formatMinutes(g.minutes);
+      const entry = document.createElement('div');
+      entry.className = 'gig-entry';
+      entry.innerHTML = `
+        <div class="gig-top">
+          <span class="gig-venue"><span class="gig-dot"></span>${g.venue || 'Gig'}</span>
+          <span class="gig-date">${dateStr}</span>
+        </div>
+        <div class="gig-detail">${g.notes ? g.notes + ' \u00B7 ' : ''}${durStr}</div>
+      `;
+      gigsEl.appendChild(entry);
+    });
+  } else {
+    gigsEl.innerHTML = '<div style="font-size:10px;color:var(--dim);padding:8px 0;">no gigs logged yet</div>';
+  }
+}
+
+// ═══════════════════════════════════════════
+// TAB NAVIGATION
+// ═══════════════════════════════════════════
+document.querySelectorAll('#main-tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (currentView !== 'main') {
+      showMainView();
+    }
+    switchTab(btn.dataset.tab);
+  });
+});
+
+function switchTab(tabName) {
+  document.querySelectorAll('#main-tabs button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+
+  document.querySelector(`#main-tabs button[data-tab="${tabName}"]`).classList.add('active');
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+}
+
+// Home CTA → Log tab
+document.getElementById('home-cta').addEventListener('click', () => {
+  switchTab('log');
+});
+
+// ═══════════════════════════════════════════
+// LOG INTERACTION
+// ═══════════════════════════════════════════
+
+// Category selection
+document.querySelectorAll('.cat-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCategory = btn.dataset.cat;
+    isGigMode = false;
+    document.getElementById('gig-btn').classList.remove('selected');
+    document.getElementById('venue-field').classList.remove('visible');
+  });
+});
+
+// Gig button
+document.getElementById('gig-btn').addEventListener('click', () => {
+  isGigMode = !isGigMode;
+  document.getElementById('gig-btn').classList.toggle('selected', isGigMode);
+  document.getElementById('venue-field').classList.toggle('visible', isGigMode);
+  if (isGigMode) {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+    selectedCategory = null;
+    document.getElementById('venue-field').focus();
+  }
+});
+
+// Duration
+document.getElementById('dur-minus').addEventListener('click', () => {
+  duration = Math.max(5, duration - 5);
+  document.getElementById('dur-value').textContent = duration;
+});
+
+document.getElementById('dur-plus').addEventListener('click', () => {
+  duration = Math.min(480, duration + 5);
+  document.getElementById('dur-value').textContent = duration;
+});
+
+document.querySelectorAll('#quick-mins button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    duration = parseInt(btn.dataset.min);
+    document.getElementById('dur-value').textContent = duration;
+  });
+});
+
+// Log submission
+document.getElementById('log-btn').addEventListener('click', async () => {
+  const btn = document.getElementById('log-btn');
+  const notes = document.getElementById('notes-field').value.trim();
+  const venue = document.getElementById('venue-field').value.trim();
+
+  if (isGigMode) {
+    if (!venue) {
+      showToast('enter a venue name');
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'logging...';
+    try {
+      await logEntry('gig', duration, notes, 'gig', venue);
+      btn.textContent = 'logged';
+      btn.classList.add('success');
+      document.getElementById('venue-field').value = '';
+      document.getElementById('notes-field').value = '';
+      isGigMode = false;
+      document.getElementById('gig-btn').classList.remove('selected');
+      document.getElementById('venue-field').classList.remove('visible');
+      await fetchStats();
+      setTimeout(() => {
+        btn.textContent = 'log';
+        btn.classList.remove('success');
+        btn.disabled = false;
+      }, 1200);
+    } catch {
+      btn.textContent = 'error';
+      setTimeout(() => { btn.textContent = 'log'; btn.disabled = false; }, 1500);
+    }
+  } else {
+    if (!selectedCategory) {
+      showToast('pick a category');
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'logging...';
+    try {
+      await logEntry(selectedCategory, duration, notes, 'practice', '');
+      btn.textContent = 'logged';
+      btn.classList.add('success');
+      document.getElementById('notes-field').value = '';
+      await fetchStats();
+      setTimeout(() => {
+        btn.textContent = 'log';
+        btn.classList.remove('success');
+        btn.disabled = false;
+      }, 1200);
+    } catch {
+      btn.textContent = 'error';
+      setTimeout(() => { btn.textContent = 'log'; btn.disabled = false; }, 1500);
+    }
+  }
+});
+
+// ═══════════════════════════════════════════
+// SHARE FLOW
+// ═══════════════════════════════════════════
+document.getElementById('share-week-btn').addEventListener('click', () => {
+  showShareView();
+});
+
+function showShareView() {
+  currentView = 'share';
+  document.getElementById('main-tabs').style.display = 'none';
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('share-view').classList.add('active');
+  document.getElementById('card-view').classList.remove('active');
+
+  // Header
+  const link = document.getElementById('header-link');
+  link.style.display = 'inline';
+  link.textContent = '\u2190 stats';
+  link.onclick = () => showMainView();
+
+  // Update preview
+  if (appData) {
+    const hrs = (appData.week.totalMinutes / 60).toFixed(1);
+    document.getElementById('mp-hours').textContent = hrs;
+  }
+
+  // Wire up reflect input
+  document.getElementById('reflect-input').addEventListener('input', updatePreviewQuote);
+}
+
+function updatePreviewQuote() {
+  const text = document.getElementById('reflect-input').value.trim();
+  const quoteEl = document.getElementById('mp-quote');
+  if (text) {
+    quoteEl.textContent = '"' + text + '"';
+    quoteEl.style.display = 'block';
+  } else {
+    quoteEl.style.display = 'none';
+  }
+}
+
+document.getElementById('skip-reflect').addEventListener('click', () => {
+  document.getElementById('reflect-input').value = '';
+  generateCard();
+});
+
+document.getElementById('generate-btn').addEventListener('click', () => {
+  generateCard();
+});
+
+function generateCard() {
+  currentView = 'card';
+  document.getElementById('share-view').classList.remove('active');
+  document.getElementById('card-view').classList.add('active');
+
+  const link = document.getElementById('header-link');
+  link.textContent = '\u2190 back';
+  link.onclick = () => showShareView();
+
+  if (!appData) return;
+
+  const reflection = document.getElementById('reflect-input').value.trim();
+  const weekHrs = (appData.week.totalMinutes / 60).toFixed(1);
+
+  // Card hours
+  document.getElementById('card-hours').textContent = weekHrs;
+
+  // Card grid (7 days)
+  const gridEl = document.getElementById('card-grid');
+  gridEl.innerHTML = '';
+  const dayLabels = ['m', 't', 'w', 't', 'f', 's', 's'];
+  dayLabels.forEach(l => {
+    const dl = document.createElement('div');
+    dl.className = 'day-label';
+    dl.textContent = l;
+    gridEl.appendChild(dl);
+  });
+
+  let activeDays = 0;
+  let weekGigs = 0;
+  appData.week.days.forEach(day => {
+    const cell = document.createElement('div');
+    cell.className = 'grid-cell';
+    if (day.isFuture) {
+      cell.style.background = '#e8e5de';
+    } else {
+      if (day.hasGig) {
+        cell.classList.add('gig-cell');
+        cell.style.background = GIG_COLOR;
+        weekGigs++;
+      } else {
+        cell.style.background = INTENSITY_COLORS[day.intensity] || INTENSITY_COLORS[0];
+      }
+      if (day.minutes > 0) activeDays++;
+      if (day.intensity <= 1 && !day.hasGig) {
+        cell.classList.add('light-cell');
+      }
+    }
+
+    if (!day.isFuture && day.minutes > 0) {
+      const minEl = document.createElement('div');
+      minEl.className = 'cell-min';
+      minEl.textContent = day.minutes;
+      cell.appendChild(minEl);
+    }
+    gridEl.appendChild(cell);
+  });
+
+  // Footer
+  const gigStr = weekGigs > 0 ? ` \u00B7 ${weekGigs} gig${weekGigs !== 1 ? 's' : ''}` : '';
+  document.getElementById('card-days-info').textContent = `${activeDays} of 7 days${gigStr}`;
+  document.getElementById('card-streak').textContent = `${appData.streak} day streak`;
+
+  // Context
+  const topCat = appData.week.topCategory;
+  if (topCat) {
+    document.getElementById('card-context').innerHTML = `mostly <em>${topCat}</em> this week`;
+  } else {
+    document.getElementById('card-context').textContent = '';
+  }
+
+  // Reflection
+  const refEl = document.getElementById('card-reflection');
+  if (reflection) {
+    refEl.style.display = 'block';
+    document.getElementById('card-quote').textContent = '"' + reflection + '"';
+  } else {
+    refEl.style.display = 'none';
+  }
+
+  // Render canvas for saving
+  renderShareCanvas(weekHrs, activeDays, weekGigs, reflection, topCat);
+}
+
+function showMainView() {
+  currentView = 'main';
+  document.getElementById('main-tabs').style.display = 'flex';
+  document.getElementById('share-view').classList.remove('active');
+  document.getElementById('card-view').classList.remove('active');
+  document.getElementById('header-link').style.display = 'none';
+  switchTab('stats');
+}
+
+// ═══════════════════════════════════════════
+// CANVAS RENDERING (1080×1920)
+// ═══════════════════════════════════════════
+function renderShareCanvas(weekHrs, activeDays, weekGigs, reflection, topCat) {
+  const canvas = document.getElementById('share-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = 1080, H = 1920;
+
+  // Background
+  ctx.fillStyle = BG_COLOR;
+  ctx.fillRect(0, 0, W, H);
+
+  // Use system monospace as fallback (IBM Plex Mono if loaded)
+  const mono = "'IBM Plex Mono', monospace";
+
+  let y = 320;
+
+  // Instrument label
+  ctx.font = `300 24px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '6px';
+  ctx.fillText('GUITAR \u00B7 WEEK IN PRACTICE', W / 2, y);
+  ctx.letterSpacing = '0px';
+  y += 120;
+
+  // Big number
+  ctx.font = `200 180px ${mono}`;
+  ctx.fillStyle = FG_COLOR;
+  ctx.fillText(weekHrs, W / 2, y);
+  y += 30;
+
+  // Unit
+  ctx.font = `300 26px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.letterSpacing = '5px';
+  ctx.fillText('HOURS THIS WEEK', W / 2, y);
+  ctx.letterSpacing = '0px';
+  y += 80;
+
+  // Day grid
+  const cellSize = 100;
+  const cellGap = 16;
+  const gridWidth = 7 * cellSize + 6 * cellGap;
+  const gridX = (W - gridWidth) / 2;
+
+  // Day labels
+  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+  ctx.font = `400 20px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  dayLabels.forEach((label, i) => {
+    const cx = gridX + i * (cellSize + cellGap) + cellSize / 2;
+    ctx.fillText(label, cx, y);
+  });
+  y += 20;
+
+  // Cells
+  if (appData && appData.week && appData.week.days) {
+    appData.week.days.forEach((day, i) => {
+      const cx = gridX + i * (cellSize + cellGap);
+      const cy = y;
+
+      if (day.isFuture) {
+        ctx.fillStyle = '#e8e5de';
+      } else if (day.hasGig) {
+        ctx.fillStyle = GIG_COLOR;
+      } else {
+        ctx.fillStyle = INTENSITY_COLORS[day.intensity] || INTENSITY_COLORS[0];
+      }
+
+      if (day.hasGig && !day.isFuture) {
+        // Circle for gig
+        ctx.beginPath();
+        ctx.arc(cx + cellSize / 2, cy + cellSize / 2, cellSize / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        // Rounded rect
+        roundRect(ctx, cx, cy, cellSize, cellSize, 8);
+        ctx.fill();
+      }
+
+      // Minutes label
+      if (!day.isFuture && day.minutes > 0) {
+        const isLight = day.intensity <= 1 && !day.hasGig;
+        ctx.font = `500 24px ${mono}`;
+        ctx.fillStyle = isLight ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.85)';
+        ctx.fillText(day.minutes.toString(), cx + cellSize / 2, cy + cellSize / 2 + 8);
+      }
+    });
+  }
+  y += cellSize + 24;
+
+  // Footer line
+  ctx.font = `400 22px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'left';
+  const gigStr = weekGigs > 0 ? ` \u00B7 ${weekGigs} gig${weekGigs !== 1 ? 's' : ''}` : '';
+  ctx.fillText(`${activeDays} of 7 days${gigStr}`, gridX, y);
+  ctx.textAlign = 'right';
+  ctx.fillText(`${appData.streak} day streak`, gridX + gridWidth, y);
+  y += 60;
+
+  // Context
+  ctx.textAlign = 'center';
+  if (topCat) {
+    ctx.font = `300 26px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    const beforeText = 'mostly ';
+    const afterText = ' this week';
+    const catText = topCat;
+
+    // Measure
+    const beforeW = ctx.measureText(beforeText).width;
+    ctx.font = `500 26px ${mono}`;
+    const catW = ctx.measureText(catText).width;
+    ctx.font = `300 26px ${mono}`;
+    const afterW = ctx.measureText(afterText).width;
+    const totalW = beforeW + catW + afterW;
+    const startX = (W - totalW) / 2;
+
+    ctx.fillText(beforeText, startX + beforeW / 2, y);
+    ctx.font = `500 26px ${mono}`;
+    ctx.fillStyle = FG_COLOR;
+    ctx.fillText(catText, startX + beforeW + catW / 2, y);
+    ctx.font = `300 26px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.fillText(afterText, startX + beforeW + catW + afterW / 2, y);
+    y += 60;
+  }
+
+  // Reflection
+  if (reflection) {
+    y += 10;
+    // Divider line
+    ctx.strokeStyle = '#e8e5de';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(gridX, y);
+    ctx.lineTo(gridX + gridWidth, y);
+    ctx.stroke();
+    y += 40;
+
+    ctx.font = `italic 28px ${mono}`;
+    ctx.fillStyle = FG_COLOR;
+    ctx.textAlign = 'center';
+    const quoteText = '"' + reflection + '"';
+    wrapText(ctx, quoteText, W / 2, y, gridWidth, 42);
+    // Estimate wrapped height
+    const lines = getWrappedLines(ctx, quoteText, gridWidth);
+    y += lines.length * 42 + 30;
+  }
+
+  // Watermark
+  y = Math.max(y + 40, H - 200);
+  ctx.font = `300 20px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '4px';
+  ctx.fillText('WOODSHED', W / 2, y);
+  ctx.letterSpacing = '0px';
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function getWrappedLines(ctx, text, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    const test = line + (line ? ' ' : '') + word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const lines = getWrappedLines(ctx, text, maxWidth);
+  lines.forEach((line, i) => {
+    ctx.fillText(line, x, y + i * lineHeight);
   });
 }
 
-function resetForm() {
-  document.getElementById('logForm').style.display = 'block';
-  document.getElementById('successMsg').classList.remove('show');
-  document.getElementById('errorMsg').classList.remove('show');
-  selectedCat = null;
-  mins = 10;
-  document.getElementById('minsDisplay').textContent = '10';
-  document.getElementById('notesInput').value = '';
-  document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('selected'); });
-  var btn = document.getElementById('submitBtn');
-  btn.classList.remove('loading');
-  btn.textContent = 'LOG PRACTICE';
-  updateSubmit();
+// Save / Share
+document.getElementById('save-image-btn').addEventListener('click', () => {
+  const canvas = document.getElementById('share-canvas');
+  const link = document.createElement('a');
+  link.download = 'woodshed-week.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('image saved');
+});
+
+document.getElementById('share-btn').addEventListener('click', async () => {
+  const canvas = document.getElementById('share-canvas');
+  try {
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const file = new File([blob], 'woodshed-week.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file] });
+    } else {
+      // Fallback: download
+      const link = document.createElement('a');
+      link.download = 'woodshed-week.png';
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      showToast('image saved (share not supported)');
+    }
+  } catch (err) {
+    console.log('Share cancelled or failed');
+  }
+});
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function formatHours(minutes) {
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-function fetchToday() {
-  fetch(API_BASE + '/api/practice-log')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var container = document.getElementById('todayEntries');
-      var totalRow = document.getElementById('todayTotalRow');
-
-      if (!data.todayEntries || data.todayEntries.length === 0) {
-        container.innerHTML = '<div class="today-empty">no practice logged today</div>';
-        totalRow.style.display = 'none';
-        return;
-      }
-
-      var html = '';
-      data.todayEntries.forEach(function(e) {
-        var d = new Date(e.timestamp);
-        var time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
-        html += '<div class="today-entry">';
-        html += '<span class="today-cat">' + e.category + '</span>';
-        html += '<span class="today-mins">' + e.minutes + 'min</span>';
-        html += '<span class="today-time">' + time + '</span>';
-        html += '</div>';
-      });
-      container.innerHTML = html;
-      document.getElementById('todayTotal').textContent = data.todayTotal + 'min';
-      totalRow.style.display = 'flex';
-    })
-    .catch(function() {
-      document.getElementById('todayEntries').innerHTML = '<div class="today-empty">couldn\'t load today\'s data</div>';
-    });
+function formatMinutes(minutes) {
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-// Set today's date
-var now = new Date();
-var days = ['sun','mon','tue','wed','thu','fri','sat'];
-var months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-document.getElementById('todayDate').textContent = days[now.getDay()] + ' ' + months[now.getMonth()] + ' ' + now.getDate();
+function timeAgo(date) {
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHrs = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
 
-// Load today's entries on page load
-fetchToday();
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  if (diffDays === 1) return '1d ago';
+  return `${diffDays}d ago`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+fetchStats();
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 </script>
-
 </body>
 </html>
-
