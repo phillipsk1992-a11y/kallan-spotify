@@ -1493,10 +1493,10 @@ function clearCanvas(ctx) {
   ctx.fillStyle = BG_COLOR;
   ctx.fillRect(0, 0, CW, CH);
 
-  // Thin border inset from edges
-  ctx.strokeStyle = '#d5d2cb';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(36, 36, CW - 72, CH - 72);
+  // Border inset from edges
+  ctx.strokeStyle = '#b0ada6';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(40, 40, CW - 80, CH - 80);
 }
 
 function fmtMin(totalMin) {
@@ -1574,9 +1574,9 @@ function renderWeekCard(ctx, reflection) {
   const contentW = CW - pad * 2;
 
   // ── Subtitle ──
-  let y = 280;
+  let y = 320;
   drawSubLabel(ctx, 'WEEK IN PRACTICE', y);
-  y += 200;
+  y += 220;
 
   // ── Big number ──
   const weekHrs = (appData.week.totalMinutes / 60).toFixed(1);
@@ -1584,14 +1584,14 @@ function renderWeekCard(ctx, reflection) {
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(weekHrs, CW / 2, y);
-  y += 50;
+  y += 55;
 
   ctx.font = `300 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
   ctx.fillText('HOURS', CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 90;
+  y += 110;
 
   // ── Day grid ──
   const cellGap = 12;
@@ -1644,7 +1644,7 @@ function renderWeekCard(ctx, reflection) {
       }
     });
   }
-  y += cellSize + 40;
+  y += cellSize + 50;
 
   // Stats line
   ctx.font = `400 22px ${mono}`;
@@ -1654,7 +1654,7 @@ function renderWeekCard(ctx, reflection) {
   ctx.fillText(`${activeDays} of 7 days${gigStr}`, gridX, y);
   ctx.textAlign = 'right';
   ctx.fillText(`${appData.streak} day streak`, gridX + gridWidth, y);
-  y += 100;
+  y += 130;
 
   // ── Donut chart ──
   const breakdown = appData.categoryBreakdownWeek || {};
@@ -1663,7 +1663,7 @@ function renderWeekCard(ctx, reflection) {
 
   if (cats.length > 0 && totalMins > 0) {
     const donutCenterX = CW / 2;
-    const donutCenterY = y + 260;
+    const donutCenterY = y + 240;
     const outerR = 210;
     const innerR = 135;
 
@@ -1700,17 +1700,19 @@ function renderWeekCard(ctx, reflection) {
     ctx.fillText('TOTAL', donutCenterX, donutCenterY + 42);
     ctx.letterSpacing = '0px';
 
-    y = donutCenterY + outerR + 90;
+    y = donutCenterY + outerR + 110;
 
-    // Legend — two columns
-    const legendX = pad + 30;
-    const legendColW = (contentW - 60) / 2;
-    const legendRowH = 58;
+    // Legend — two columns with proper center gap
+    const legendGap = 80;
+    const legendColW = (contentW - legendGap) / 2;
+    const legendX1 = pad;
+    const legendX2 = pad + legendColW + legendGap;
+    const legendRowH = 60;
 
     cats.forEach((cat, i) => {
       const col = i % 2;
       const row = Math.floor(i / 2);
-      const lx = legendX + col * legendColW;
+      const lx = col === 0 ? legendX1 : legendX2;
       const ly = y + row * legendRowH;
 
       // Color dot
@@ -1725,7 +1727,7 @@ function renderWeekCard(ctx, reflection) {
       ctx.textAlign = 'left';
       ctx.fillText(cat[0], lx + 24, ly + 8);
 
-      // Minutes
+      // Minutes — right-aligned within column
       const mins = cat[1];
       const hrsStr = mins >= 60
         ? parseFloat((mins / 60).toFixed(1)) + 'h'
@@ -1733,10 +1735,10 @@ function renderWeekCard(ctx, reflection) {
       ctx.font = `400 22px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
-      ctx.fillText(hrsStr, lx + legendColW - 10, ly + 8);
+      ctx.fillText(hrsStr, lx + legendColW, ly + 8);
     });
 
-    y += Math.ceil(cats.length / 2) * legendRowH + 50;
+    y += Math.ceil(cats.length / 2) * legendRowH + 60;
   }
 
   y = drawReflection(ctx, reflection, y, gridWidth);
