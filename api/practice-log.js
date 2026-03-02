@@ -397,6 +397,7 @@ module.exports = async (req, res) => {
         })),
         categoryBreakdown,
         categoryBreakdownMonth,
+        categoryBreakdownWeek: weekCategoryTotals,
         grid: gridData,
       });
     } catch (err) {
