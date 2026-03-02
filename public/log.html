@@ -1546,12 +1546,20 @@ function drawHeader(ctx) {
   ctx.fillText(logoText, startX + dotR * 2 + dotGap, 124);
   ctx.letterSpacing = '0px';
 
+  // Tagline
+  ctx.font = `300 16px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '3px';
+  ctx.fillText('practice, logged', CW / 2, 148);
+  ctx.letterSpacing = '0px';
+
   // Thin rule
   ctx.strokeStyle = '#ddd';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(100, 155);
-  ctx.lineTo(CW - 100, 155);
+  ctx.moveTo(100, 168);
+  ctx.lineTo(CW - 100, 168);
   ctx.stroke();
 }
 
@@ -1643,7 +1651,7 @@ function renderWeekCard(ctx, reflection) {
   const contentW = CW - pad * 2;
 
   // ── Subtitle ──
-  let y = 290;
+  let y = 305;
   drawSubLabel(ctx, 'WEEK IN PRACTICE', y);
   y += 190;
 
@@ -1829,7 +1837,7 @@ function renderMonthCard(ctx, reflection) {
   const contentW = CW - pad * 2;
 
   // ── Subtitle ──
-  let y = 270;
+  let y = 285;
   const monthName = (appData.month.name || 'THIS MONTH').toUpperCase();
   drawSubLabel(ctx, monthName + ' ' + new Date().getFullYear(), y);
   y += 170;
@@ -2047,7 +2055,7 @@ function renderYearCard(ctx, reflection) {
   const contentW = CW - pad * 2;
 
   // ── Subtitle ──
-  let y = 270;
+  let y = 285;
   drawSubLabel(ctx, 'THE LONG GAME', y);
   y += 180;
 
