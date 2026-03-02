@@ -1611,6 +1611,14 @@ function fmtMin(totalMin) {
   return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
 }
 
+function formatBigNumber(totalMins) {
+  const h = Math.floor(totalMins / 60);
+  const m = totalMins % 60;
+  if (h === 0) return { text: m + 'm', sub: 'MINUTES' };
+  if (m === 0) return { text: h + 'h', sub: 'HOURS' };
+  return { text: h + 'h ' + m + 'm', sub: '' };
+}
+
 function drawHeader(ctx) {
   const logoText = 'woodshed';
   ctx.font = `600 42px ${mono}`;
@@ -1743,18 +1751,21 @@ function renderWeekCard(ctx, reflection) {
   y += 190;
 
   // ── Big number ──
-  const weekHrs = (appData.week.totalMinutes / 60).toFixed(1);
-  ctx.font = `200 180px ${mono}`;
+  const weekBig = formatBigNumber(appData.week.totalMinutes);
+  const weekFontSize = weekBig.text.length > 4 ? 140 : 180;
+  ctx.font = `200 ${weekFontSize}px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
-  ctx.fillText(weekHrs, CW / 2, y);
+  ctx.fillText(weekBig.text, CW / 2, y);
   y += 50;
 
-  ctx.font = `300 22px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
-  ctx.letterSpacing = '5px';
-  ctx.fillText('HOURS', CW / 2, y);
-  ctx.letterSpacing = '0px';
+  if (weekBig.sub) {
+    ctx.font = `300 22px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.letterSpacing = '5px';
+    ctx.fillText(weekBig.sub, CW / 2, y);
+    ctx.letterSpacing = '0px';
+  }
   y += 100;
 
   // ── Day grid ──
@@ -1930,18 +1941,21 @@ function renderMonthCard(ctx, reflection) {
   y += 170;
 
   // ── Big number ──
-  const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
-  ctx.font = `200 150px ${mono}`;
+  const monthBig = formatBigNumber(appData.month.totalMinutes);
+  const monthFontSize = monthBig.text.length > 4 ? 120 : 150;
+  ctx.font = `200 ${monthFontSize}px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
-  ctx.fillText(monthHrs.toString(), CW / 2, y);
+  ctx.fillText(monthBig.text, CW / 2, y);
   y += 42;
 
-  ctx.font = `300 22px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
-  ctx.letterSpacing = '5px';
-  ctx.fillText('HOURS', CW / 2, y);
-  ctx.letterSpacing = '0px';
+  if (monthBig.sub) {
+    ctx.font = `300 22px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.letterSpacing = '5px';
+    ctx.fillText(monthBig.sub, CW / 2, y);
+    ctx.letterSpacing = '0px';
+  }
   y += 70;
 
   // ── Calendar grid ──
@@ -2147,32 +2161,36 @@ function renderYearCard(ctx, reflection) {
   y += 180;
 
   // ── Year hours ──
-  const yearHrs = Math.round((appData.year ? appData.year.totalMinutes : 0) / 60);
-  ctx.font = `200 180px ${mono}`;
+  const yearMins = appData.year ? appData.year.totalMinutes : 0;
+  const yearBig = formatBigNumber(yearMins);
+  const yearFontSize = yearBig.text.length > 4 ? 140 : 180;
+  ctx.font = `200 ${yearFontSize}px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
-  ctx.fillText(yearHrs.toString(), CW / 2, y);
+  ctx.fillText(yearBig.text, CW / 2, y);
   y += 45;
 
   ctx.font = `300 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
-  ctx.fillText('HOURS IN ' + new Date().getFullYear(), CW / 2, y);
+  ctx.fillText('IN ' + new Date().getFullYear(), CW / 2, y);
   ctx.letterSpacing = '0px';
   y += 80;
 
   // ── Three stat boxes ──
-  const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
-  const weekHrs = parseFloat((appData.week.totalMinutes / 60).toFixed(1));
+  const weekMins = appData.week.totalMinutes;
+  const monthMins = appData.month.totalMinutes;
+  const weekBox = formatBigNumber(weekMins);
+  const monthBox = formatBigNumber(monthMins);
   const colGap = 16;
   const colW = Math.floor((contentW - 2 * colGap) / 3);
   const colH = 110;
   const colX = pad;
 
   const statItems = [
-    { num: weekHrs.toString(), label: 'THIS WEEK' },
+    { num: weekBox.text, label: 'THIS WEEK' },
     { num: appData.streak.toString(), label: 'DAY STREAK' },
-    { num: monthHrs.toString(), label: 'IN ' + (appData.month.name || '--').toUpperCase() },
+    { num: monthBox.text, label: 'IN ' + (appData.month.name || '--').toUpperCase() },
   ];
 
   statItems.forEach((s, i) => {
@@ -2183,7 +2201,8 @@ function renderYearCard(ctx, reflection) {
     roundRect(ctx, sx, y, colW, colH, 8);
     ctx.stroke();
 
-    ctx.font = `300 42px ${mono}`;
+    const numSize = s.num.length > 4 ? 32 : 42;
+    ctx.font = `300 ${numSize}px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
     ctx.fillText(s.num, sx + colW / 2, y + 48);
