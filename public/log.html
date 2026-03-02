@@ -1492,6 +1492,11 @@ const mono = "'IBM Plex Mono', monospace";
 function clearCanvas(ctx) {
   ctx.fillStyle = BG_COLOR;
   ctx.fillRect(0, 0, CW, CH);
+
+  // Thin border inset from edges
+  ctx.strokeStyle = '#d5d2cb';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(36, 36, CW - 72, CH - 72);
 }
 
 function fmtMin(totalMin) {
@@ -1569,9 +1574,9 @@ function renderWeekCard(ctx, reflection) {
   const contentW = CW - pad * 2;
 
   // ── Subtitle ──
-  let y = 210;
+  let y = 280;
   drawSubLabel(ctx, 'WEEK IN PRACTICE', y);
-  y += 170;
+  y += 200;
 
   // ── Big number ──
   const weekHrs = (appData.week.totalMinutes / 60).toFixed(1);
@@ -1579,14 +1584,14 @@ function renderWeekCard(ctx, reflection) {
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(weekHrs, CW / 2, y);
-  y += 40;
+  y += 50;
 
   ctx.font = `300 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
   ctx.fillText('HOURS', CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 60;
+  y += 90;
 
   // ── Day grid ──
   const cellGap = 12;
@@ -1639,7 +1644,7 @@ function renderWeekCard(ctx, reflection) {
       }
     });
   }
-  y += cellSize + 30;
+  y += cellSize + 40;
 
   // Stats line
   ctx.font = `400 22px ${mono}`;
@@ -1649,7 +1654,7 @@ function renderWeekCard(ctx, reflection) {
   ctx.fillText(`${activeDays} of 7 days${gigStr}`, gridX, y);
   ctx.textAlign = 'right';
   ctx.fillText(`${appData.streak} day streak`, gridX + gridWidth, y);
-  y += 60;
+  y += 100;
 
   // ── Donut chart ──
   const breakdown = appData.categoryBreakdownWeek || {};
@@ -1658,7 +1663,7 @@ function renderWeekCard(ctx, reflection) {
 
   if (cats.length > 0 && totalMins > 0) {
     const donutCenterX = CW / 2;
-    const donutCenterY = y + 230;
+    const donutCenterY = y + 260;
     const outerR = 210;
     const innerR = 135;
 
@@ -1695,12 +1700,12 @@ function renderWeekCard(ctx, reflection) {
     ctx.fillText('TOTAL', donutCenterX, donutCenterY + 42);
     ctx.letterSpacing = '0px';
 
-    y = donutCenterY + outerR + 60;
+    y = donutCenterY + outerR + 90;
 
     // Legend — two columns
     const legendX = pad + 30;
     const legendColW = (contentW - 60) / 2;
-    const legendRowH = 52;
+    const legendRowH = 58;
 
     cats.forEach((cat, i) => {
       const col = i % 2;
@@ -1731,7 +1736,7 @@ function renderWeekCard(ctx, reflection) {
       ctx.fillText(hrsStr, lx + legendColW - 10, ly + 8);
     });
 
-    y += Math.ceil(cats.length / 2) * legendRowH + 30;
+    y += Math.ceil(cats.length / 2) * legendRowH + 50;
   }
 
   y = drawReflection(ctx, reflection, y, gridWidth);
