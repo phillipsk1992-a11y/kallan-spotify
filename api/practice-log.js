@@ -140,7 +140,7 @@ module.exports = async (req, res) => {
   // Auth check (POST only, matches existing pattern)
   if (req.method === 'POST') {
     const token = req.headers.authorization;
-    if (token !== `Bearer ${API_}`) {
+    if (token !== `Bearer ${API_SECRET}`) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
   }
