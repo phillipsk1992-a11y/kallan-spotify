@@ -2124,9 +2124,23 @@ function renderYearCard(ctx, reflection) {
     const startIdx = Math.max(0, Math.floor((halfStartDate - gridStart) / 86400000));
     const endIdx = Math.min(appData.grid.length - 1, Math.floor((halfEndDate - gridStart) / 86400000));
 
+    // Only include weeks whose Thursday falls within the half
+    let startWeek = Math.floor(startIdx / 7);
+    let endWeek = Math.floor(endIdx / 7);
+    // Trim start: if Thursday of startWeek is before halfStartDate, skip it
+    while (startWeek <= endWeek) {
+      const thu = new Date(gridStart.getTime() + (startWeek * 7 + 3) * 86400000);
+      if (thu.getMonth() >= halfStartMonth) break;
+      startWeek++;
+    }
+    // Trim end: if Thursday of endWeek is after halfEndMonth, skip it
+    while (endWeek >= startWeek) {
+      const thu = new Date(gridStart.getTime() + (endWeek * 7 + 3) * 86400000);
+      if (thu.getMonth() <= halfEndMonth) break;
+      endWeek--;
+    }
+
     // Slice to weeks — track which month each week starts in
-    const startWeek = Math.floor(startIdx / 7);
-    const endWeek = Math.floor(endIdx / 7);
     const cols = endWeek - startWeek + 1;
     const rows = 7;
     const cellGap = 4;
