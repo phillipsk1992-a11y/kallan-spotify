@@ -2045,28 +2045,28 @@ function renderYearCard(ctx, reflection) {
 
   const pad = 100;
   const contentW = CW - pad * 2;
-  let y = 210;
 
-  // Subtitle
+  // ── Subtitle ──
+  let y = 270;
   drawSubLabel(ctx, 'THE LONG GAME', y);
-  y += 170;
+  y += 180;
 
-  // Year hours
+  // ── Year hours ──
   const yearHrs = Math.round((appData.year ? appData.year.totalMinutes : 0) / 60);
-  ctx.font = `200 200px ${mono}`;
+  ctx.font = `200 180px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(yearHrs.toString(), CW / 2, y);
   y += 45;
 
-  ctx.font = `300 24px ${mono}`;
+  ctx.font = `300 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.letterSpacing = '5px';
   ctx.fillText('HOURS IN ' + new Date().getFullYear(), CW / 2, y);
   ctx.letterSpacing = '0px';
-  y += 90;
+  y += 80;
 
-  // Three stat boxes
+  // ── Three stat boxes ──
   const monthHrs = parseFloat((appData.month.totalMinutes / 60).toFixed(1));
   const weekHrs = parseFloat((appData.week.totalMinutes / 60).toFixed(1));
   const colGap = 16;
@@ -2101,7 +2101,7 @@ function renderYearCard(ctx, reflection) {
   });
   y += colH + 60;
 
-  // Contribution grid
+  // ── Contribution grid — bigger cells ──
   if (appData.grid && appData.grid.length > 0) {
     const cols = 52;
     const rows = 7;
@@ -2136,7 +2136,7 @@ function renderYearCard(ctx, reflection) {
       } else {
         ctx.fillStyle = INTENSITY_COLORS[cell.intensity] || INTENSITY_COLORS[0];
       }
-      roundRect(ctx, cx, cy, cellSize, cellSize, 1);
+      roundRect(ctx, cx, cy, cellSize, cellSize, 2);
       ctx.fill();
     }
 
@@ -2146,7 +2146,6 @@ function renderYearCard(ctx, reflection) {
     const swatchSize = 12;
     const swatchGap = 4;
     const legendColors = [INTENSITY_COLORS[0], INTENSITY_COLORS[1], INTENSITY_COLORS[2], INTENSITY_COLORS[3], INTENSITY_COLORS[4]];
-    // "less ■■■■■ more · ■ gig"
     ctx.font = `400 16px ${mono}`;
     const lessW = ctx.measureText('less ').width;
     const moreW = ctx.measureText(' more').width;
@@ -2184,10 +2183,85 @@ function renderYearCard(ctx, reflection) {
     ctx.fillStyle = DIM_COLOR;
     ctx.fillText(' gig', lx, y);
 
-    y += 50;
+    y += 60;
   }
 
-  y = drawReflection(ctx, reflection, y, contentW);
+  // ── Donut chart + legend side by side (yearly breakdown) ──
+  const breakdown = appData.categoryBreakdown || {};
+  const cats = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
+  const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
+
+  if (cats.length > 0 && totalMins > 0) {
+    const outerR = 120;
+    const innerR = 78;
+    const donutCenterX = pad + outerR + 30;
+    const donutCenterY = y + outerR + 10;
+
+    const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
+
+    let startAngle = -Math.PI / 2;
+    cats.forEach((cat, i) => {
+      const fraction = cat[1] / totalMins;
+      const endAngle = startAngle + fraction * Math.PI * 2;
+      ctx.beginPath();
+      ctx.arc(donutCenterX, donutCenterY, outerR, startAngle, endAngle);
+      ctx.arc(donutCenterX, donutCenterY, innerR, endAngle, startAngle, true);
+      ctx.closePath();
+      ctx.fillStyle = donutColors[i % donutColors.length];
+      ctx.fill();
+      startAngle = endAngle;
+    });
+
+    // Center text
+    ctx.font = `300 34px ${mono}`;
+    ctx.fillStyle = FG_COLOR;
+    ctx.textAlign = 'center';
+    const totalStr = totalMins >= 60
+      ? Math.floor(totalMins / 60) + 'h ' + (totalMins % 60 > 0 ? (totalMins % 60) + 'm' : '')
+      : totalMins + 'm';
+    ctx.fillText(totalStr.trim(), donutCenterX, donutCenterY + 8);
+    ctx.font = `300 12px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.letterSpacing = '3px';
+    ctx.fillText('ALL TIME', donutCenterX, donutCenterY + 28);
+    ctx.letterSpacing = '0px';
+
+    // Legend — single column to the right
+    const legendX = donutCenterX + outerR + 60;
+    const legendRowH = 42;
+    const legendTopY = donutCenterY - ((cats.length * legendRowH) / 2) + 10;
+
+    cats.forEach((cat, i) => {
+      const ly = legendTopY + i * legendRowH;
+
+      ctx.fillStyle = donutColors[i % donutColors.length];
+      ctx.beginPath();
+      ctx.arc(legendX, ly, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.font = `500 20px ${mono}`;
+      ctx.fillStyle = FG_COLOR;
+      ctx.textAlign = 'left';
+      ctx.fillText(cat[0], legendX + 20, ly + 6);
+
+      const mins = cat[1];
+      const hrsStr = mins >= 60
+        ? parseFloat((mins / 60).toFixed(1)) + 'h'
+        : mins + 'm';
+      ctx.font = `400 18px ${mono}`;
+      ctx.fillStyle = DIM_COLOR;
+      ctx.textAlign = 'right';
+      ctx.fillText(hrsStr, CW - pad, ly + 6);
+    });
+
+    y = donutCenterY + outerR + 40;
+  }
+
+  // Reflection
+  const footerZone = CH - 120;
+  if (reflection && y < footerZone - 100) {
+    y = drawReflection(ctx, reflection, y, contentW);
+  }
   drawFooterWm(ctx);
 }
 
