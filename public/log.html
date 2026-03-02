@@ -1131,9 +1131,7 @@ let currentView = 'main'; // main | share | card
 // ═══════════════════════════════════════════
 async function fetchStats() {
   try {
-    const resp = await fetch(API_URL + '?tz=' + new Date().getTimezoneOffset(), {
-      headers: { 'x-api-secret': API_SECRET }
-    });
+    const resp = await fetch(API_URL + '?tz=' + new Date().getTimezoneOffset(), {});
     if (!resp.ok) {
       const body = await resp.text();
       console.error(`API ${resp.status}: ${body}`);
@@ -1154,7 +1152,7 @@ async function logEntry(category, minutes, notes, type, venue) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-secret': API_SECRET,
+        'Authorization': `Bearer ${API_SECRET}`,
       },
       body: JSON.stringify({ category, minutes, notes, type, venue }),
     });
