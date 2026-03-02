@@ -1874,7 +1874,7 @@ function renderMonthCard(ctx, reflection) {
   }
 
   const cellGap = 7;
-  const cellSize = 65;
+  const cellSize = 72;
   const calW = 7 * cellSize + 6 * cellGap;
   const calX = (CW - calW) / 2;
 
@@ -1957,16 +1957,16 @@ function renderMonthCard(ctx, reflection) {
   ctx.fillText(`${appData.streak} day streak`, calX + calW, y);
   y += 70;
 
-  // ── Donut chart (practice categories only) ──
+  // ── Donut chart + legend side by side ──
   const breakdown = appData.categoryBreakdownMonth || {};
   const cats = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
   const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
 
   if (cats.length > 0 && totalMins > 0) {
-    const donutCenterX = CW / 2;
-    const donutCenterY = y + 140;
-    const outerR = 135;
-    const innerR = 88;
+    const outerR = 125;
+    const innerR = 80;
+    const donutCenterX = pad + outerR + 30;
+    const donutCenterY = y + outerR + 10;
 
     const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
 
@@ -1984,43 +1984,36 @@ function renderMonthCard(ctx, reflection) {
     });
 
     // Center text
-    ctx.font = `300 40px ${mono}`;
+    ctx.font = `300 36px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
     const totalStr = totalMins >= 60
       ? Math.floor(totalMins / 60) + 'h ' + (totalMins % 60 > 0 ? (totalMins % 60) + 'm' : '')
       : totalMins + 'm';
     ctx.fillText(totalStr.trim(), donutCenterX, donutCenterY + 8);
-    ctx.font = `300 14px ${mono}`;
+    ctx.font = `300 13px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.letterSpacing = '3px';
-    ctx.fillText('PRACTICE', donutCenterX, donutCenterY + 32);
+    ctx.fillText('PRACTICE', donutCenterX, donutCenterY + 30);
     ctx.letterSpacing = '0px';
 
-    y = donutCenterY + outerR + 55;
-
-    // Legend — two columns
-    const legendGap = 80;
-    const legendColW = (contentW - legendGap) / 2;
-    const legendX1 = pad;
-    const legendX2 = pad + legendColW + legendGap;
-    const legendRowH = 44;
+    // Legend — single column to the right of donut
+    const legendX = donutCenterX + outerR + 60;
+    const legendRowH = 42;
+    const legendTopY = donutCenterY - ((cats.length * legendRowH) / 2) + 10;
 
     cats.forEach((cat, i) => {
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const lx = col === 0 ? legendX1 : legendX2;
-      const ly = y + row * legendRowH;
+      const ly = legendTopY + i * legendRowH;
 
       ctx.fillStyle = donutColors[i % donutColors.length];
       ctx.beginPath();
-      ctx.arc(lx, ly, 6, 0, Math.PI * 2);
+      ctx.arc(legendX, ly, 6, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.font = `500 20px ${mono}`;
       ctx.fillStyle = FG_COLOR;
       ctx.textAlign = 'left';
-      ctx.fillText(cat[0], lx + 20, ly + 6);
+      ctx.fillText(cat[0], legendX + 20, ly + 6);
 
       const mins = cat[1];
       const hrsStr = mins >= 60
@@ -2029,10 +2022,10 @@ function renderMonthCard(ctx, reflection) {
       ctx.font = `400 18px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
-      ctx.fillText(hrsStr, lx + legendColW, ly + 6);
+      ctx.fillText(hrsStr, CW - pad, ly + 6);
     });
 
-    y += Math.ceil(cats.length / 2) * legendRowH + 30;
+    y = donutCenterY + outerR + 40;
   }
 
   // Reflection
