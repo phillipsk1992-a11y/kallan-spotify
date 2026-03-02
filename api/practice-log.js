@@ -131,16 +131,18 @@ module.exports = async (req, res) => {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-api-secret');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  // Auth check
-  const secret = req.headers['x-api-secret'];
-  if (secret !== API_SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  // Auth check (POST only, matches existing pattern)
+  if (req.method === 'POST') {
+    const token = req.headers.authorization;
+    if (token !== `Bearer ${API_SECRET}`) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
   }
 
   const sheets = await getSheets();
