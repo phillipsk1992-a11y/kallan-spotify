@@ -6,7 +6,7 @@ const { google } = require('googleapis');
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
-const SHEET_NAME = process.env.SHEET_NAME || 'Sheet1';
+const SHEET_NAME = process.env.SHEET_NAME || 'Log';
 const API_SECRET = process.env.PRACTICE_LOG_SECRET;
 
 function getAuth() {
