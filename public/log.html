@@ -1896,7 +1896,7 @@ function renderWeekCard(ctx, reflection) {
 
     // Legend — single column to the right
     const legendX = donutCenterX + outerR + donutLegendGap;
-    const legendRowH = 42;
+    const legendRowH = 50;
     const legendTopY = donutCenterY - ((cats.length * legendRowH) / 2) + 10;
     const legendRightEdge = legendX + legendW;
 
@@ -1905,19 +1905,19 @@ function renderWeekCard(ctx, reflection) {
 
       ctx.fillStyle = donutColors[i % donutColors.length];
       ctx.beginPath();
-      ctx.arc(legendX, ly, 6, 0, Math.PI * 2);
+      ctx.arc(legendX, ly, 8, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.font = `500 20px ${mono}`;
+      ctx.font = `500 32px ${mono}`;
       ctx.fillStyle = FG_COLOR;
       ctx.textAlign = 'left';
-      ctx.fillText(cat[0], legendX + 20, ly + 6);
+      ctx.fillText(cat[0], legendX + 24, ly + 6);
 
       const mins = cat[1];
       const hrsStr = mins < 120
         ? mins + 'm'
         : parseFloat((mins / 60).toFixed(1)) + 'h';
-      ctx.font = `400 18px ${mono}`;
+      ctx.font = `400 28px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
       ctx.fillText(hrsStr, legendRightEdge, ly + 6);
@@ -2122,7 +2122,7 @@ function renderMonthCard(ctx, reflection) {
 
     // Legend — single column to the right
     const legendX = donutCenterX + outerR + donutLegendGap;
-    const legendRowH = 42;
+    const legendRowH = 50;
     const legendTopY = donutCenterY - ((cats.length * legendRowH) / 2) + 10;
     const legendRightEdge = legendX + legendW;
 
@@ -2131,19 +2131,19 @@ function renderMonthCard(ctx, reflection) {
 
       ctx.fillStyle = donutColors[i % donutColors.length];
       ctx.beginPath();
-      ctx.arc(legendX, ly, 6, 0, Math.PI * 2);
+      ctx.arc(legendX, ly, 8, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.font = `500 20px ${mono}`;
+      ctx.font = `500 32px ${mono}`;
       ctx.fillStyle = FG_COLOR;
       ctx.textAlign = 'left';
-      ctx.fillText(cat[0], legendX + 20, ly + 6);
+      ctx.fillText(cat[0], legendX + 24, ly + 6);
 
       const mins = cat[1];
       const hrsStr = mins < 120
         ? mins + 'm'
         : parseFloat((mins / 60).toFixed(1)) + 'h';
-      ctx.font = `400 18px ${mono}`;
+      ctx.font = `400 28px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
       ctx.fillText(hrsStr, legendRightEdge, ly + 6);
@@ -2457,7 +2457,7 @@ function renderYearCard(ctx, reflection) {
 
     // Legend — single column to the right
     const legendX = donutCenterX + outerR + donutLegendGap;
-    const legendRowH = 42;
+    const legendRowH = 50;
     const legendTopY = donutCenterY - ((cats.length * legendRowH) / 2) + 10;
     const legendRightEdge = legendX + legendW;
 
@@ -2466,19 +2466,19 @@ function renderYearCard(ctx, reflection) {
 
       ctx.fillStyle = donutColors[i % donutColors.length];
       ctx.beginPath();
-      ctx.arc(legendX, ly, 6, 0, Math.PI * 2);
+      ctx.arc(legendX, ly, 8, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.font = `500 20px ${mono}`;
+      ctx.font = `500 32px ${mono}`;
       ctx.fillStyle = FG_COLOR;
       ctx.textAlign = 'left';
-      ctx.fillText(cat[0], legendX + 20, ly + 6);
+      ctx.fillText(cat[0], legendX + 24, ly + 6);
 
       const mins = cat[1];
       const hrsStr = mins < 120
         ? mins + 'm'
         : parseFloat((mins / 60).toFixed(1)) + 'h';
-      ctx.font = `400 18px ${mono}`;
+      ctx.font = `400 28px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
       ctx.fillText(hrsStr, legendRightEdge, ly + 6);
