@@ -1440,12 +1440,12 @@ document.getElementById('gig-btn').addEventListener('click', () => {
 
 // Duration
 document.getElementById('dur-minus').addEventListener('click', () => {
-  duration = Math.max(5, duration - 5);
+  duration = Math.max(1, duration - 1);
   document.getElementById('dur-value').textContent = duration;
 });
 
 document.getElementById('dur-plus').addEventListener('click', () => {
-  duration = Math.min(480, duration + 5);
+  duration = Math.min(480, duration + 1);
   document.getElementById('dur-value').textContent = duration;
 });
 
