@@ -716,6 +716,33 @@ body {
   margin-bottom: 8px;
 }
 
+/* Name input */
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.name-label {
+  font-size: 13px;
+  color: var(--dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.name-input {
+  flex: 1;
+  font-family: inherit;
+  font-size: 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  padding: 6px 0;
+  color: var(--fg);
+  outline: none;
+}
+.name-input::placeholder { color: var(--dim); opacity: 0.5; }
+
 /* Card type selector */
 .card-type-selector {
   display: flex;
@@ -869,7 +896,7 @@ input:focus, textarea:focus, button:focus { outline: none; }
 <!-- App Header -->
 <div class="app-header">
   <div class="app-name"><span class="app-dot"></span>woodshed</div>
-  <div class="app-tagline">shedding, logged</div>
+  <div class="app-tagline">practice, tracked</div>
   <div class="header-link" id="header-link" style="display:none;"></div>
 </div>
 
@@ -994,6 +1021,11 @@ input:focus, textarea:focus, button:focus { outline: none; }
 <div id="share-view">
   <div class="section-label">Share your progress</div>
 
+  <div class="name-row">
+    <label class="name-label" for="share-name">your name</label>
+    <input type="text" class="name-input" id="share-name" placeholder="e.g. Kallan" maxlength="30">
+  </div>
+
   <div class="card-type-selector">
     <button class="card-type-btn selected" data-card="week">
       <span class="card-type-icon">&#9632;</span>
@@ -1110,13 +1142,18 @@ function renderAll() {
 }
 
 // ─── Home Tab ───
+function getUserName() {
+  return localStorage.getItem('woodshed_name') || '';
+}
+
 function renderHome() {
   // Greeting
   const hour = new Date().getHours();
-  let greet = 'Good evening.';
-  if (hour < 12) greet = 'Good morning.';
-  else if (hour < 17) greet = 'Good afternoon.';
-  document.getElementById('greeting').textContent = greet;
+  let greet = 'Good evening';
+  if (hour < 12) greet = 'Good morning';
+  else if (hour < 17) greet = 'Good afternoon';
+  const name = getUserName();
+  document.getElementById('greeting').textContent = name ? `${greet}, ${name}.` : `${greet}.`;
 
   // Date + streak
   const now = new Date();
@@ -1728,27 +1765,41 @@ function drawSubLabel(ctx, text, y) {
 }
 
 function drawFooterWm(ctx) {
-  const wmY = CH - 80;
-  const dotText = 'woodshed';
-  ctx.font = `300 28px ${mono}`;
-  ctx.letterSpacing = '5px';
-  ctx.textAlign = 'left';
-  const wmW = ctx.measureText(dotText).width;
-  const dotR = 6;
-  const dotGap = 10;
-  const totalW = dotR * 2 + dotGap + wmW;
-  const startX = (CW - totalW) / 2;
+  // ── Brand block: logo + tagline + URL ──
+  const baseY = CH - 120;
 
-  // Green dot
-  ctx.fillStyle = 'rgba(29,185,84,0.45)';
+  // Line 1: ●woodshed
+  const logoText = 'woodshed';
+  ctx.font = `500 36px ${mono}`;
+  ctx.letterSpacing = '4px';
+  ctx.textAlign = 'left';
+  const logoW = ctx.measureText(logoText).width;
+  const dotR = 7;
+  const dotGap = 10;
+  const totalLogoW = dotR * 2 + dotGap + logoW;
+  const logoX = (CW - totalLogoW) / 2;
+
+  ctx.fillStyle = '#1db954';
   ctx.beginPath();
-  ctx.arc(startX + dotR, wmY - 6, dotR, 0, Math.PI * 2);
+  ctx.arc(logoX + dotR, baseY - 8, dotR, 0, Math.PI * 2);
   ctx.fill();
 
-  // Text
-  ctx.fillStyle = '#b0ada6';
-  ctx.fillText(dotText, startX + dotR * 2 + dotGap, wmY);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillText(logoText, logoX + dotR * 2 + dotGap, baseY);
   ctx.letterSpacing = '0px';
+
+  // Line 2: practice, tracked
+  ctx.font = `300 20px ${mono}`;
+  ctx.fillStyle = '#999999';
+  ctx.textAlign = 'center';
+  ctx.letterSpacing = '3px';
+  ctx.fillText('practice, tracked', CW / 2, baseY + 36);
+  ctx.letterSpacing = '0px';
+
+  // Line 3: woodshed.info
+  ctx.font = `400 20px ${mono}`;
+  ctx.fillStyle = '#aaaaaa';
+  ctx.fillText('woodshed.info', CW / 2, baseY + 66);
 }
 
 
@@ -1772,7 +1823,7 @@ function renderWeekCard(ctx, reflection) {
   const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
 
   // Estimate total content height
-  const subtitleH = 60;
+  const subtitleH = 70;
   const heroH = 240;
   const gridSectionH = 24 + 22 + cellSize + 50;
   const statsLineH = 70;
@@ -1782,13 +1833,23 @@ function renderWeekCard(ctx, reflection) {
 
   // Safe zone: top 240px (Instagram overlay), bottom 160px (watermark)
   const safeTop = 240;
-  const safeBottom = 160;
+  const safeBottom = 190;
   const safeH = CH - safeTop - safeBottom;
   let y = safeTop + Math.max(0, (safeH - totalH) / 2);
 
   // ── Subtitle ──
   drawSubLabel(ctx, 'WEEK IN PRACTICE', y);
-  y += 60;
+  y += 40;
+
+  // ── User name ──
+  const userName = getUserName();
+  if (userName) {
+    ctx.font = `400 28px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.textAlign = 'center';
+    ctx.fillText(userName, CW / 2, y);
+  }
+  y += 30;
 
   // ── Hero number ──
   const weekBig = formatBigNumber(appData.week.totalMinutes);
@@ -1955,7 +2016,7 @@ function renderMonthCard(ctx, reflection) {
   const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
 
   // Estimate content height for vertical centering
-  const subtitleH = 50;
+  const subtitleH = 60;
   const heroH = 210;
   const calLabelH = 32;
   const calGridH = calRows * (cellSize + cellGap);
@@ -1965,14 +2026,24 @@ function renderMonthCard(ctx, reflection) {
   const totalH = subtitleH + heroH + calLabelH + calGridH + statsH + barSectionH + reflectionH;
 
   const safeTop = 240;
-  const safeBottom = 160;
+  const safeBottom = 190;
   const safeH = CH - safeTop - safeBottom;
   let y = safeTop + Math.max(0, (safeH - totalH) / 2);
 
   // ── Subtitle ──
   const monthName = (appData.month.name || 'THIS MONTH').toUpperCase();
   drawSubLabel(ctx, monthName + ' ' + yr, y);
-  y += 50;
+  y += 36;
+
+  // ── User name ──
+  const userName = getUserName();
+  if (userName) {
+    ctx.font = `400 26px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.textAlign = 'center';
+    ctx.fillText(userName, CW / 2, y);
+  }
+  y += 24;
 
   // ── Hero number ──
   const monthBig = formatBigNumber(appData.month.totalMinutes);
@@ -2163,7 +2234,7 @@ function renderYearCard(ctx, reflection) {
   const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
 
   // ── Measure for vertical centering ──
-  const subtitleH = 60;
+  const subtitleH = 70;
   const heroH = 260;
   const statsH = 80;
   const donutR = 200;
@@ -2172,13 +2243,23 @@ function renderYearCard(ctx, reflection) {
   const totalH = subtitleH + heroH + statsH + donutSectionH + reflectionH;
 
   const safeTop = 240;
-  const safeBottom = 160;
+  const safeBottom = 190;
   const safeH = CH - safeTop - safeBottom;
   let y = safeTop + Math.max(0, (safeH - totalH) / 2);
 
   // ── Subtitle ──
   drawSubLabel(ctx, new Date().getFullYear() + ' SO FAR', y);
-  y += 60;
+  y += 40;
+
+  // ── User name ──
+  const userName = getUserName();
+  if (userName) {
+    ctx.font = `400 28px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.textAlign = 'center';
+    ctx.fillText(userName, CW / 2, y);
+  }
+  y += 30;
 
   // ── Hero: total hours ──
   const yearBig = formatBigNumber(yearMins);
@@ -2408,6 +2489,14 @@ function showToast(msg) {
 // ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
+
+// Name input — load from localStorage, save on change
+const nameInput = document.getElementById('share-name');
+nameInput.value = localStorage.getItem('woodshed_name') || '';
+nameInput.addEventListener('input', () => {
+  localStorage.setItem('woodshed_name', nameInput.value.trim());
+});
+
 fetchStats();
 
 // Register service worker
