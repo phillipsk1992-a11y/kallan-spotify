@@ -1894,11 +1894,11 @@ function renderWeekCard(ctx, reflection) {
 
     y = donutCenterY + outerR + 80;
 
-    // Legend — two columns with proper center gap
-    const legendGap = 80;
-    const legendColW = (contentW - legendGap) / 2;
+    // Legend — two columns, tight
+    const legendItemW = 280;
+    const legendGap = contentW - 2 * legendItemW;
     const legendX1 = pad;
-    const legendX2 = pad + legendColW + legendGap;
+    const legendX2 = pad + legendItemW + legendGap;
     const legendRowH = 55;
 
     cats.forEach((cat, i) => {
@@ -1927,7 +1927,7 @@ function renderWeekCard(ctx, reflection) {
       ctx.font = `400 22px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
-      ctx.fillText(hrsStr, lx + legendColW, ly + 8);
+      ctx.fillText(hrsStr, lx + legendItemW, ly + 8);
     });
 
     y += Math.ceil(cats.length / 2) * legendRowH + 40;
@@ -2089,9 +2089,9 @@ function renderMonthCard(ctx, reflection) {
   const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
 
   if (cats.length > 0 && totalMins > 0) {
-    const outerR = 125;
-    const innerR = 80;
-    const donutCenterX = pad + outerR + 30;
+    const outerR = 140;
+    const innerR = 90;
+    const donutCenterX = pad + outerR + 20;
     const donutCenterY = y + outerR + 10;
 
     const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
@@ -2123,10 +2123,11 @@ function renderMonthCard(ctx, reflection) {
     ctx.fillText('PRACTICE', donutCenterX, donutCenterY + 30);
     ctx.letterSpacing = '0px';
 
-    // Legend — single column to the right of donut
-    const legendX = donutCenterX + outerR + 60;
+    // Legend — single column to the right, tight
+    const legendX = donutCenterX + outerR + 30;
     const legendRowH = 42;
     const legendTopY = donutCenterY - ((cats.length * legendRowH) / 2) + 10;
+    const legendRightEdge = legendX + 280;
 
     cats.forEach((cat, i) => {
       const ly = legendTopY + i * legendRowH;
@@ -2148,7 +2149,7 @@ function renderMonthCard(ctx, reflection) {
       ctx.font = `400 18px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
-      ctx.fillText(hrsStr, CW - pad, ly + 6);
+      ctx.fillText(hrsStr, legendRightEdge, ly + 6);
     });
 
     y = donutCenterY + outerR + 40;
@@ -2419,9 +2420,9 @@ function renderYearCard(ctx, reflection) {
   const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
 
   if (cats.length > 0 && totalMins > 0) {
-    const outerR = 150;
-    const innerR = 98;
-    const donutCenterX = pad + outerR + 20;
+    const outerR = 165;
+    const innerR = 108;
+    const donutCenterX = pad + outerR + 10;
     const donutCenterY = y + outerR + 10;
 
     const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
@@ -2453,11 +2454,11 @@ function renderYearCard(ctx, reflection) {
     ctx.fillText('ALL TIME', donutCenterX, donutCenterY + 34);
     ctx.letterSpacing = '0px';
 
-    // Legend — single column to the right, tighter layout
-    const legendX = donutCenterX + outerR + 40;
+    // Legend — single column to the right, tight
+    const legendX = donutCenterX + outerR + 30;
     const legendRowH = 42;
     const legendTopY = donutCenterY - ((cats.length * legendRowH) / 2) + 10;
-    const legendRightEdge = CW - pad - 10;
+    const legendRightEdge = legendX + 280;
 
     cats.forEach((cat, i) => {
       const ly = legendTopY + i * legendRowH;
