@@ -1625,6 +1625,24 @@ function clearCanvas(ctx) {
   ctx.strokeRect(40, 40, CW - 80, CH - 80);
 }
 
+// Large faint background watermark — type as form (à la Spotify Wrapped)
+function drawBgWatermark(ctx, text) {
+  ctx.save();
+  // Scale font to fit width with generous overflow (crops at edges = intentional)
+  const maxW = CW * 1.4;
+  let fontSize = 600;
+  ctx.font = `200 ${fontSize}px ${mono}`;
+  while (ctx.measureText(text).width > maxW && fontSize > 200) {
+    fontSize -= 20;
+    ctx.font = `200 ${fontSize}px ${mono}`;
+  }
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.035)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, CW / 2, CH * 0.48);
+  ctx.restore();
+}
+
 function fmtMin(totalMin) {
   if (totalMin < 60) return totalMin + 'm';
   const h = Math.floor(totalMin / 60);
@@ -1735,8 +1753,9 @@ function drawSubLabel(ctx, text, y) {
 }
 
 function drawFooterWm(ctx) {
-  // ── Brand block: logo + tagline + URL ──
-  const baseY = CH - 120;
+  // Instagram stories cover bottom ~280px with UI (share, highlight, mention)
+  // Position brand block above that zone
+  const baseY = CH - 340;
 
   // Line 1: ●woodshed
   const logoText = 'woodshed';
@@ -1783,6 +1802,10 @@ function renderWeekCard(ctx, reflection) {
   const pad = 100;
   const contentW = CW - pad * 2;
 
+  // Background watermark — hero number faintly behind everything
+  const weekBig = formatBigNumber(appData.week.totalMinutes);
+  drawBgWatermark(ctx, weekBig.text);
+
   // ── Measure content height first, then vertically centre ──
   const cellGap = 14;
   const cellSize = Math.floor((contentW - 6 * cellGap) / 7);
@@ -1801,9 +1824,9 @@ function renderWeekCard(ctx, reflection) {
   const reflectionH = reflection ? 120 : 0;
   const totalH = subtitleH + heroH + gridSectionH + statsLineH + barSectionH + reflectionH;
 
-  // Safe zone: top 240px (Instagram overlay), bottom 160px (watermark)
+  // Safe zone: top 240px (Instagram overlay), bottom 380px (brand + Instagram UI)
   const safeTop = 240;
-  const safeBottom = 190;
+  const safeBottom = 380;
   const safeH = CH - safeTop - safeBottom;
   let y = safeTop + Math.max(0, (safeH - totalH) / 2);
 
@@ -1967,6 +1990,10 @@ function renderMonthCard(ctx, reflection) {
   const pad = 100;
   const contentW = CW - pad * 2;
 
+  // Background watermark
+  const monthBigWm = formatBigNumber(appData.month.totalMinutes);
+  drawBgWatermark(ctx, monthBigWm.text);
+
   // ── Calendar measurements ──
   const now = new Date();
   const yr = now.getFullYear();
@@ -1996,7 +2023,7 @@ function renderMonthCard(ctx, reflection) {
   const totalH = subtitleH + heroH + calLabelH + calGridH + statsH + barSectionH + reflectionH;
 
   const safeTop = 240;
-  const safeBottom = 190;
+  const safeBottom = 380;
   const safeH = CH - safeTop - safeBottom;
   let y = safeTop + Math.max(0, (safeH - totalH) / 2);
 
@@ -2203,6 +2230,10 @@ function renderYearCard(ctx, reflection) {
   const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
   const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
 
+  // Background watermark
+  const yearBigWm = formatBigNumber(yearMins);
+  drawBgWatermark(ctx, yearBigWm.text);
+
   // ── Measure for vertical centering ──
   const subtitleH = 70;
   const heroH = 260;
@@ -2213,7 +2244,7 @@ function renderYearCard(ctx, reflection) {
   const totalH = subtitleH + heroH + statsH + donutSectionH + reflectionH;
 
   const safeTop = 240;
-  const safeBottom = 190;
+  const safeBottom = 380;
   const safeH = CH - safeTop - safeBottom;
   let y = safeTop + Math.max(0, (safeH - totalH) / 2);
 
