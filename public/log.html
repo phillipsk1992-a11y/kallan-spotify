@@ -2197,17 +2197,23 @@ function renderYearCard(ctx, reflection) {
   // ── Three stat boxes ──
   const weekMins = appData.week.totalMinutes;
   const monthMins = appData.month.totalMinutes;
-  const weekBox = formatBigNumber(weekMins);
-  const monthBox = formatBigNumber(monthMins);
-  const colGap = 16;
+  const colGap = 20;
   const colW = Math.floor((contentW - 2 * colGap) / 3);
-  const colH = 110;
+  const colH = 160;
   const colX = pad;
 
+  // Format with units
+  function statWithUnit(mins) {
+    if (mins < 60) return mins + 'm';
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
+  }
+
   const statItems = [
-    { num: weekBox.text, label: 'THIS WEEK' },
-    { num: appData.streak.toString(), label: 'DAY STREAK' },
-    { num: monthBox.text, label: 'IN ' + (appData.month.name || '--').toUpperCase() },
+    { num: statWithUnit(weekMins), label: 'THIS WEEK' },
+    { num: appData.streak.toString() + 'd', label: 'STREAK' },
+    { num: statWithUnit(monthMins), label: 'IN ' + (appData.month.name || '--').toUpperCase() },
   ];
 
   statItems.forEach((s, i) => {
@@ -2215,19 +2221,19 @@ function renderYearCard(ctx, reflection) {
 
     ctx.strokeStyle = '#ddd';
     ctx.lineWidth = 1;
-    roundRect(ctx, sx, y, colW, colH, 8);
+    roundRect(ctx, sx, y, colW, colH, 10);
     ctx.stroke();
 
-    const numSize = s.num.length > 4 ? 32 : 42;
+    const numSize = s.num.length > 5 ? 40 : 52;
     ctx.font = `300 ${numSize}px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
-    ctx.fillText(s.num, sx + colW / 2, y + 48);
+    ctx.fillText(s.num, sx + colW / 2, y + 72);
 
-    ctx.font = `300 15px ${mono}`;
+    ctx.font = `300 18px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.letterSpacing = '2px';
-    ctx.fillText(s.label, sx + colW / 2, y + 78);
+    ctx.fillText(s.label, sx + colW / 2, y + 112);
     ctx.letterSpacing = '0px';
   });
   y += colH + 60;
