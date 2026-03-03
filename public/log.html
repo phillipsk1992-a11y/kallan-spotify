@@ -1854,83 +1854,76 @@ function renderWeekCard(ctx, reflection) {
   const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
 
   if (cats.length > 0 && totalMins > 0) {
-    const donutCenterX = CW / 2;
-    const donutCenterY = y + 210;
-    const outerR = 200;
-    const innerR = 130;
+    const outerR = 155;
+    const innerR = 100;
+    const donutLegendGap = 30;
+    const legendW = 280;
+    const groupW = outerR * 2 + donutLegendGap + legendW;
+    const groupX = (CW - groupW) / 2;
+    const donutCenterX = groupX + outerR;
+    const donutCenterY = y + outerR + 10;
 
     // Donut colors — muted palette
     const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
 
     // Draw segments
-    let startAngle = -Math.PI / 2; // start from top
+    let startAngle = -Math.PI / 2;
     cats.forEach((cat, i) => {
       const fraction = cat[1] / totalMins;
       const endAngle = startAngle + fraction * Math.PI * 2;
-
       ctx.beginPath();
       ctx.arc(donutCenterX, donutCenterY, outerR, startAngle, endAngle);
       ctx.arc(donutCenterX, donutCenterY, innerR, endAngle, startAngle, true);
       ctx.closePath();
       ctx.fillStyle = donutColors[i % donutColors.length];
       ctx.fill();
-
       startAngle = endAngle;
     });
 
-    // Center text — total minutes
-    ctx.font = `300 52px ${mono}`;
+    // Center text
+    ctx.font = `300 42px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
     const totalStr = totalMins < 120
       ? totalMins + 'm'
       : Math.floor(totalMins / 60) + 'h' + (totalMins % 60 > 0 ? ' ' + (totalMins % 60) + 'm' : '');
     ctx.fillText(totalStr.trim(), donutCenterX, donutCenterY + 10);
-    ctx.font = `300 18px ${mono}`;
+    ctx.font = `300 14px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.letterSpacing = '3px';
-    ctx.fillText('TOTAL', donutCenterX, donutCenterY + 42);
+    ctx.fillText('TOTAL', donutCenterX, donutCenterY + 36);
     ctx.letterSpacing = '0px';
 
-    y = donutCenterY + outerR + 80;
-
-    // Legend — two columns, tight
-    const legendItemW = 280;
-    const legendGap = contentW - 2 * legendItemW;
-    const legendX1 = pad;
-    const legendX2 = pad + legendItemW + legendGap;
-    const legendRowH = 55;
+    // Legend — single column to the right
+    const legendX = donutCenterX + outerR + donutLegendGap;
+    const legendRowH = 42;
+    const legendTopY = donutCenterY - ((cats.length * legendRowH) / 2) + 10;
+    const legendRightEdge = legendX + legendW;
 
     cats.forEach((cat, i) => {
-      const col = i % 2;
-      const row = Math.floor(i / 2);
-      const lx = col === 0 ? legendX1 : legendX2;
-      const ly = y + row * legendRowH;
+      const ly = legendTopY + i * legendRowH;
 
-      // Color dot
       ctx.fillStyle = donutColors[i % donutColors.length];
       ctx.beginPath();
-      ctx.arc(lx, ly, 8, 0, Math.PI * 2);
+      ctx.arc(legendX, ly, 6, 0, Math.PI * 2);
       ctx.fill();
 
-      // Category name
-      ctx.font = `500 24px ${mono}`;
+      ctx.font = `500 20px ${mono}`;
       ctx.fillStyle = FG_COLOR;
       ctx.textAlign = 'left';
-      ctx.fillText(cat[0], lx + 24, ly + 8);
+      ctx.fillText(cat[0], legendX + 20, ly + 6);
 
-      // Minutes — right-aligned within column
       const mins = cat[1];
       const hrsStr = mins < 120
         ? mins + 'm'
         : parseFloat((mins / 60).toFixed(1)) + 'h';
-      ctx.font = `400 22px ${mono}`;
+      ctx.font = `400 18px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
-      ctx.fillText(hrsStr, lx + legendItemW, ly + 8);
+      ctx.fillText(hrsStr, legendRightEdge, ly + 6);
     });
 
-    y += Math.ceil(cats.length / 2) * legendRowH + 40;
+    y = donutCenterY + outerR + 40;
   }
 
   // Reflection — but cap it so it doesn't collide with footer
@@ -2091,7 +2084,11 @@ function renderMonthCard(ctx, reflection) {
   if (cats.length > 0 && totalMins > 0) {
     const outerR = 140;
     const innerR = 90;
-    const donutCenterX = pad + outerR + 20;
+    const donutLegendGap = 30;
+    const legendW = 280;
+    const groupW = outerR * 2 + donutLegendGap + legendW;
+    const groupX = (CW - groupW) / 2;
+    const donutCenterX = groupX + outerR;
     const donutCenterY = y + outerR + 10;
 
     const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
@@ -2123,11 +2120,11 @@ function renderMonthCard(ctx, reflection) {
     ctx.fillText('PRACTICE', donutCenterX, donutCenterY + 30);
     ctx.letterSpacing = '0px';
 
-    // Legend — single column to the right, tight
-    const legendX = donutCenterX + outerR + 30;
+    // Legend — single column to the right
+    const legendX = donutCenterX + outerR + donutLegendGap;
     const legendRowH = 42;
     const legendTopY = donutCenterY - ((cats.length * legendRowH) / 2) + 10;
-    const legendRightEdge = legendX + 280;
+    const legendRightEdge = legendX + legendW;
 
     cats.forEach((cat, i) => {
       const ly = legendTopY + i * legendRowH;
@@ -2422,7 +2419,11 @@ function renderYearCard(ctx, reflection) {
   if (cats.length > 0 && totalMins > 0) {
     const outerR = 165;
     const innerR = 108;
-    const donutCenterX = pad + outerR + 10;
+    const donutLegendGap = 30;
+    const legendW = 280;
+    const groupW = outerR * 2 + donutLegendGap + legendW;
+    const groupX = (CW - groupW) / 2;
+    const donutCenterX = groupX + outerR;
     const donutCenterY = y + outerR + 10;
 
     const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
@@ -2454,11 +2455,11 @@ function renderYearCard(ctx, reflection) {
     ctx.fillText('ALL TIME', donutCenterX, donutCenterY + 34);
     ctx.letterSpacing = '0px';
 
-    // Legend — single column to the right, tight
-    const legendX = donutCenterX + outerR + 30;
+    // Legend — single column to the right
+    const legendX = donutCenterX + outerR + donutLegendGap;
     const legendRowH = 42;
     const legendTopY = donutCenterY - ((cats.length * legendRowH) / 2) + 10;
-    const legendRightEdge = legendX + 280;
+    const legendRightEdge = legendX + legendW;
 
     cats.forEach((cat, i) => {
       const ly = legendTopY + i * legendRowH;
