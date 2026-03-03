@@ -1628,47 +1628,50 @@ function fmtMin(totalMin) {
 function formatBigNumber(totalMins) {
   const h = Math.floor(totalMins / 60);
   const m = totalMins % 60;
-  if (h === 0) return { text: m + 'm', sub: 'MINUTES' };
+  // Under 2 hours: show total minutes (more impressive than "0.6 hours")
+  if (totalMins < 120) return { text: totalMins.toString(), sub: totalMins === 1 ? 'MINUTE' : 'MINUTES' };
+  // 2+ hours, round number: show just hours
   if (m === 0) return { text: h + 'h', sub: 'HOURS' };
+  // 2+ hours with remainder: show hours and minutes
   return { text: h + 'h ' + m + 'm', sub: '' };
 }
 
 function drawHeader(ctx) {
   const logoText = 'woodshed';
-  ctx.font = `600 42px ${mono}`;
-  ctx.letterSpacing = '1px';
+  ctx.font = `600 56px ${mono}`;
+  ctx.letterSpacing = '2px';
   ctx.textAlign = 'left';
   const textW = ctx.measureText(logoText).width;
-  const dotR = 7;
-  const dotGap = 8;
+  const dotR = 9;
+  const dotGap = 10;
   const totalW = dotR * 2 + dotGap + textW;
   const startX = (CW - totalW) / 2;
 
-  // Green accent dot — vertically centered with text x-height
+  // Green accent dot
   ctx.fillStyle = '#1db954';
   ctx.beginPath();
-  ctx.arc(startX + dotR, 115, dotR, 0, Math.PI * 2);
+  ctx.arc(startX + dotR, 118, dotR, 0, Math.PI * 2);
   ctx.fill();
 
   // Logo text
   ctx.fillStyle = FG_COLOR;
-  ctx.fillText(logoText, startX + dotR * 2 + dotGap, 124);
+  ctx.fillText(logoText, startX + dotR * 2 + dotGap, 130);
   ctx.letterSpacing = '0px';
 
   // Tagline
-  ctx.font = `300 16px ${mono}`;
+  ctx.font = `300 18px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'center';
   ctx.letterSpacing = '3px';
-  ctx.fillText('shedding, logged', CW / 2, 148);
+  ctx.fillText('practice, tracked', CW / 2, 160);
   ctx.letterSpacing = '0px';
 
   // Thin rule
   ctx.strokeStyle = '#ddd';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(100, 168);
-  ctx.lineTo(CW - 100, 168);
+  ctx.moveTo(100, 182);
+  ctx.lineTo(CW - 100, 182);
   ctx.stroke();
 }
 
@@ -1727,23 +1730,23 @@ function drawSubLabel(ctx, text, y) {
 function drawFooterWm(ctx) {
   const wmY = CH - 80;
   const dotText = 'woodshed';
-  ctx.font = `300 22px ${mono}`;
+  ctx.font = `300 28px ${mono}`;
   ctx.letterSpacing = '5px';
   ctx.textAlign = 'left';
   const wmW = ctx.measureText(dotText).width;
-  const dotR = 4;
-  const dotGap = 8;
+  const dotR = 6;
+  const dotGap = 10;
   const totalW = dotR * 2 + dotGap + wmW;
   const startX = (CW - totalW) / 2;
 
   // Green dot
-  ctx.fillStyle = 'rgba(29,185,84,0.35)';
+  ctx.fillStyle = 'rgba(29,185,84,0.45)';
   ctx.beginPath();
-  ctx.arc(startX + dotR, wmY - 5, dotR, 0, Math.PI * 2);
+  ctx.arc(startX + dotR, wmY - 6, dotR, 0, Math.PI * 2);
   ctx.fill();
 
   // Text
-  ctx.fillStyle = '#c0bdb6';
+  ctx.fillStyle = '#b0ada6';
   ctx.fillText(dotText, startX + dotR * 2 + dotGap, wmY);
   ctx.letterSpacing = '0px';
 }
@@ -1760,7 +1763,7 @@ function renderWeekCard(ctx, reflection) {
   const contentW = CW - pad * 2;
 
   // ── Subtitle ──
-  let y = 305;
+  let y = 320;
   drawSubLabel(ctx, 'WEEK IN PRACTICE', y);
   y += 190;
 
@@ -1949,7 +1952,7 @@ function renderMonthCard(ctx, reflection) {
   const contentW = CW - pad * 2;
 
   // ── Subtitle ──
-  let y = 285;
+  let y = 300;
   const monthName = (appData.month.name || 'THIS MONTH').toUpperCase();
   drawSubLabel(ctx, monthName + ' ' + new Date().getFullYear(), y);
   y += 170;
@@ -2170,7 +2173,7 @@ function renderYearCard(ctx, reflection) {
   const contentW = CW - pad * 2;
 
   // ── Subtitle ──
-  let y = 285;
+  let y = 300;
   drawSubLabel(ctx, 'THE LONG GAME', y);
   y += 180;
 
