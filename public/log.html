@@ -716,33 +716,6 @@ body {
   margin-bottom: 8px;
 }
 
-/* Name input */
-.name-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-.name-label {
-  font-size: 13px;
-  color: var(--dim);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.name-input {
-  flex: 1;
-  font-family: inherit;
-  font-size: 16px;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--rule);
-  padding: 6px 0;
-  color: var(--fg);
-  outline: none;
-}
-.name-input::placeholder { color: var(--dim); opacity: 0.5; }
-
 /* Card type selector */
 .card-type-selector {
   display: flex;
@@ -1021,11 +994,6 @@ input:focus, textarea:focus, button:focus { outline: none; }
 <div id="share-view">
   <div class="section-label">Share your progress</div>
 
-  <div class="name-row">
-    <label class="name-label" for="share-name">your name</label>
-    <input type="text" class="name-input" id="share-name" placeholder="e.g. Kallan" maxlength="30">
-  </div>
-
   <div class="card-type-selector">
     <button class="card-type-btn selected" data-card="week">
       <span class="card-type-icon">&#9632;</span>
@@ -1142,8 +1110,10 @@ function renderAll() {
 }
 
 // ─── Home Tab ───
+const APP_USERNAME = 'Kallan';
+
 function getUserName() {
-  return localStorage.getItem('woodshed_name') || '';
+  return APP_USERNAME;
 }
 
 function renderHome() {
@@ -2489,13 +2459,6 @@ function showToast(msg) {
 // ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
-
-// Name input — load from localStorage, save on change
-const nameInput = document.getElementById('share-name');
-nameInput.value = localStorage.getItem('woodshed_name') || '';
-nameInput.addEventListener('input', () => {
-  localStorage.setItem('woodshed_name', nameInput.value.trim());
-});
 
 fetchStats();
 
