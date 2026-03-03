@@ -1882,9 +1882,9 @@ function renderWeekCard(ctx, reflection) {
     ctx.font = `300 52px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
-    const totalStr = totalMins >= 60
-      ? Math.floor(totalMins / 60) + 'h ' + (totalMins % 60 > 0 ? (totalMins % 60) + 'm' : '')
-      : totalMins + 'm';
+    const totalStr = totalMins < 120
+      ? totalMins + 'm'
+      : Math.floor(totalMins / 60) + 'h' + (totalMins % 60 > 0 ? ' ' + (totalMins % 60) + 'm' : '');
     ctx.fillText(totalStr.trim(), donutCenterX, donutCenterY + 10);
     ctx.font = `300 18px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
@@ -1921,9 +1921,9 @@ function renderWeekCard(ctx, reflection) {
 
       // Minutes — right-aligned within column
       const mins = cat[1];
-      const hrsStr = mins >= 60
-        ? parseFloat((mins / 60).toFixed(1)) + 'h'
-        : mins + 'm';
+      const hrsStr = mins < 120
+        ? mins + 'm'
+        : parseFloat((mins / 60).toFixed(1)) + 'h';
       ctx.font = `400 22px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
@@ -2113,9 +2113,9 @@ function renderMonthCard(ctx, reflection) {
     ctx.font = `300 36px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
-    const totalStr = totalMins >= 60
-      ? Math.floor(totalMins / 60) + 'h ' + (totalMins % 60 > 0 ? (totalMins % 60) + 'm' : '')
-      : totalMins + 'm';
+    const totalStr = totalMins < 120
+      ? totalMins + 'm'
+      : Math.floor(totalMins / 60) + 'h' + (totalMins % 60 > 0 ? ' ' + (totalMins % 60) + 'm' : '');
     ctx.fillText(totalStr.trim(), donutCenterX, donutCenterY + 8);
     ctx.font = `300 13px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
@@ -2142,9 +2142,9 @@ function renderMonthCard(ctx, reflection) {
       ctx.fillText(cat[0], legendX + 20, ly + 6);
 
       const mins = cat[1];
-      const hrsStr = mins >= 60
-        ? parseFloat((mins / 60).toFixed(1)) + 'h'
-        : mins + 'm';
+      const hrsStr = mins < 120
+        ? mins + 'm'
+        : parseFloat((mins / 60).toFixed(1)) + 'h';
       ctx.font = `400 18px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
@@ -2202,9 +2202,9 @@ function renderYearCard(ctx, reflection) {
   const colH = 160;
   const colX = pad;
 
-  // Format with units
+  // Format with units — show minutes when under 2hrs
   function statWithUnit(mins) {
-    if (mins < 60) return mins + 'm';
+    if (mins < 120) return mins + 'm';
     const h = Math.floor(mins / 60);
     const m = mins % 60;
     return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
@@ -2224,16 +2224,22 @@ function renderYearCard(ctx, reflection) {
     roundRect(ctx, sx, y, colW, colH, 10);
     ctx.stroke();
 
+    // Vertically centre the number + label pair
     const numSize = s.num.length > 5 ? 40 : 52;
+    const labelSize = 18;
+    const gap = 16;
+    const totalTextH = numSize * 0.7 + gap + labelSize * 0.7;
+    const startY = y + (colH - totalTextH) / 2 + numSize * 0.7;
+
     ctx.font = `300 ${numSize}px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
-    ctx.fillText(s.num, sx + colW / 2, y + 72);
+    ctx.fillText(s.num, sx + colW / 2, startY);
 
-    ctx.font = `300 18px ${mono}`;
+    ctx.font = `300 ${labelSize}px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.letterSpacing = '2px';
-    ctx.fillText(s.label, sx + colW / 2, y + 112);
+    ctx.fillText(s.label, sx + colW / 2, startY + gap + labelSize * 0.7);
     ctx.letterSpacing = '0px';
   });
   y += colH + 60;
@@ -2413,9 +2419,9 @@ function renderYearCard(ctx, reflection) {
   const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
 
   if (cats.length > 0 && totalMins > 0) {
-    const outerR = 120;
-    const innerR = 78;
-    const donutCenterX = pad + outerR + 30;
+    const outerR = 150;
+    const innerR = 98;
+    const donutCenterX = pad + outerR + 20;
     const donutCenterY = y + outerR + 10;
 
     const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
@@ -2434,23 +2440,24 @@ function renderYearCard(ctx, reflection) {
     });
 
     // Center text
-    ctx.font = `300 34px ${mono}`;
+    ctx.font = `300 38px ${mono}`;
     ctx.fillStyle = FG_COLOR;
     ctx.textAlign = 'center';
-    const totalStr = totalMins >= 60
-      ? Math.floor(totalMins / 60) + 'h ' + (totalMins % 60 > 0 ? (totalMins % 60) + 'm' : '')
-      : totalMins + 'm';
-    ctx.fillText(totalStr.trim(), donutCenterX, donutCenterY + 8);
-    ctx.font = `300 12px ${mono}`;
+    const totalStr = totalMins < 120
+      ? totalMins + 'm'
+      : Math.floor(totalMins / 60) + 'h' + (totalMins % 60 > 0 ? ' ' + (totalMins % 60) + 'm' : '');
+    ctx.fillText(totalStr.trim(), donutCenterX, donutCenterY + 10);
+    ctx.font = `300 14px ${mono}`;
     ctx.fillStyle = DIM_COLOR;
     ctx.letterSpacing = '3px';
-    ctx.fillText('ALL TIME', donutCenterX, donutCenterY + 28);
+    ctx.fillText('ALL TIME', donutCenterX, donutCenterY + 34);
     ctx.letterSpacing = '0px';
 
-    // Legend — single column to the right
-    const legendX = donutCenterX + outerR + 60;
+    // Legend — single column to the right, tighter layout
+    const legendX = donutCenterX + outerR + 40;
     const legendRowH = 42;
     const legendTopY = donutCenterY - ((cats.length * legendRowH) / 2) + 10;
+    const legendRightEdge = CW - pad - 10;
 
     cats.forEach((cat, i) => {
       const ly = legendTopY + i * legendRowH;
@@ -2466,13 +2473,13 @@ function renderYearCard(ctx, reflection) {
       ctx.fillText(cat[0], legendX + 20, ly + 6);
 
       const mins = cat[1];
-      const hrsStr = mins >= 60
-        ? parseFloat((mins / 60).toFixed(1)) + 'h'
-        : mins + 'm';
+      const hrsStr = mins < 120
+        ? mins + 'm'
+        : parseFloat((mins / 60).toFixed(1)) + 'h';
       ctx.font = `400 18px ${mono}`;
       ctx.fillStyle = DIM_COLOR;
       ctx.textAlign = 'right';
-      ctx.fillText(hrsStr, CW - pad, ly + 6);
+      ctx.fillText(hrsStr, legendRightEdge, ly + 6);
     });
 
     y = donutCenterY + outerR + 40;
