@@ -1618,16 +1618,21 @@ const mono = "'IBM Plex Mono', monospace";
 function clearCanvas(ctx) {
   ctx.fillStyle = BG_COLOR;
   ctx.fillRect(0, 0, CW, CH);
+}
 
-  // Border inset from edges
+function drawBorder(ctx) {
   ctx.strokeStyle = '#b0ada6';
   ctx.lineWidth = 3;
   ctx.strokeRect(40, 40, CW - 80, CH - 80);
 }
 
-// Large faint background watermark — type as form (à la Spotify Wrapped)
+// Large faint background watermark — clipped hard at the border
 function drawBgWatermark(ctx, text, fontSize) {
   ctx.save();
+  // Clip to border rect so text cuts off cleanly at edges
+  ctx.beginPath();
+  ctx.rect(42, 42, CW - 84, CH - 84);
+  ctx.clip();
   const size = fontSize || 600;
   ctx.font = `200 ${size}px ${mono}`;
   ctx.fillStyle = 'rgba(0, 0, 0, 0.032)';
@@ -1635,6 +1640,8 @@ function drawBgWatermark(ctx, text, fontSize) {
   ctx.textBaseline = 'middle';
   ctx.fillText(text, CW / 2, CH * 0.46);
   ctx.restore();
+  // Border on top
+  drawBorder(ctx);
 }
 
 function fmtMin(totalMin) {
@@ -1746,6 +1753,44 @@ function drawSubLabel(ctx, text, y) {
   ctx.letterSpacing = '0px';
 }
 
+// Narrative header: context line → name line → hero number
+// Returns y position after the header block
+function drawNarrativeHeader(ctx, contextLine, verbLine, bigText, unitLabel, startY) {
+  let y = startY;
+
+  // Line 1: context with flanking rules
+  drawSubLabel(ctx, contextLine.toUpperCase(), y);
+  y += 44;
+
+  // Line 2: name + verb
+  ctx.font = `400 28px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'center';
+  ctx.fillText(verbLine, CW / 2, y);
+  y += 50;
+
+  // Line 3: hero number
+  const heroSize = bigText.length > 4 ? 150 : 220;
+  ctx.font = `200 ${heroSize}px ${mono}`;
+  ctx.fillStyle = FG_COLOR;
+  ctx.textAlign = 'center';
+  y += heroSize * 0.72;
+  ctx.fillText(bigText, CW / 2, y);
+  y += 20;
+
+  // Line 4: unit label (if any)
+  if (unitLabel) {
+    ctx.font = `300 28px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.letterSpacing = '6px';
+    ctx.fillText(unitLabel, CW / 2, y);
+    ctx.letterSpacing = '0px';
+  }
+  y += 60;
+
+  return y;
+}
+
 function drawFooterWm(ctx) {
   // Instagram stories cover bottom ~280px with UI (share, highlight, mention)
   // Position brand block above that zone
@@ -1810,13 +1855,12 @@ function renderWeekCard(ctx, reflection) {
   const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
 
   // Estimate total content height
-  const subtitleH = 70;
-  const heroH = 240;
+  const headerH = 340;
   const gridSectionH = 24 + 22 + cellSize + 50;
   const statsLineH = 70;
   const barSectionH = (cats.length > 0 && totalMins > 0) ? (16 + 40 + Math.ceil(cats.length / 2) * 48 + 20) : 0;
   const reflectionH = reflection ? 120 : 0;
-  const totalH = subtitleH + heroH + gridSectionH + statsLineH + barSectionH + reflectionH;
+  const totalH = headerH + gridSectionH + statsLineH + barSectionH + reflectionH;
 
   // Safe zone: top 240px (Instagram overlay), bottom 380px (brand + Instagram UI)
   const safeTop = 240;
@@ -1824,37 +1868,10 @@ function renderWeekCard(ctx, reflection) {
   const safeH = CH - safeTop - safeBottom;
   let y = safeTop + Math.max(0, (safeH - totalH) / 2);
 
-  // ── Subtitle ──
-  drawSubLabel(ctx, 'WEEK IN PRACTICE', y);
-  y += 40;
-
-  // ── User name ──
+  // ── Narrative header ──
   const userName = getUserName();
-  if (userName) {
-    ctx.font = `400 28px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
-    ctx.textAlign = 'center';
-    ctx.fillText(userName, CW / 2, y);
-  }
-  y += 30;
-
-  // ── Hero number ──
-  const heroSize = weekBig.text.length > 4 ? 150 : 220;
-  ctx.font = `200 ${heroSize}px ${mono}`;
-  ctx.fillStyle = FG_COLOR;
-  ctx.textAlign = 'center';
-  y += heroSize * 0.75;
-  ctx.fillText(weekBig.text, CW / 2, y);
-  y += 30;
-
-  if (weekBig.sub) {
-    ctx.font = `300 28px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
-    ctx.letterSpacing = '6px';
-    ctx.fillText(weekBig.sub, CW / 2, y);
-    ctx.letterSpacing = '0px';
-  }
-  y += 80;
+  const verb = userName ? `${userName} practiced` : 'practiced';
+  y = drawNarrativeHeader(ctx, 'THIS WEEK', verb, weekBig.text, weekBig.sub, y);
 
   // ── Day grid ──
   const gridX = (CW - gridWidth) / 2;
@@ -2006,53 +2023,25 @@ function renderMonthCard(ctx, reflection) {
   const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
 
   // Estimate content height for vertical centering
-  const subtitleH = 60;
-  const heroH = 210;
+  const headerH = 340;
   const calLabelH = 32;
   const calGridH = calRows * (cellSize + cellGap);
   const statsH = 60;
   const barSectionH = (cats.length > 0 && totalMins > 0) ? (16 + 40 + Math.ceil(cats.length / 2) * 48 + 20) : 0;
   const reflectionH = reflection ? 120 : 0;
-  const totalH = subtitleH + heroH + calLabelH + calGridH + statsH + barSectionH + reflectionH;
+  const totalH = headerH + calLabelH + calGridH + statsH + barSectionH + reflectionH;
 
   const safeTop = 240;
   const safeBottom = 380;
   const safeH = CH - safeTop - safeBottom;
   let y = safeTop + Math.max(0, (safeH - totalH) / 2);
 
-  // ── Subtitle ──
-  const monthName = (appData.month.name || 'THIS MONTH').toUpperCase();
-  drawSubLabel(ctx, monthName + ' ' + yr, y);
-  y += 36;
-
-  // ── User name ──
-  const userName = getUserName();
-  if (userName) {
-    ctx.font = `400 26px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
-    ctx.textAlign = 'center';
-    ctx.fillText(userName, CW / 2, y);
-  }
-  y += 24;
-
-  // ── Hero number ──
+  // ── Narrative header ──
+  const monthName = (appData.month.name || 'this month');
   const monthBig = formatBigNumber(appData.month.totalMinutes);
-  const heroSize = monthBig.text.length > 4 ? 130 : 170;
-  ctx.font = `200 ${heroSize}px ${mono}`;
-  ctx.fillStyle = FG_COLOR;
-  ctx.textAlign = 'center';
-  y += heroSize * 0.75;
-  ctx.fillText(monthBig.text, CW / 2, y);
-  y += 25;
-
-  if (monthBig.sub) {
-    ctx.font = `300 24px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
-    ctx.letterSpacing = '5px';
-    ctx.fillText(monthBig.sub, CW / 2, y);
-    ctx.letterSpacing = '0px';
-  }
-  y += 70;
+  const userName = getUserName();
+  const verb = userName ? `${userName} has practiced` : 'practiced';
+  y = drawNarrativeHeader(ctx, `IN ${monthName.toUpperCase()} ${yr}`, verb, monthBig.text, monthBig.sub, y);
 
   // ── Calendar grid ──
   const jan1 = new Date(yr, 0, 1);
@@ -2227,53 +2216,23 @@ function renderYearCard(ctx, reflection) {
   drawBgWatermark(ctx, new Date().getFullYear().toString(), 550);
 
   // ── Measure for vertical centering ──
-  const subtitleH = 70;
-  const heroH = 260;
+  const headerH = 340;
   const statsH = 80;
   const donutR = 200;
   const donutSectionH = (cats.length > 0 && totalMins > 0) ? (donutR * 2 + 60) : 0;
   const reflectionH = reflection ? 120 : 0;
-  const totalH = subtitleH + heroH + statsH + donutSectionH + reflectionH;
+  const totalH = headerH + statsH + donutSectionH + reflectionH;
 
   const safeTop = 240;
   const safeBottom = 380;
   const safeH = CH - safeTop - safeBottom;
   let y = safeTop + Math.max(0, (safeH - totalH) / 2);
 
-  // ── Subtitle ──
-  drawSubLabel(ctx, new Date().getFullYear() + ' SO FAR', y);
-  y += 40;
-
-  // ── User name ──
-  const userName = getUserName();
-  if (userName) {
-    ctx.font = `400 28px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
-    ctx.textAlign = 'center';
-    ctx.fillText(userName, CW / 2, y);
-  }
-  y += 30;
-
-  // ── Hero: total hours ──
+  // ── Narrative header ──
   const yearBig = formatBigNumber(yearMins);
-  const heroSize = yearBig.text.length > 4 ? 150 : 220;
-  ctx.font = `200 ${heroSize}px ${mono}`;
-  ctx.fillStyle = FG_COLOR;
-  ctx.textAlign = 'center';
-  y += heroSize * 0.75;
-  ctx.fillText(yearBig.text, CW / 2, y);
-  y += 30;
-
-  ctx.font = `300 28px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
-  ctx.letterSpacing = '6px';
-  if (yearBig.sub) {
-    ctx.fillText(yearBig.sub, CW / 2, y);
-  } else {
-    ctx.fillText('PRACTICED', CW / 2, y);
-  }
-  ctx.letterSpacing = '0px';
-  y += 80;
+  const userName = getUserName();
+  const verb = userName ? `${userName} has practiced` : 'practiced';
+  y = drawNarrativeHeader(ctx, `IN ${new Date().getFullYear()} SO FAR`, verb, yearBig.text, yearBig.sub, y);
 
   // ── Inline stats ──
   const weekMins = appData.week.totalMinutes;
