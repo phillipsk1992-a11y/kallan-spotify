@@ -1760,14 +1760,14 @@ function drawNarrativeHeader(ctx, contextLine, verbLine, bigText, unitLabel, sta
 
   // Line 1: context with flanking rules
   drawSubLabel(ctx, contextLine.toUpperCase(), y);
-  y += 44;
+  y += 54;
 
-  // Line 2: name + verb
+  // Line 2: name + verb (centred between context and hero)
   ctx.font = `400 28px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
   ctx.textAlign = 'center';
   ctx.fillText(verbLine, CW / 2, y);
-  y += 50;
+  y += 40;
 
   // Line 3: hero number
   const heroSize = bigText.length > 4 ? 150 : 220;
