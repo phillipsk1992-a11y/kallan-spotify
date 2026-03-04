@@ -1625,6 +1625,11 @@ const mono = "'IBM Plex Mono', monospace";
 function clearCanvas(ctx) {
   ctx.fillStyle = BG_COLOR;
   ctx.fillRect(0, 0, CW, CH);
+  // Reset all drawing state so cards don't leak into each other
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'start';
+  ctx.textBaseline = 'alphabetic';
+  ctx.letterSpacing = '0px';
 }
 
 function drawBorder(ctx) {
