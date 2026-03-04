@@ -1007,6 +1007,10 @@ input:focus, textarea:focus, button:focus { outline: none; }
       <span class="card-type-icon">&#9617;</span>
       <span class="card-type-name">year</span>
     </button>
+    <button class="card-type-btn" data-card="wrapped">
+      <span class="card-type-icon">&#9609;</span>
+      <span class="card-type-name">wrapped</span>
+    </button>
   </div>
 
   <div class="card-type-desc" id="card-type-desc">i showed up</div>
@@ -1528,6 +1532,7 @@ const cardDescriptions = {
   week: 'i showed up',
   month: 'what i worked on',
   year: 'the long game',
+  wrapped: 'my year in practice',
 };
 
 // Card type selector
@@ -1587,6 +1592,8 @@ function generateCard() {
     renderMonthCard(ctx, reflection);
   } else if (selectedCardType === 'year') {
     renderYearCard(ctx, reflection);
+  } else if (selectedCardType === 'wrapped') {
+    renderWrappedCard(ctx, reflection);
   }
 
   // Show canvas preview
@@ -2329,7 +2336,168 @@ function renderYearCard(ctx, reflection) {
   drawFooterWm(ctx);
 }
 
-// Save / Share
+
+// ═══════════════════════════════════════════
+// CARD 4: WRAPPED — "My year in practice"
+// ═══════════════════════════════════════════
+function renderWrappedCard(ctx, reflection) {
+  clearCanvas(ctx);
+
+  const pad = 80;
+  const contentW = CW - pad * 2;
+
+  // Background watermark
+  drawBgWatermark(ctx, new Date().getFullYear().toString(), 650);
+
+  // ── Reorganize grid data by month ──
+  const yr = new Date().getFullYear();
+  const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const monthData = Array.from({ length: 12 }, () => []);
+
+  if (appData.grid) {
+    appData.grid.forEach(cell => {
+      if (!cell.date) return;
+      const parts = cell.date.split('-');
+      const cellYear = parseInt(parts[0]);
+      const cellMonth = parseInt(parts[1]) - 1; // 0-indexed
+      if (cellYear === yr && cellMonth >= 0 && cellMonth < 12) {
+        monthData[cellMonth].push(cell);
+      }
+    });
+  }
+
+  // ── Layout constants ──
+  const safeTop = 240;
+  const safeBottom = 380;
+
+  // Header sizing (compact for wrapped)
+  const headerH = 260;
+
+  // Grid sizing
+  const labelColW = 56;   // month abbreviation
+  const totalColW = 62;   // monthly total
+  const gapL = 14;
+  const gapR = 14;
+  const cellAreaW = contentW - labelColW - gapL - gapR - totalColW;
+  const cellGap = 3;
+  const cellW = Math.floor((cellAreaW - 30 * cellGap) / 31);
+  const cellH = cellW; // square cells
+  const rowGap = 10;
+  const rowH = cellH + rowGap;
+
+  // Determine which months to show (only up to current month)
+  const currentMonth = new Date().getMonth(); // 0-indexed
+  const monthCount = currentMonth + 1;
+  const gridH = monthCount * rowH + 30; // extra breathing room
+
+  // Stats line
+  const statsH = 80;
+  const totalH = headerH + gridH + statsH;
+
+  const safeH = CH - safeTop - safeBottom;
+  let y = safeTop + Math.max(0, (safeH - totalH) / 2);
+
+  // ── Narrative header (compact) ──
+  const yearMins = appData.year ? appData.year.totalMinutes : 0;
+  const yearBig = formatBigNumber(yearMins);
+  const userName = getUserName();
+  const verb = userName ? `${userName} has practiced` : 'practiced';
+  y = drawNarrativeHeader(ctx, `${yr} SO FAR`, verb, yearBig.text, yearBig.sub, y);
+
+  // ── Month rows ──
+  const gridX = pad;
+  const cellStartX = gridX + labelColW + gapL;
+  const totalX = cellStartX + 31 * (cellW + cellGap) + gapR;
+
+  for (let m = 0; m < monthCount; m++) {
+    const rowY = y;
+    const days = monthData[m];
+    const daysInMonth = new Date(yr, m + 1, 0).getDate();
+
+    // Month label (left)
+    ctx.font = `500 20px ${mono}`;
+    ctx.fillStyle = m === currentMonth ? FG_COLOR : DIM_COLOR;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(monthNames[m], gridX + labelColW, rowY + cellH / 2);
+
+    // Day cells
+    let monthMinutes = 0;
+    let monthActiveDays = 0;
+    for (let d = 0; d < daysInMonth; d++) {
+      const cx = cellStartX + d * (cellW + cellGap);
+      const day = days[d];
+
+      let color = INTENSITY_COLORS[0];
+      let isFuture = false;
+
+      if (day) {
+        monthMinutes += day.minutes;
+        if (day.intensity === -1) {
+          isFuture = true;
+          color = INTENSITY_COLORS[0];
+        } else if (day.hasGig) {
+          color = GIG_COLOR;
+          monthActiveDays++;
+        } else {
+          color = INTENSITY_COLORS[Math.max(0, day.intensity)] || INTENSITY_COLORS[0];
+          if (day.intensity > 0) monthActiveDays++;
+        }
+      }
+
+      ctx.fillStyle = color;
+      ctx.globalAlpha = isFuture ? 0.3 : 1;
+      // Rounded rect
+      const r = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx + r, rowY);
+      ctx.lineTo(cx + cellW - r, rowY);
+      ctx.quadraticCurveTo(cx + cellW, rowY, cx + cellW, rowY + r);
+      ctx.lineTo(cx + cellW, rowY + cellH - r);
+      ctx.quadraticCurveTo(cx + cellW, rowY + cellH, cx + cellW - r, rowY + cellH);
+      ctx.lineTo(cx + r, rowY + cellH);
+      ctx.quadraticCurveTo(cx, rowY + cellH, cx, rowY + cellH - r);
+      ctx.lineTo(cx, rowY + r);
+      ctx.quadraticCurveTo(cx, rowY, cx + r, rowY);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // Monthly total (right)
+    ctx.font = `400 18px ${mono}`;
+    ctx.fillStyle = monthMinutes > 0 ? '#555555' : '#bbbbbb';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    const monthTotalStr = monthMinutes > 0 ? fmtMin(monthMinutes) : '—';
+    ctx.fillText(monthTotalStr, totalX, rowY + cellH / 2);
+
+    y += rowH;
+  }
+
+  y += 30;
+
+  // ── Summary stats ──
+  // Count total active days and total gigs from grid
+  let totalActiveDays = 0;
+  let totalGigs = 0;
+  if (appData.grid) {
+    appData.grid.forEach(cell => {
+      if (cell.intensity > 0) totalActiveDays++;
+      if (cell.hasGig) totalGigs++;
+    });
+  }
+
+  ctx.font = `400 24px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'center';
+  const parts = [];
+  parts.push(`${totalActiveDays} days practiced`);
+  parts.push(`${appData.streak}d streak`);
+  if (totalGigs > 0) parts.push(`${totalGigs} gig${totalGigs > 1 ? 's' : ''}`);
+  ctx.fillText(parts.join('  ·  '), CW / 2, y);
+
+  drawFooterWm(ctx);
+}
 document.getElementById('save-image-btn').addEventListener('click', () => {
   const canvas = document.getElementById('share-canvas');
   const link = document.createElement('a');
