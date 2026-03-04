@@ -1626,20 +1626,14 @@ function clearCanvas(ctx) {
 }
 
 // Large faint background watermark — type as form (à la Spotify Wrapped)
-function drawBgWatermark(ctx, text) {
+function drawBgWatermark(ctx, text, fontSize) {
   ctx.save();
-  // Scale font to fit width with generous overflow (crops at edges = intentional)
-  const maxW = CW * 1.4;
-  let fontSize = 600;
-  ctx.font = `200 ${fontSize}px ${mono}`;
-  while (ctx.measureText(text).width > maxW && fontSize > 200) {
-    fontSize -= 20;
-    ctx.font = `200 ${fontSize}px ${mono}`;
-  }
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.035)';
+  const size = fontSize || 600;
+  ctx.font = `200 ${size}px ${mono}`;
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.032)';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, CW / 2, CH * 0.48);
+  ctx.fillText(text, CW / 2, CH * 0.46);
   ctx.restore();
 }
 
@@ -1802,9 +1796,9 @@ function renderWeekCard(ctx, reflection) {
   const pad = 100;
   const contentW = CW - pad * 2;
 
-  // Background watermark — hero number faintly behind everything
+  // Background watermark — raw number, big and simple
   const weekBig = formatBigNumber(appData.week.totalMinutes);
-  drawBgWatermark(ctx, weekBig.text);
+  drawBgWatermark(ctx, appData.week.totalMinutes.toString());
 
   // ── Measure content height first, then vertically centre ──
   const cellGap = 14;
@@ -1989,9 +1983,9 @@ function renderMonthCard(ctx, reflection) {
   const pad = 100;
   const contentW = CW - pad * 2;
 
-  // Background watermark
-  const monthBigWm = formatBigNumber(appData.month.totalMinutes);
-  drawBgWatermark(ctx, monthBigWm.text);
+  // Background watermark — month abbreviation, clean and bold
+  const monthAbbr = (appData.month.name || 'JAN').toUpperCase().slice(0, 3);
+  drawBgWatermark(ctx, monthAbbr, 700);
 
   // ── Calendar measurements ──
   const now = new Date();
@@ -2229,9 +2223,8 @@ function renderYearCard(ctx, reflection) {
   const totalMins = cats.reduce((sum, c) => sum + c[1], 0);
   const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
 
-  // Background watermark
-  const yearBigWm = formatBigNumber(yearMins);
-  drawBgWatermark(ctx, yearBigWm.text);
+  // Background watermark — year number
+  drawBgWatermark(ctx, new Date().getFullYear().toString(), 550);
 
   // ── Measure for vertical centering ──
   const subtitleH = 70;
