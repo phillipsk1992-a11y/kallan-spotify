@@ -150,7 +150,7 @@ module.exports = async (req, res) => {
   // ─── POST: Log an entry ───
   if (req.method === 'POST') {
     try {
-      const { category, minutes, notes, type, venue } = req.body;
+      const { category, minutes, notes, type, venue, user } = req.body;
 
       if (!category || !minutes) {
         return res.status(400).json({ error: 'category and minutes are required' });
@@ -158,14 +158,15 @@ module.exports = async (req, res) => {
 
       const entryType = type || 'practice';
       const entryVenue = venue || '';
+      const entryUser = user || 'Kallan';
       const timestamp = new Date().toISOString();
 
       await sheets.spreadsheets.values.append({
         spreadsheetId: SHEET_ID,
-        range: `${SHEET_NAME}!A:F`,
+        range: `${SHEET_NAME}!A:G`,
         valueInputOption: 'USER_ENTERED',
         requestBody: {
-          values: [[timestamp, category, minutes, notes || '', entryType, entryVenue]],
+          values: [[timestamp, category, minutes, notes || '', entryType, entryVenue, entryUser]],
         },
       });
 
@@ -181,7 +182,7 @@ module.exports = async (req, res) => {
     try {
       const result = await sheets.spreadsheets.values.get({
         spreadsheetId: SHEET_ID,
-        range: `${SHEET_NAME}!A:F`,
+        range: `${SHEET_NAME}!A:G`,
       });
 
       const rows = result.data.values || [];
@@ -192,6 +193,7 @@ module.exports = async (req, res) => {
 
       const now = new Date();
       const tzOffset = parseInt(req.query.tz) || 0; // from getTimezoneOffset()
+      const filterUser = req.query.user || null; // optional user filter
       const todayStart = getDayStart(now, tzOffset);
       const weekStart = getWeekStart(now, tzOffset);
       const monthStart = getMonthStart(now, tzOffset);
@@ -204,7 +206,9 @@ module.exports = async (req, res) => {
         notes: row[3] || '',
         type: (row[4] || 'practice').toLowerCase(),
         venue: row[5] || '',
-      })).filter(e => e.timestamp);
+        user: row[6] || 'Kallan',
+      })).filter(e => e.timestamp)
+        .filter(e => !filterUser || e.user.toLowerCase() === filterUser.toLowerCase());
 
       // Sort by timestamp descending
       entries.sort((a, b) => b.timestamp - a.timestamp);
@@ -234,8 +238,9 @@ module.exports = async (req, res) => {
         }
       });
 
-      // Streak
-      const streak = calculateStreak(data, tzOffset);
+      // Streak (using filtered entries)
+      const streakRows = entries.map(e => [e.timestamp.toISOString()]);
+      const streak = calculateStreak(streakRows, tzOffset);
 
       // Last practice entry
       const lastPractice = entries.find(e => e.type === 'practice');

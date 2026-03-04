@@ -42,6 +42,76 @@ body {
   padding-top: env(safe-area-inset-top, 20px);
 }
 
+/* ─── User Picker ─── */
+.user-picker {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.user-picker .picker-dot {
+  width: 8px; height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+  margin-bottom: 12px;
+}
+.user-picker h1 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--dim);
+  margin-bottom: 32px;
+}
+.user-picker .user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 280px;
+}
+.user-picker .user-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  background: none;
+  border: 1.5px solid var(--fg);
+  color: var(--fg);
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+.user-picker .user-btn:hover, .user-picker .user-btn:active {
+  background: var(--fg);
+  color: var(--bg);
+}
+.user-picker .picker-footer {
+  position: absolute;
+  bottom: 40px;
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* ─── Header user switcher ─── */
+.header-user {
+  font-size: 11px;
+  color: var(--dim);
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+.header-user:hover {
+  color: var(--fg);
+}
+
 /* ─── Header ─── */
 .app-header {
   display: flex;
@@ -866,10 +936,19 @@ input:focus, textarea:focus, button:focus { outline: none; }
 </head>
 <body>
 
+<!-- User Picker Screen -->
+<div class="user-picker" id="user-picker">
+  <div class="picker-dot"></div>
+  <h1>who's practicing?</h1>
+  <div class="user-list" id="user-list"></div>
+  <div class="picker-footer">woodshed alpha</div>
+</div>
+
 <!-- App Header -->
 <div class="app-header">
   <div class="app-name"><span class="app-dot"></span>woodshed</div>
   <div class="app-tagline">practice, tracked</div>
+  <div class="header-user" id="header-user" onclick="showUserPicker()" title="Switch user"></div>
   <div class="header-link" id="header-link" style="display:none;"></div>
 </div>
 
@@ -1057,6 +1136,12 @@ const FG_COLOR = '#1a1a1a';
 const DIM_COLOR = '#888888';
 
 // ═══════════════════════════════════════════
+// USERS (alpha testers — add/remove names here)
+// ═══════════════════════════════════════════
+const USERS = ['Kallan'];
+let currentUser = null;
+
+// ═══════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════
 let appData = null;
@@ -1070,7 +1155,9 @@ let currentView = 'main'; // main | share | card
 // ═══════════════════════════════════════════
 async function fetchStats() {
   try {
-    const resp = await fetch(API_URL + '?tz=' + new Date().getTimezoneOffset(), {});
+    let url = API_URL + '?tz=' + new Date().getTimezoneOffset();
+    if (currentUser) url += '&user=' + encodeURIComponent(currentUser);
+    const resp = await fetch(url, {});
     if (!resp.ok) {
       const body = await resp.text();
       console.error(`API ${resp.status}: ${body}`);
@@ -1093,7 +1180,7 @@ async function logEntry(category, minutes, notes, type, venue) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${API_SECRET}`,
       },
-      body: JSON.stringify({ category, minutes, notes, type, venue }),
+      body: JSON.stringify({ category, minutes, notes, type, venue, user: currentUser || 'Kallan' }),
     });
     if (!resp.ok) throw new Error('API error');
     return await resp.json();
@@ -1114,10 +1201,34 @@ function renderAll() {
 }
 
 // ─── Home Tab ───
-const APP_USERNAME = 'Kallan';
 
 function getUserName() {
-  return APP_USERNAME;
+  return currentUser || '';
+}
+
+// ─── User Picker ───
+function initUserPicker() {
+  const list = document.getElementById('user-list');
+  list.innerHTML = '';
+  USERS.forEach(name => {
+    const btn = document.createElement('button');
+    btn.className = 'user-btn';
+    btn.textContent = name;
+    btn.onclick = () => selectUser(name);
+    list.appendChild(btn);
+  });
+}
+
+function selectUser(name) {
+  currentUser = name;
+  document.getElementById('user-picker').style.display = 'none';
+  document.getElementById('header-user').textContent = name.toLowerCase();
+  fetchStats();
+}
+
+function showUserPicker() {
+  initUserPicker();
+  document.getElementById('user-picker').style.display = '';
 }
 
 function renderHome() {
@@ -2655,7 +2766,12 @@ function showToast(msg) {
 // INIT
 // ═══════════════════════════════════════════
 
-fetchStats();
+// If only one user, skip the picker
+if (USERS.length === 1) {
+  selectUser(USERS[0]);
+} else {
+  initUserPicker();
+}
 
 // Register service worker
 if ('serviceWorker' in navigator) {
