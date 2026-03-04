@@ -1,5 +1,5 @@
 // sw.js — Woodshed Service Worker
-const CACHE_NAME = 'woodshed-v11';
+const CACHE_NAME = 'woodshed-v12';
 const STATIC_ASSETS = [
   '/log.html',
   '/manifest.json',
@@ -28,11 +28,11 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: network-first for API, cache-first for static
+// Fetch strategy
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // API requests: network only (don't cache dynamic data)
+  // API requests: network only
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => {
@@ -45,12 +45,30 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Static assets: cache-first, fallback to network
+  // HTML: network-first (always get latest, cache as fallback)
+  if (event.request.headers.get('accept')?.includes('text/html') ||
+      url.pathname.endsWith('.html')) {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, clone);
+          });
+        }
+        return response;
+      }).catch(() => {
+        return caches.match(event.request) || caches.match('/log.html');
+      })
+    );
+    return;
+  }
+
+  // Everything else (fonts, manifest, icons): cache-first
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        // Cache successful responses
         if (response.ok && response.type === 'basic') {
           const clone = response.clone();
           caches.open(CACHE_NAME).then(cache => {
@@ -59,11 +77,6 @@ self.addEventListener('fetch', event => {
         }
         return response;
       });
-    }).catch(() => {
-      // Offline fallback for HTML
-      if (event.request.headers.get('accept')?.includes('text/html')) {
-        return caches.match('/log.html');
-      }
     })
   );
 });
