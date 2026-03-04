@@ -1845,7 +1845,6 @@ function renderWeekCard(ctx, reflection) {
   y += 30;
 
   // ── Hero number ──
-  const weekBig = formatBigNumber(appData.week.totalMinutes);
   const heroSize = weekBig.text.length > 4 ? 150 : 220;
   ctx.font = `200 ${heroSize}px ${mono}`;
   ctx.fillStyle = FG_COLOR;
