@@ -2342,159 +2342,199 @@ function renderYearCard(ctx, reflection) {
 // ═══════════════════════════════════════════
 function renderWrappedCard(ctx, reflection) {
   clearCanvas(ctx);
+  drawBgWatermark(ctx, new Date().getFullYear().toString(), 700);
 
-  const pad = 80;
-  const contentW = CW - pad * 2;
-
-  // Background watermark
-  drawBgWatermark(ctx, new Date().getFullYear().toString(), 650);
-
-  // ── Reorganize grid data by month ──
   const yr = new Date().getFullYear();
+  const grid = appData.grid || [];
   const monthNames = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-  const monthData = Array.from({ length: 12 }, () => []);
 
-  if (appData.grid) {
-    appData.grid.forEach(cell => {
-      if (!cell.date) return;
-      const parts = cell.date.split('-');
-      const cellYear = parseInt(parts[0]);
-      const cellMonth = parseInt(parts[1]) - 1; // 0-indexed
-      if (cellYear === yr && cellMonth >= 0 && cellMonth < 12) {
-        monthData[cellMonth].push(cell);
-      }
-    });
-  }
-
-  // ── Layout constants ──
-  const safeTop = 240;
-  const safeBottom = 380;
-
-  // Header sizing (compact for wrapped)
-  const headerH = 260;
-
-  // Grid sizing
-  const labelColW = 56;   // month abbreviation
-  const totalColW = 62;   // monthly total
-  const gapL = 14;
-  const gapR = 14;
-  const cellAreaW = contentW - labelColW - gapL - gapR - totalColW;
+  // ── Grid layout: 7 columns (M-S), 52 rows cascading down ──
+  const cellSize = 26;
   const cellGap = 3;
-  const cellW = Math.floor((cellAreaW - 30 * cellGap) / 31);
-  const cellH = cellW; // square cells
-  const rowGap = 10;
-  const rowH = cellH + rowGap;
+  const cols = 7;
+  const rows = 52;
+  const gridW = cols * cellSize + (cols - 1) * cellGap;   // 200px
+  const rowStep = cellSize + cellGap;                       // 29px
+  const gridH = rows * rowStep;                             // 1508px
 
-  // Determine which months to show (only up to current month)
-  const currentMonth = new Date().getMonth(); // 0-indexed
-  const monthCount = currentMonth + 1;
-  const gridH = monthCount * rowH + 30; // extra breathing room
+  // Position grid on right side of card
+  const gridRight = CW - 100;
+  const gridLeft = gridRight - gridW;
+  const gridTop = 180;
 
-  // Stats line
-  const statsH = 80;
-  const totalH = headerH + gridH + statsH;
+  // ── Day column headers ──
+  const dayLabels = ['M','T','W','T','F','S','S'];
+  ctx.font = `400 18px ${mono}`;
+  ctx.fillStyle = '#aaaaaa';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  dayLabels.forEach((d, i) => {
+    ctx.fillText(d, gridLeft + i * (cellSize + cellGap) + cellSize / 2, gridTop - 10);
+  });
 
-  const safeH = CH - safeTop - safeBottom;
-  let y = safeTop + Math.max(0, (safeH - totalH) / 2);
-
-  // ── Narrative header (compact) ──
-  const yearMins = appData.year ? appData.year.totalMinutes : 0;
-  const yearBig = formatBigNumber(yearMins);
-  const userName = getUserName();
-  const verb = userName ? `${userName} has practiced` : 'practiced';
-  y = drawNarrativeHeader(ctx, `${yr} SO FAR`, verb, yearBig.text, yearBig.sub, y);
-
-  // ── Month rows ──
-  const gridX = pad;
-  const cellStartX = gridX + labelColW + gapL;
-  const totalX = cellStartX + 31 * (cellW + cellGap) + gapR;
-
-  for (let m = 0; m < monthCount; m++) {
-    const rowY = y;
-    const days = monthData[m];
-    const daysInMonth = new Date(yr, m + 1, 0).getDate();
-
-    // Month label (left)
-    ctx.font = `500 20px ${mono}`;
-    ctx.fillStyle = m === currentMonth ? FG_COLOR : DIM_COLOR;
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(monthNames[m], gridX + labelColW, rowY + cellH / 2);
-
-    // Day cells
-    let monthMinutes = 0;
-    let monthActiveDays = 0;
-    for (let d = 0; d < daysInMonth; d++) {
-      const cx = cellStartX + d * (cellW + cellGap);
-      const day = days[d];
-
-      let color = INTENSITY_COLORS[0];
-      let isFuture = false;
-
-      if (day) {
-        monthMinutes += day.minutes;
-        if (day.intensity === -1) {
-          isFuture = true;
-          color = INTENSITY_COLORS[0];
-        } else if (day.hasGig) {
-          color = GIG_COLOR;
-          monthActiveDays++;
-        } else {
-          color = INTENSITY_COLORS[Math.max(0, day.intensity)] || INTENSITY_COLORS[0];
-          if (day.intensity > 0) monthActiveDays++;
+  // ── Draw grid cells ──
+  // Determine first day of each month for labels
+  const monthStartWeeks = [];
+  for (let m = 0; m < 12; m++) {
+    const firstOfMonth = new Date(yr, m, 1);
+    // Find which grid index this date falls on
+    for (let i = 0; i < grid.length; i++) {
+      if (grid[i].date) {
+        const parts = grid[i].date.split('-');
+        if (parseInt(parts[1]) === m + 1 && parseInt(parts[2]) === 1 && parseInt(parts[0]) === yr) {
+          monthStartWeeks.push({ month: m, week: Math.floor(i / 7), dayInWeek: i % 7 });
+          break;
         }
       }
+    }
+  }
 
+  // Track monthly totals
+  const monthTotals = new Array(12).fill(0);
+  let totalActiveDays = 0;
+  let totalGigs = 0;
+
+  for (let w = 0; w < rows; w++) {
+    for (let d = 0; d < cols; d++) {
+      const idx = w * 7 + d;
+      if (idx >= grid.length) continue;
+
+      const cell = grid[idx];
+      const cx = gridLeft + d * (cellSize + cellGap);
+      const cy = gridTop + w * rowStep;
+
+      let color = INTENSITY_COLORS[0];
+      let alpha = 1;
+
+      if (cell.intensity === -1) {
+        color = INTENSITY_COLORS[0];
+        alpha = 0.25;
+      } else if (cell.hasGig) {
+        color = GIG_COLOR;
+        totalGigs++;
+        totalActiveDays++;
+      } else {
+        color = INTENSITY_COLORS[Math.max(0, cell.intensity)] || INTENSITY_COLORS[0];
+        if (cell.intensity > 0) totalActiveDays++;
+      }
+
+      // Track monthly totals
+      if (cell.date) {
+        const mo = parseInt(cell.date.split('-')[1]) - 1;
+        if (mo >= 0 && mo < 12) monthTotals[mo] += cell.minutes;
+      }
+
+      ctx.globalAlpha = alpha;
       ctx.fillStyle = color;
-      ctx.globalAlpha = isFuture ? 0.3 : 1;
-      // Rounded rect
-      const r = 3;
+      const r = 4;
       ctx.beginPath();
-      ctx.moveTo(cx + r, rowY);
-      ctx.lineTo(cx + cellW - r, rowY);
-      ctx.quadraticCurveTo(cx + cellW, rowY, cx + cellW, rowY + r);
-      ctx.lineTo(cx + cellW, rowY + cellH - r);
-      ctx.quadraticCurveTo(cx + cellW, rowY + cellH, cx + cellW - r, rowY + cellH);
-      ctx.lineTo(cx + r, rowY + cellH);
-      ctx.quadraticCurveTo(cx, rowY + cellH, cx, rowY + cellH - r);
-      ctx.lineTo(cx, rowY + r);
-      ctx.quadraticCurveTo(cx, rowY, cx + r, rowY);
+      ctx.moveTo(cx + r, cy);
+      ctx.lineTo(cx + cellSize - r, cy);
+      ctx.quadraticCurveTo(cx + cellSize, cy, cx + cellSize, cy + r);
+      ctx.lineTo(cx + cellSize, cy + cellSize - r);
+      ctx.quadraticCurveTo(cx + cellSize, cy + cellSize, cx + cellSize - r, cy + cellSize);
+      ctx.lineTo(cx + r, cy + cellSize);
+      ctx.quadraticCurveTo(cx, cy + cellSize, cx, cy + cellSize - r);
+      ctx.lineTo(cx, cy + r);
+      ctx.quadraticCurveTo(cx, cy, cx + r, cy);
       ctx.fill();
       ctx.globalAlpha = 1;
     }
-
-    // Monthly total (right)
-    ctx.font = `400 18px ${mono}`;
-    ctx.fillStyle = monthMinutes > 0 ? '#555555' : '#bbbbbb';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    const monthTotalStr = monthMinutes > 0 ? fmtMin(monthMinutes) : '—';
-    ctx.fillText(monthTotalStr, totalX, rowY + cellH / 2);
-
-    y += rowH;
   }
 
-  y += 30;
+  // ── Month labels (left of grid, at row where month starts) ──
+  const currentMonth = new Date().getMonth();
+  ctx.textBaseline = 'top';
+  monthStartWeeks.forEach(ms => {
+    const ly = gridTop + ms.week * rowStep;
+    ctx.font = ms.month === currentMonth ? `700 22px ${mono}` : `400 22px ${mono}`;
+    ctx.fillStyle = ms.month === currentMonth ? FG_COLOR : '#999999';
+    ctx.textAlign = 'right';
+    ctx.fillText(monthNames[ms.month], gridLeft - 18, ly);
+  });
 
-  // ── Summary stats ──
-  // Count total active days and total gigs from grid
-  let totalActiveDays = 0;
-  let totalGigs = 0;
-  if (appData.grid) {
-    appData.grid.forEach(cell => {
-      if (cell.intensity > 0) totalActiveDays++;
-      if (cell.hasGig) totalGigs++;
-    });
-  }
+  // ── Left zone: header + stats ──
+  const leftX = 100;
+  const leftW = gridLeft - 18 - leftX - 40; // available width
 
-  ctx.font = `400 24px ${mono}`;
+  // Year title
+  let ly = 200;
+  ctx.font = `200 120px ${mono}`;
+  ctx.fillStyle = FG_COLOR;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText(yr.toString(), leftX, ly);
+  ly += 140;
+
+  // Subtitle
+  ctx.font = `400 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
-  ctx.textAlign = 'center';
-  const parts = [];
-  parts.push(`${totalActiveDays} days practiced`);
-  parts.push(`${appData.streak}d streak`);
-  if (totalGigs > 0) parts.push(`${totalGigs} gig${totalGigs > 1 ? 's' : ''}`);
-  ctx.fillText(parts.join('  ·  '), CW / 2, y);
+  const userName = getUserName();
+  ctx.fillText(userName ? `${userName} has` : 'you have', leftX, ly);
+  ly += 30;
+  ctx.fillText('practiced', leftX, ly);
+  ly += 60;
+
+  // Hero number
+  const yearMins = appData.year ? appData.year.totalMinutes : 0;
+  const yearBig = formatBigNumber(yearMins);
+  ctx.font = `200 80px ${mono}`;
+  ctx.fillStyle = FG_COLOR;
+  ctx.fillText(yearBig.text, leftX, ly);
+  ly += 90;
+  if (yearBig.sub) {
+    ctx.font = `300 22px ${mono}`;
+    ctx.fillStyle = DIM_COLOR;
+    ctx.letterSpacing = '4px';
+    ctx.fillText(yearBig.sub, leftX, ly);
+    ctx.letterSpacing = '0px';
+  }
+  ly += 70;
+
+  // Divider
+  ctx.strokeStyle = '#ccc';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(leftX, ly);
+  ctx.lineTo(leftX + 100, ly);
+  ctx.stroke();
+  ly += 40;
+
+  // Stacked stats
+  ctx.font = `400 20px ${mono}`;
+  ctx.fillStyle = DIM_COLOR;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+
+  ctx.fillText(`${totalActiveDays} days`, leftX, ly);
+  ly += 30;
+  ctx.fillText('practiced', leftX, ly);
+  ly += 50;
+
+  ctx.fillText(`${appData.streak}d streak`, leftX, ly);
+  ly += 50;
+
+  if (totalGigs > 0) {
+    ctx.fillText(`${totalGigs} gig${totalGigs > 1 ? 's' : ''}`, leftX, ly);
+    ly += 50;
+  }
+
+  // Monthly breakdown (compact, left-aligned)
+  ly += 20;
+  ctx.font = `400 16px ${mono}`;
+  ctx.fillStyle = '#bbbbbb';
+  ctx.letterSpacing = '3px';
+  ctx.fillText('BY MONTH', leftX, ly);
+  ctx.letterSpacing = '0px';
+  ly += 30;
+
+  ctx.font = `400 18px ${mono}`;
+  for (let m = 0; m <= currentMonth; m++) {
+    const t = monthTotals[m];
+    ctx.fillStyle = t > 0 ? DIM_COLOR : '#cccccc';
+    ctx.fillText(`${monthNames[m]}  ${t > 0 ? fmtMin(t) : '—'}`, leftX, ly);
+    ly += 26;
+  }
 
   drawFooterWm(ctx);
 }
