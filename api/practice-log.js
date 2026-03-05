@@ -118,6 +118,33 @@ function calculateStreak(rows, tzOffset) {
   return streak;
 }
 
+// Calculate longest-ever streak from all entries
+function calculateLongestStreak(rows, tzOffset) {
+  if (!rows || rows.length === 0) return 0;
+
+  const dates = new Set();
+  rows.forEach(row => {
+    const ts = parseTimestamp(row[0]);
+    if (ts) dates.add(getLocalDateStr(ts, tzOffset));
+  });
+
+  const sorted = Array.from(dates).sort();
+  if (sorted.length === 0) return 0;
+
+  let longest = 1, current = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = new Date(sorted[i - 1]);
+    const curr = new Date(sorted[i]);
+    if (Math.round((curr - prev) / 86400000) === 1) {
+      current++;
+      if (current > longest) longest = current;
+    } else {
+      current = 1;
+    }
+  }
+  return longest;
+}
+
 // Get intensity level based on minutes
 function getIntensity(minutes) {
   if (minutes === 0) return 0;
@@ -241,6 +268,7 @@ module.exports = async (req, res) => {
       // Streak (using filtered entries)
       const streakRows = entries.map(e => [e.timestamp.toISOString()]);
       const streak = calculateStreak(streakRows, tzOffset);
+      const longestStreak = calculateLongestStreak(streakRows, tzOffset);
 
       // Last practice entry
       const lastPractice = entries.find(e => e.type === 'practice');
@@ -382,7 +410,9 @@ module.exports = async (req, res) => {
           totalMinutes: yearTotalMinutes,
         },
         streak,
+        longestStreak,
         weekAvgHours: parseFloat((weekAvgMinutes / 60).toFixed(1)),
+        allTimeTotalMinutes: entries.reduce((sum, e) => sum + e.minutes, 0),
         totalGigCount,
         lastPractice: lastPractice ? {
           timestamp: lastPractice.timestamp.toISOString(),
