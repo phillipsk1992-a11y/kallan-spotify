@@ -1943,20 +1943,25 @@ function drawCardFooter(ctx, x, y) {
 }
 
 // 10,000 hours projection
-function calc10kProjection(weekAvgHours, allTimeTotalMinutes) {
+function calc10kProjection(weekAvgHours, allTimeTotalMinutes, currentWeekMinutes) {
   const targetMins = 10000 * 60;
   const remaining = targetMins - (allTimeTotalMinutes || 0);
   if (remaining <= 0) return 'done';
-  if (!weekAvgHours || weekAvgHours <= 0) return null;
-  const weeksLeft = remaining / (weekAvgHours * 60);
+  // Use 4-week rolling avg, fall back to current week pace
+  let paceHrsPerWeek = weekAvgHours || 0;
+  if (paceHrsPerWeek <= 0 && currentWeekMinutes > 0) {
+    paceHrsPerWeek = currentWeekMinutes / 60;
+  }
+  if (paceHrsPerWeek <= 0) return null;
+  const weeksLeft = remaining / (paceHrsPerWeek * 60);
   const yearsLeft = weeksLeft / 52;
-  if (yearsLeft >= 100) return null; // too large to be meaningful
+  if (yearsLeft >= 1000) return null; // only hide truly absurd numbers
   if (yearsLeft >= 10) return Math.round(yearsLeft) + ' years';
   return yearsLeft.toFixed(1) + ' years';
 }
 
 function drawCard10k(ctx, x, r, y) {
-  const proj = calc10kProjection(appData.weekAvgHours, appData.allTimeTotalMinutes);
+  const proj = calc10kProjection(appData.weekAvgHours, appData.allTimeTotalMinutes, appData.week.totalMinutes);
   if (!proj) return y;
   ctx.font = `400 22px ${mono}`;
   ctx.fillStyle = DIM_COLOR;
@@ -2003,7 +2008,7 @@ function renderWeekCard(ctx, reflection) {
   const cellSize = Math.floor((L.cW - 6 * cellGap) / 7);
 
   // 10k hours projection availability
-  const has10k = calc10kProjection(appData.weekAvgHours, appData.allTimeTotalMinutes) !== null;
+  const has10k = calc10kProjection(appData.weekAvgHours, appData.allTimeTotalMinutes, appData.week.totalMinutes) !== null;
 
   // ── Calculate content height ──
   const heroSize = hero.text.length <= 2 ? 200 : hero.text.length <= 4 ? 160 : 120;
@@ -2157,7 +2162,7 @@ function renderMonthCard(ctx, reflection) {
   const calLabelH = 22 + 12;
   const calGridH = calRows * (cellSize + cellGap) - cellGap;
   const catBarH = (cats.length > 0 && catTotal > 0) ? (16 + 32 + Math.ceil(cats.length / 2) * 44) : 0;
-  const tenKH = calc10kProjection(appData.weekAvgHours, appData.allTimeTotalMinutes) ? 52 : 0;
+  const tenKH = calc10kProjection(appData.weekAvgHours, appData.allTimeTotalMinutes, appData.week.totalMinutes) ? 52 : 0;
   const reflH = reflection ? 12 + 72 : 0;
   const footerH = 22;
   const totalH = nameH + 40 + heroBlockH + statsH + 36 + calLabelH + calGridH + 28 + catBarH + tenKH + reflH + 36 + footerH;
@@ -2359,7 +2364,7 @@ function renderYearCard(ctx, reflection) {
   const heroBlockH = heroSize * 0.78 + 48;
   const statsH = 3 * 48;
   const donutSectionH = (cats.length > 0 && catTotal > 0) ? (donutR * 2 + 40 + Math.ceil(cats.length / 2) * 44) : 0;
-  const tenKH = calc10kProjection(appData.weekAvgHours, appData.allTimeTotalMinutes) ? 52 : 0;
+  const tenKH = calc10kProjection(appData.weekAvgHours, appData.allTimeTotalMinutes, appData.week.totalMinutes) ? 52 : 0;
   const reflH = reflection ? 12 + 72 : 0;
   const footerH = 22;
   const totalH = nameH + 40 + heroBlockH + statsH + 40 + donutSectionH + tenKH + reflH + 36 + footerH;
