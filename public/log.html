@@ -2051,7 +2051,7 @@ function renderWeekCard(ctx, reflection) {
   const tenKH = weekTotalMins > 0 ? 54 : 0;
   const reflH = reflection ? 12 + Math.ceil(reflection.length / 35) * 36 + 20 : 0;
   const footerH = 22;
-  const totalH = nameH + 40 + heroBlockH + statsH + 40 + gridH + tenKH + reflH + 40 + footerH;
+  const totalH = nameH + 40 + heroBlockH + statsH + 60 + gridH + 48 + tenKH + reflH + 40 + footerH;
 
   const safeTop = 240, safeBot = 380;
   const safeH = CH - safeTop - safeBot;
@@ -2078,7 +2078,7 @@ function renderWeekCard(ctx, reflection) {
     ['sessions', sessions.toString()],
     [streakLabel, streakVal + ' day' + (streakVal !== 1 ? 's' : '')],
   ], L.cX, L.cR, y);
-  y += 40;
+  y += 60;
 
   // Day grid
   const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -2117,7 +2117,7 @@ function renderWeekCard(ctx, reflection) {
       }
     });
   }
-  y += cellSize + 20;
+  y += cellSize + 48;
 
   // 10,000 hours — "X more weeks like this"
   if (weekTotalMins > 0) {
@@ -2193,14 +2193,15 @@ function renderMonthCard(ctx, reflection) {
   const heroSize = hero.text.length <= 2 ? 200 : hero.text.length <= 4 ? 160 : 120;
   const nameH = 28;
   const heroBlockH = heroSize * 0.78 + 48;
-  const statsH = 3 * 48;
+  const statsRows = monthGigs > 0 ? 3 : 2;
+  const statsH = statsRows * 48;
   const calLabelH = 22 + 12;
   const calGridH = calRows * (cellSize + cellGap) - cellGap;
   const catBarH = (cats.length > 0 && catTotal > 0) ? (16 + 32 + Math.ceil(cats.length / 2) * 44) : 0;
   const tenKH = appData.month.totalMinutes > 0 ? 54 : 0;
   const reflH = reflection ? 12 + 72 : 0;
   const footerH = 22;
-  const totalH = nameH + 40 + heroBlockH + statsH + 36 + calLabelH + calGridH + 28 + catBarH + tenKH + reflH + 36 + footerH;
+  const totalH = nameH + 40 + heroBlockH + statsH + 48 + calLabelH + calGridH + 36 + catBarH + tenKH + reflH + 36 + footerH;
 
   const safeTop = 240, safeBot = 380;
   const safeH = CH - safeTop - safeBot;
@@ -2228,16 +2229,14 @@ function renderMonthCard(ctx, reflection) {
     }
   }
 
-  // Stats table
+  // Stats table — only show gigs if > 0
   const streakLabel = streak > 0 ? 'streak' : 'longest streak';
   const streakVal = streak > 0 ? streak : longestStreak;
-  const statsArr = [
-    ['days practiced', activeDays.toString()],
-    ['gigs', monthGigs.toString()],
-    [streakLabel, streakVal + ' day' + (streakVal !== 1 ? 's' : '')],
-  ];
+  const statsArr = [['days practiced', activeDays.toString()]];
+  if (monthGigs > 0) statsArr.push(['gigs', monthGigs.toString()]);
+  statsArr.push([streakLabel, streakVal + ' day' + (streakVal !== 1 ? 's' : '')]);
   y = drawCardStats(ctx, statsArr, L.cX, L.cR, y);
-  y += 36;
+  y += 48;
 
   // Calendar grid
   const calX = L.cX;
@@ -2296,7 +2295,7 @@ function renderMonthCard(ctx, reflection) {
       dayNum++;
     }
   }
-  y += calRows * (cellSize + cellGap) - cellGap + 28;
+  y += calRows * (cellSize + cellGap) - cellGap + 40;
 
   // Category bar + legend
   if (cats.length > 0 && catTotal > 0) {
