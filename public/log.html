@@ -271,65 +271,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Status lines */
-.status-line {
-  display: flex;
-  align-items: center;
-  padding: 11px 0;
-  border-bottom: 1px solid #eae7e0;
-  font-size: 13px;
-}
-
-.status-line .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-right: 12px;
-  flex-shrink: 0;
-}
-
-.status-line .dot.green {
-  background: var(--green);
-  box-shadow: 0 0 6px rgba(29,185,84,0.4);
-}
-
-.status-line .dot.orange { background: var(--gig); }
-.status-line .dot.grey { background: #bbb; }
-
-.status-line .status-label {
-  width: 90px;
-  color: var(--dim);
-  font-size: 12px;
-}
-
-.status-line .status-value { flex: 1; }
-
-/* Home CTA */
-.home-cta {
-  display: block;
-  width: 100%;
-  background: var(--fg);
-  color: var(--bg);
-  border: none;
-  font-family: inherit;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  padding: 16px;
-  cursor: pointer;
-  text-align: center;
-  margin-top: 8px;
-}
-
-.home-footer {
-  text-align: center;
-  font-size: 11px;
-  color: #bbb;
-  margin-top: 24px;
-  line-height: 1.7;
-  font-style: italic;
-}
-
 /* ═══════════════════════════════════════ */
 /* LOG TAB                                */
 /* ═══════════════════════════════════════ */
@@ -954,13 +895,12 @@ input:focus, textarea:focus, button:focus { outline: none; }
 
 <!-- Tab Navigation -->
 <div class="tabs" id="main-tabs">
-  <button class="active" data-tab="home">home</button>
-  <button data-tab="log">log</button>
+  <button class="active" data-tab="log">log</button>
   <button data-tab="stats">stats</button>
 </div>
 
-<!-- ═══════════════════════════════════ HOME ═══════════════════════════════════ -->
-<div class="tab-content active" id="tab-home">
+<!-- ═══════════════════════════════════ LOG ═══════════════════════════════════ -->
+<div class="tab-content active" id="tab-log">
   <div class="home-greeting" id="greeting"></div>
   <div class="home-date" id="home-date"></div>
 
@@ -968,17 +908,6 @@ input:focus, textarea:focus, button:focus { outline: none; }
 
   <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
 
-  <div id="status-lines"></div>
-
-  <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
-
-  <button class="home-cta" id="home-cta">log session</button>
-
-  <div class="home-footer">"the woodshed is where<br>the work gets done."</div>
-</div>
-
-<!-- ═══════════════════════════════════ LOG ═══════════════════════════════════ -->
-<div class="tab-content" id="tab-log">
   <div class="section-label">Category</div>
   <div class="category-grid" id="cat-grid">
     <button class="cat-btn" data-cat="technique">technique</button>
@@ -1197,7 +1126,6 @@ async function logEntry(category, minutes, notes, type, venue) {
 // ═══════════════════════════════════════════
 function renderAll() {
   if (!appData) return;
-  renderHome();
   renderLog();
   renderStats();
 }
@@ -1233,7 +1161,8 @@ function showUserPicker() {
   document.getElementById('user-picker').style.display = '';
 }
 
-function renderHome() {
+// ─── Log Tab (greeting + week viz + log form + today's entries) ───
+function renderLog() {
   // Greeting
   const hour = new Date().getHours();
   let greet = 'Good evening';
@@ -1268,68 +1197,22 @@ function renderHome() {
         cell.style.background = INTENSITY_COLORS[day.intensity] || INTENSITY_COLORS[0];
       }
 
-      // Show minutes inside cell
       if (!day.isFuture && day.minutes > 0) {
         cell.textContent = day.minutes;
         cell.classList.add(day.intensity <= 1 && !day.hasGig ? 'mins-dark' : 'mins-light');
       }
 
-      const name = document.createElement('div');
-      name.className = 'day-name';
-      name.textContent = day.dayLabel;
+      const dayLabel = document.createElement('div');
+      dayLabel.className = 'day-name';
+      dayLabel.textContent = day.dayLabel;
 
       wrap.appendChild(cell);
-      wrap.appendChild(name);
+      wrap.appendChild(dayLabel);
       weekViz.appendChild(wrap);
     });
   }
 
-  // Status lines
-  const statusEl = document.getElementById('status-lines');
-  statusEl.innerHTML = '';
-
-  // Last practiced
-  if (appData.lastPractice) {
-    const ts = new Date(appData.lastPractice.timestamp);
-    const ago = timeAgo(ts);
-    addStatusLine(statusEl, 'green', 'practiced', `${ago} · ${appData.lastPractice.minutes}m ${appData.lastPractice.category}`);
-  }
-
-  // Last gig
-  if (appData.lastGig) {
-    const ts = new Date(appData.lastGig.timestamp);
-    const ago = timeAgo(ts);
-    addStatusLine(statusEl, 'orange', 'gigged', `${ago} · ${appData.lastGig.venue || 'gig'} · ${appData.lastGig.minutes}m`);
-  }
-
-  // This week
-  if (appData.week) {
-    const hrs = formatHours(appData.week.totalMinutes);
-    const sessions = appData.week.sessionCount;
-    addStatusLine(statusEl, 'grey', 'this week', `${hrs} · ${sessions} sessions`);
-  }
-
-  // This month
-  if (appData.month) {
-    const hrs = formatHours(appData.month.totalMinutes);
-    const gigs = appData.month.gigCount;
-    addStatusLine(statusEl, 'grey', 'this month', `${hrs} · ${gigs} gig${gigs !== 1 ? 's' : ''}`);
-  }
-}
-
-function addStatusLine(parent, dotClass, label, value) {
-  const line = document.createElement('div');
-  line.className = 'status-line';
-  line.innerHTML = `
-    <div class="dot ${dotClass}"></div>
-    <span class="status-label">${label}</span>
-    <span class="status-value">${value}</span>
-  `;
-  parent.appendChild(line);
-}
-
-// ─── Log Tab ───
-function renderLog() {
+  // Today's entries
   const entriesEl = document.getElementById('today-entries');
   entriesEl.innerHTML = '';
 
@@ -1528,11 +1411,6 @@ function switchTab(tabName) {
   document.querySelector(`#main-tabs button[data-tab="${tabName}"]`).classList.add('active');
   document.getElementById(`tab-${tabName}`).classList.add('active');
 }
-
-// Home CTA → Log tab
-document.getElementById('home-cta').addEventListener('click', () => {
-  switchTab('log');
-});
 
 // ═══════════════════════════════════════════
 // LOG INTERACTION
