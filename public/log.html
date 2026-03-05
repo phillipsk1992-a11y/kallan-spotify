@@ -1864,9 +1864,12 @@ function drawCardBorder(ctx, x, y, w, h) {
   ctx.strokeRect(x, y, w, h);
 }
 
+// Card-specific text color — darker than app DIM for better contrast on share cards
+const CARD_DIM = '#666666';
+
 function drawCardNameLine(ctx, text, x, y) {
-  ctx.font = `400 24px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
+  ctx.font = `400 26px ${mono}`;
+  ctx.fillStyle = CARD_DIM;
   ctx.textAlign = 'left';
   ctx.letterSpacing = '0px';
   ctx.fillText(text, x, y);
@@ -1883,8 +1886,8 @@ function drawCardHero(ctx, heroText, unit, x, y) {
 
   // Unit inline, same baseline, smaller and lighter
   if (unit) {
-    ctx.font = `300 28px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
+    ctx.font = `300 32px ${mono}`;
+    ctx.fillStyle = CARD_DIM;
     ctx.fillText(unit, x - 6 + heroW + 16, heroY);
   }
 
@@ -1893,15 +1896,15 @@ function drawCardHero(ctx, heroText, unit, x, y) {
 
 function drawCardStats(ctx, stats, x, r, y) {
   stats.forEach(([label, value]) => {
-    ctx.font = `400 28px ${mono}`;
-    ctx.fillStyle = DIM_COLOR;
+    ctx.font = `400 30px ${mono}`;
+    ctx.fillStyle = CARD_DIM;
     ctx.textAlign = 'left';
     ctx.fillText(label, x, y);
     ctx.fillStyle = FG_COLOR;
-    ctx.font = `500 28px ${mono}`;
+    ctx.font = `500 30px ${mono}`;
     ctx.textAlign = 'right';
     ctx.fillText(value, r, y);
-    y += 48;
+    y += 52;
   });
   return y;
 }
@@ -1909,26 +1912,36 @@ function drawCardStats(ctx, stats, x, r, y) {
 function drawCardReflection(ctx, reflection, x, w, y) {
   if (!reflection) return y;
   y += 12;
-  ctx.font = `italic 24px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
+  ctx.font = `italic 26px ${mono}`;
+  ctx.fillStyle = CARD_DIM;
   ctx.textAlign = 'left';
   const lines = getWrappedLines(ctx, '\u201c' + reflection + '\u201d', w);
   lines.forEach((line, i) => {
-    ctx.fillText(line, x, y + i * 36);
+    ctx.fillText(line, x, y + i * 38);
   });
-  return y + lines.length * 36;
+  return y + lines.length * 38;
+}
+
+function drawCardSectionLabel(ctx, text, x, y) {
+  ctx.font = `400 22px ${mono}`;
+  ctx.fillStyle = '#999';
+  ctx.textAlign = 'left';
+  ctx.letterSpacing = '3px';
+  ctx.fillText(text.toUpperCase(), x, y);
+  ctx.letterSpacing = '0px';
+  return y + 36;
 }
 
 function drawCardFooter(ctx, x, y) {
   // Green dot
-  const dotR = 5;
+  const dotR = 6;
   ctx.fillStyle = '#1db954';
   ctx.beginPath();
   ctx.arc(x + dotR, y - 5, dotR, 0, Math.PI * 2);
   ctx.fill();
 
   // WOODSHED text
-  ctx.font = `500 18px ${mono}`;
+  ctx.font = `500 20px ${mono}`;
   ctx.fillStyle = FG_COLOR;
   ctx.textAlign = 'left';
   ctx.letterSpacing = '2px';
@@ -1936,8 +1949,8 @@ function drawCardFooter(ctx, x, y) {
   const wsW = ctx.measureText('woodshed').width;
 
   // woodshed.info
-  ctx.font = `300 18px ${mono}`;
-  ctx.fillStyle = '#aaa';
+  ctx.font = `300 20px ${mono}`;
+  ctx.fillStyle = '#999';
   ctx.fillText('\u00b7  woodshed.info', x + dotR * 2 + 8 + wsW + 14, y);
   ctx.letterSpacing = '0px';
 }
@@ -1963,16 +1976,16 @@ function calc10kProjection(weekAvgHours, allTimeTotalMinutes, currentWeekMinutes
 function drawCard10k(ctx, x, r, y) {
   const proj = calc10kProjection(appData.weekAvgHours, appData.allTimeTotalMinutes, appData.week.totalMinutes);
   if (!proj) return y;
-  ctx.font = `400 22px ${mono}`;
-  ctx.fillStyle = DIM_COLOR;
+  // Single readable line
+  ctx.font = `400 24px ${mono}`;
+  ctx.fillStyle = CARD_DIM;
   ctx.textAlign = 'left';
-  ctx.fillText('10,000 hours', x, y);
-  ctx.fillStyle = FG_COLOR;
-  ctx.font = `500 22px ${mono}`;
-  ctx.textAlign = 'right';
-  const valueText = proj === 'done' ? 'done' : proj + ' at this pace';
-  ctx.fillText(valueText, r, y);
-  return y + 40;
+  if (proj === 'done') {
+    ctx.fillText('10,000 hours \u2014 done', x, y);
+  } else {
+    ctx.fillText('10,000 hours in ' + proj + ' at this pace', x, y);
+  }
+  return y + 44;
 }
 
 function fmtDateShort(ds) {
@@ -2014,7 +2027,7 @@ function renderWeekCard(ctx, reflection) {
   const heroSize = hero.text.length <= 2 ? 200 : hero.text.length <= 4 ? 160 : 120;
   const nameH = 28;
   const heroBlockH = heroSize * 0.78 + 48;
-  const statsH = 3 * 48;
+  const statsH = 3 * 52;
   const gridH = 28 + 14 + cellSize;
   const tenKH = has10k ? 52 : 0;
   const reflH = reflection ? 12 + Math.ceil(reflection.length / 35) * 36 + 20 : 0;
@@ -2158,7 +2171,7 @@ function renderMonthCard(ctx, reflection) {
   const heroSize = hero.text.length <= 2 ? 200 : hero.text.length <= 4 ? 160 : 120;
   const nameH = 28;
   const heroBlockH = heroSize * 0.78 + 48;
-  const statsH = 3 * 48;
+  const statsH = 3 * 52;
   const calLabelH = 22 + 12;
   const calGridH = calRows * (cellSize + cellGap) - cellGap;
   const catBarH = (cats.length > 0 && catTotal > 0) ? (16 + 32 + Math.ceil(cats.length / 2) * 44) : 0;
@@ -2330,7 +2343,8 @@ function renderDayCard(ctx, reflection) {
   clearCanvas(ctx);
   const L = cardLayout();
   const userName = getUserName();
-  const hero = formatHero(appData.today.totalMinutes);
+  const totalMins = appData.today.totalMinutes;
+  const hero = formatHero(totalMins);
 
   // Date
   const now = new Date();
@@ -2339,38 +2353,37 @@ function renderDayCard(ctx, reflection) {
   const dateStr = dayNames[now.getDay()] + ', ' + monthNames[now.getMonth()] + ' ' + now.getDate();
   const nameLine = userName ? userName + '  \u00b7  ' + dateStr : dateStr;
 
-  // Stats
+  // Data
   const entries = appData.today.entries || [];
   const practiceEntries = entries.filter(e => e.type !== 'gig');
   const gigEntries = entries.filter(e => e.type === 'gig');
-  const sessionCount = practiceEntries.length;
   const streak = appData.streak || 0;
   const longestStreak = appData.longestStreak || 0;
+  const weekMins = appData.week.totalMinutes;
 
-  // Top category today
+  // Category bars data
   const catTotals = {};
   practiceEntries.forEach(e => {
     catTotals[e.category] = (catTotals[e.category] || 0) + e.minutes;
   });
-  const topCat = Object.entries(catTotals).sort((a, b) => b[1] - a[1])[0];
-  const topCatName = topCat ? topCat[0] : '\u2014';
-
-  // Session bars data — group by category, sorted by minutes desc
   const catEntries = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
   const maxMins = catEntries.length > 0 ? catEntries[0][1] : 1;
-  const donutColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
+  const barColors = ['#1db954', '#2d2d2d', '#5a5a5a', '#888888', '#aaaaaa', '#cccccc'];
 
   // ── Calculate content height ──
   const heroSize = hero.text.length <= 2 ? 200 : hero.text.length <= 4 ? 160 : 120;
-  const nameH = 28;
+  const nameH = 30;
+  const contextH = 36;
   const heroBlockH = heroSize * 0.78 + 48;
-  const statsH = 3 * 48;
-  const barsH = catEntries.length > 0 ? (catEntries.length * 56 + 20) : 0;
+  const statsH = 2 * 52;
+  const sectionLabelH = catEntries.length > 0 ? 36 : 0;
+  const barRowH = 52;
+  const barsH = catEntries.length > 0 ? (catEntries.length * barRowH + 20) : 0;
   const gigH = gigEntries.length > 0 ? (gigEntries.length * 44 + 16) : 0;
   const tenKH = calc10kProjection(appData.weekAvgHours, appData.allTimeTotalMinutes, appData.week.totalMinutes) ? 52 : 0;
-  const reflH = reflection ? 12 + Math.ceil(reflection.length / 35) * 36 + 20 : 0;
-  const footerH = 22;
-  const totalH = nameH + 40 + heroBlockH + statsH + 40 + barsH + gigH + tenKH + reflH + 40 + footerH;
+  const reflH = reflection ? 12 + Math.ceil(reflection.length / 30) * 38 + 20 : 0;
+  const footerH = 24;
+  const totalH = nameH + 32 + contextH + heroBlockH + statsH + 40 + sectionLabelH + barsH + gigH + tenKH + reflH + 40 + footerH;
 
   const safeTop = 240, safeBot = 380;
   const safeH = CH - safeTop - safeBot;
@@ -2381,49 +2394,67 @@ function renderDayCard(ctx, reflection) {
   drawCardBorder(ctx, L.cardX, borderY, L.cardW, borderH);
   let y = borderY + borderPad;
 
-  // Name line
+  // Name + date line
   drawCardNameLine(ctx, nameLine, L.cX, y + 20);
-  y += nameH + 40;
+  y += nameH + 32;
 
-  // Hero + unit
+  // Context label — "today's practice"
+  ctx.font = `400 24px ${mono}`;
+  ctx.fillStyle = '#999';
+  ctx.textAlign = 'left';
+  ctx.letterSpacing = '3px';
+  ctx.fillText("TODAY'S PRACTICE", L.cX, y);
+  ctx.letterSpacing = '0px';
+  y += contextH;
+
+  // Hero number + unit
   y = drawCardHero(ctx, hero.text, hero.unit, L.cX, y);
 
-  // Stats table
+  // Stats — 2 rows: streak + this week
   const streakLabel = streak > 0 ? 'streak' : 'longest streak';
   const streakVal = streak > 0 ? streak : longestStreak;
+  function weekFmt(mins) {
+    if (mins < 60) return mins + 'm';
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
+  }
   y = drawCardStats(ctx, [
-    ['sessions', sessionCount.toString()],
-    ['top category', topCatName],
     [streakLabel, streakVal + ' day' + (streakVal !== 1 ? 's' : '')],
+    ['this week', weekFmt(weekMins)],
   ], L.cX, L.cR, y);
   y += 40;
 
-  // Session bars — horizontal bars per category
+  // "worked on" section label + category bars
   if (catEntries.length > 0) {
-    const barMaxW = L.cW - 120; // leave room for duration label
+    y = drawCardSectionLabel(ctx, 'worked on', L.cX, y);
+
+    const barMaxW = L.cW - 140;
 
     catEntries.forEach((cat, i) => {
-      const barW = Math.max(20, Math.round((cat[1] / maxMins) * barMaxW));
-      const barH = 28;
+      const barW = Math.max(24, Math.round((cat[1] / maxMins) * barMaxW));
+      const barH = 30;
       const barR = 6;
 
+      // Category name
+      ctx.font = `400 26px ${mono}`;
+      ctx.fillStyle = CARD_DIM;
+      ctx.textAlign = 'left';
+      ctx.fillText(cat[0], L.cX, y + 10);
+      y += 28;
+
       // Bar
-      ctx.fillStyle = donutColors[i % donutColors.length];
+      ctx.fillStyle = barColors[i % barColors.length];
       roundRect(ctx, L.cX, y, barW, barH, barR);
       ctx.fill();
 
-      // Duration label to right of bar
-      ctx.font = `500 24px ${mono}`;
+      // Duration to right of bar
+      ctx.font = `500 26px ${mono}`;
       ctx.fillStyle = FG_COLOR;
       ctx.textAlign = 'left';
-      ctx.fillText(cat[1] + 'm', L.cX + barW + 14, y + 20);
+      ctx.fillText(cat[1] + 'm', L.cX + barW + 14, y + 22);
 
-      // Category label below bar
-      ctx.font = `400 20px ${mono}`;
-      ctx.fillStyle = DIM_COLOR;
-      ctx.fillText(cat[0], L.cX, y + barH + 22);
-
-      y += 56;
+      y += barRowH;
     });
     y += 20;
   }
@@ -2431,7 +2462,7 @@ function renderDayCard(ctx, reflection) {
   // Gig entries
   if (gigEntries.length > 0) {
     gigEntries.forEach(g => {
-      ctx.font = `500 24px ${mono}`;
+      ctx.font = `500 26px ${mono}`;
       ctx.fillStyle = GIG_COLOR;
       ctx.textAlign = 'left';
       ctx.fillText('\u25c6 ' + (g.venue || 'gig'), L.cX, y);
@@ -2443,7 +2474,7 @@ function renderDayCard(ctx, reflection) {
     y += 16;
   }
 
-  // 10,000 hours projection
+  // 10,000 hours
   y = drawCard10k(ctx, L.cX, L.cR, y);
 
   // Reflection
