@@ -1875,23 +1875,21 @@ function drawCardNameLine(ctx, text, x, y) {
   ctx.fillText(text, x, y);
 }
 
-// Logo — green dot + woodshed, positioned top-right of card
+// Logo — green dot + woodshed, top-right, matched to name line size
 function drawCardLogo(ctx, r, y) {
   const logoText = 'woodshed';
-  ctx.font = `500 24px ${mono}`;
-  ctx.letterSpacing = '2px';
+  ctx.font = `500 26px ${mono}`;
+  ctx.letterSpacing = '0px';
   ctx.textAlign = 'right';
   const textW = ctx.measureText(logoText).width;
   ctx.fillStyle = FG_COLOR;
   ctx.fillText(logoText, r, y);
 
-  // Green dot to the left of text
-  const dotR = 7;
+  const dotR = 5;
   ctx.fillStyle = '#1db954';
   ctx.beginPath();
-  ctx.arc(r - textW - 12 - dotR, y - 6, dotR, 0, Math.PI * 2);
+  ctx.arc(r - textW - 10 - dotR, y - 5, dotR, 0, Math.PI * 2);
   ctx.fill();
-  ctx.letterSpacing = '0px';
 }
 
 function drawCardHero(ctx, heroText, unit, x, y) {
@@ -1912,18 +1910,20 @@ function drawCardHero(ctx, heroText, unit, x, y) {
   return y + size * 0.78 + 48;
 }
 
-// Stats: value on LEFT (bold), label on RIGHT (dim)
+// Stats: value + label as inline phrase, left-aligned
 function drawCardStats(ctx, stats, x, r, y) {
   stats.forEach(([label, value]) => {
+    ctx.textAlign = 'left';
+    // Value (bold)
     ctx.font = `500 30px ${mono}`;
     ctx.fillStyle = FG_COLOR;
-    ctx.textAlign = 'left';
     ctx.fillText(value, x, y);
+    const valW = ctx.measureText(value).width;
+    // Label (lighter, right after value)
     ctx.font = `400 30px ${mono}`;
     ctx.fillStyle = CARD_DIM;
-    ctx.textAlign = 'right';
-    ctx.fillText(label, r, y);
-    y += 52;
+    ctx.fillText(label, x + valW + 16, y);
+    y += 48;
   });
   return y;
 }
@@ -1941,14 +1941,26 @@ function drawCardReflection(ctx, reflection, x, w, y) {
   return y + lines.length * 38;
 }
 
+// Primary section label — larger, bolder (e.g. "TODAY'S PRACTICE")
+function drawCardHeading(ctx, text, x, y) {
+  ctx.font = `500 24px ${mono}`;
+  ctx.fillStyle = FG_COLOR;
+  ctx.textAlign = 'left';
+  ctx.letterSpacing = '4px';
+  ctx.fillText(text.toUpperCase(), x, y);
+  ctx.letterSpacing = '0px';
+  return y + 40;
+}
+
+// Secondary section label — smaller, lighter (e.g. "WORKED ON")
 function drawCardSectionLabel(ctx, text, x, y) {
-  ctx.font = `400 22px ${mono}`;
-  ctx.fillStyle = '#999';
+  ctx.font = `400 20px ${mono}`;
+  ctx.fillStyle = '#aaa';
   ctx.textAlign = 'left';
   ctx.letterSpacing = '3px';
   ctx.fillText(text.toUpperCase(), x, y);
   ctx.letterSpacing = '0px';
-  return y + 36;
+  return y + 32;
 }
 
 // Footer — just the URL, quiet
@@ -2033,7 +2045,7 @@ function renderWeekCard(ctx, reflection) {
   const heroSize = hero.text.length <= 2 ? 200 : hero.text.length <= 4 ? 160 : 120;
   const nameH = 28;
   const heroBlockH = heroSize * 0.78 + 48;
-  const statsH = 3 * 52;
+  const statsH = 3 * 48;
   const gridH = 28 + 14 + cellSize;
   const weekTotalMins = appData.week.totalMinutes;
   const tenKH = weekTotalMins > 0 ? 54 : 0;
@@ -2181,7 +2193,7 @@ function renderMonthCard(ctx, reflection) {
   const heroSize = hero.text.length <= 2 ? 200 : hero.text.length <= 4 ? 160 : 120;
   const nameH = 28;
   const heroBlockH = heroSize * 0.78 + 48;
-  const statsH = 3 * 52;
+  const statsH = 3 * 48;
   const calLabelH = 22 + 12;
   const calGridH = calRows * (cellSize + cellGap) - cellGap;
   const catBarH = (cats.length > 0 && catTotal > 0) ? (16 + 32 + Math.ceil(cats.length / 2) * 44) : 0;
@@ -2386,13 +2398,16 @@ function renderDayCard(ctx, reflection) {
   // ── Calculate content height ──
   const heroSize = hero.text.length <= 2 ? 200 : hero.text.length <= 4 ? 160 : 120;
   const nameH = 30;
-  const contextH = 36;
+  const contextH = 40;
   const heroBlockH = heroSize * 0.78 + 48;
-  const statsH = 2 * 52;
-  const sectionLabelH = catEntries.length > 0 ? 36 : 0;
+  const statsH = 2 * 48;
+  const sectionLabelH = catEntries.length > 0 ? 32 : 0;
   const barRowH = 80;
   const barsH = catEntries.length > 0 ? (catEntries.length * barRowH + 20) : 0;
-  const gigH = gigEntries.length > 0 ? (gigEntries.length * 44 + 16) : 0;
+  // Only show gigs if gig total exceeds at least one practice category
+  const lowestCatMins = catEntries.length > 0 ? catEntries[catEntries.length - 1][1] : Infinity;
+  const showGigs = gigEntries.length > 0 && gigEntries.reduce((s, g) => s + g.minutes, 0) > lowestCatMins;
+  const gigH = showGigs ? (gigEntries.length * 44 + 16) : 0;
   const tenKH = totalMins > 0 ? 54 : 0;
   const reflH = reflection ? 12 + Math.ceil(reflection.length / 30) * 38 + 20 : 0;
   const footerH = 24;
@@ -2412,8 +2427,8 @@ function renderDayCard(ctx, reflection) {
   drawCardLogo(ctx, L.cR, y + 20);
   y += nameH + 32;
 
-  // Context label
-  y = drawCardSectionLabel(ctx, "today's practice", L.cX, y);
+  // Context heading — "TODAY'S PRACTICE"
+  y = drawCardHeading(ctx, "today's practice", L.cX, y);
 
   // Hero number + unit
   y = drawCardHero(ctx, hero.text, hero.unit, L.cX, y);
@@ -2464,8 +2479,8 @@ function renderDayCard(ctx, reflection) {
     y += 20;
   }
 
-  // Gig entries
-  if (gigEntries.length > 0) {
+  // Gig entries — only if gig total > lowest practice category
+  if (showGigs) {
     gigEntries.forEach(g => {
       ctx.font = `500 26px ${mono}`;
       ctx.fillStyle = GIG_COLOR;
