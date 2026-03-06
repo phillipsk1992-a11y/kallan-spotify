@@ -2368,7 +2368,6 @@ function renderDayCard(ctx, reflection) {
   const L = cardLayout();
   const userName = getUserName();
   const totalMins = appData.today.totalMinutes;
-  const hero = formatHero(totalMins);
 
   // Date
   const now = new Date();
@@ -2376,6 +2375,63 @@ function renderDayCard(ctx, reflection) {
   const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const dateStr = dayNames[now.getDay()] + ', ' + monthNames[now.getMonth()] + ' ' + now.getDate();
   const nameLine = userName ? userName + '  \u00b7  ' + dateStr : dateStr;
+
+  // ── Empty state ──
+  if (totalMins === 0) {
+    const streak = appData.streak || 0;
+    const longestStreak = appData.longestStreak || 0;
+    const weekMins = appData.week.totalMinutes;
+    function weekFmt(mins) {
+      if (mins < 60) return mins + 'm';
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
+    }
+
+    const nameH = 30;
+    const quipH = 100;
+    const statsH = 2 * 48;
+    const footerH = 24;
+    const totalH = nameH + 32 + quipH + 40 + statsH + 40 + footerH;
+
+    const safeTop = 240, safeBot = 380;
+    const safeH = CH - safeTop - safeBot;
+    const borderPad = 56;
+    const borderH = totalH + borderPad * 2;
+    const borderY = safeTop + Math.max(0, (safeH - borderH) / 2);
+
+    drawCardBorder(ctx, L.cardX, borderY, L.cardW, borderH);
+    let y = borderY + borderPad;
+
+    drawCardNameLine(ctx, nameLine, L.cX, y + 20);
+    drawCardLogo(ctx, L.cR, y + 20);
+    y += nameH + 32;
+
+    // The quip
+    ctx.font = `italic 36px ${mono}`;
+    ctx.fillStyle = CARD_DIM;
+    ctx.textAlign = 'left';
+    const lines = getWrappedLines(ctx, 'the woodshed is gathering dust', L.cW);
+    lines.forEach((line, i) => {
+      ctx.fillText(line, L.cX, y + i * 48);
+    });
+    y += lines.length * 48 + 40;
+
+    // Stats reminder
+    const streakLabel = streak > 0 ? 'streak' : 'longest streak';
+    const streakVal = streak > 0 ? streak : longestStreak;
+    y = drawCardStats(ctx, [
+      [streakLabel, streakVal + ' day' + (streakVal !== 1 ? 's' : '')],
+      ['this week', weekFmt(weekMins)],
+    ], L.cX, L.cR, y);
+
+    y += 40;
+    drawCardFooter(ctx, L.cX, y);
+    return;
+  }
+
+  // ── Normal state ──
+  const hero = formatHero(totalMins);
 
   // Data
   const entries = appData.today.entries || [];
