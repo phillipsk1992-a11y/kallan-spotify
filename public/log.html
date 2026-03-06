@@ -2056,7 +2056,7 @@ function renderWeekCard(ctx, reflection) {
   const statsH = 3 * 48;
   const gridLabelH = 28;
   const gridH = 12 + cellSize;
-  const tenKH = weekTotalMins > 0 ? 34 : 0;
+  const tenKH = weekTotalMins > 0 ? 56 : 0;
   const reflH = reflection ? Math.ceil(reflection.length / 35) * 38 + 20 : 0;
   const footerH = 22;
   // name + SP + hero + SP + stats + SP + gridLabel + grid + SP + 10k + refl + SP + footer
@@ -2130,6 +2130,7 @@ function renderWeekCard(ctx, reflection) {
 
   // 10,000 hours — "X more weeks like this"
   if (weekTotalMins > 0) {
+    y += SP / 2;
     y = drawCard10k(ctx, L.cX, L.cW, y, weekTotalMins, 'weeks');
   }
 
@@ -2207,7 +2208,7 @@ function renderMonthCard(ctx, reflection) {
   const calLabelH = 28;
   const calGridH = calRows * (cellSize + cellGap) - cellGap;
   const catBarH = (cats.length > 0 && catTotal > 0) ? (16 + 32 + Math.ceil(cats.length / 2) * 44) : 0;
-  const tenKH = appData.month.totalMinutes > 0 ? 34 : 0;
+  const tenKH = appData.month.totalMinutes > 0 ? 56 : 0;
   const reflH = reflection ? Math.ceil(reflection.length / 30) * 38 + 20 : 0;
   const footerH = 22;
   const totalH = nameH + SP + heroBlockH + SP + statsH + SP + calLabelH + 12 + calGridH + SP + catBarH + tenKH + reflH + SP + footerH;
@@ -2367,6 +2368,7 @@ function renderMonthCard(ctx, reflection) {
 
   // 10,000 hours — "X more months like this"
   if (appData.month.totalMinutes > 0) {
+    y += SP / 2;
     y = drawCard10k(ctx, L.cX, L.cW, y, appData.month.totalMinutes, 'months');
   }
 
@@ -2465,7 +2467,7 @@ function renderDayCard(ctx, reflection) {
   const lowestCatMins = catEntries.length > 0 ? catEntries[catEntries.length - 1][1] : Infinity;
   const showGigs = gigEntries.length > 0 && gigEntries.reduce((s, g) => s + g.minutes, 0) > lowestCatMins;
   const gigH = showGigs ? (gigEntries.length * 44 + 16) : 0;
-  const tenKH = totalMins > 0 ? 34 : 0;
+  const tenKH = totalMins > 0 ? 56 : 0;
   const reflH = reflection ? Math.ceil(reflection.length / 30) * 38 + 20 : 0;
   const footerH = 24;
   const totalH = nameH + SP + contextH + heroBlockH + SP + statsH + SP + sectionLabelH + barsH + gigH + tenKH + reflH + SP + footerH;
@@ -2554,6 +2556,7 @@ function renderDayCard(ctx, reflection) {
 
   // 10,000 hours — "X more days like this"
   if (totalMins > 0) {
+    y += SP / 2;
     y = drawCard10k(ctx, L.cX, L.cW, y, totalMins, 'days');
   }
 
