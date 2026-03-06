@@ -264,6 +264,15 @@ body {
   border-radius: 50%;
 }
 
+.week-viz .day-wrap.selected-day .day-cell {
+  box-shadow: 0 0 0 2.5px var(--fg);
+}
+
+.week-viz .day-wrap.selected-day .day-name {
+  color: var(--fg);
+  font-weight: 600;
+}
+
 .week-viz .day-name {
   font-size: 10px;
   color: var(--dim);
@@ -395,28 +404,28 @@ body {
   color: var(--fg);
 }
 
-/* Date selector */
-.date-selector {
+/* Date navigation */
+.date-nav {
   display: flex;
-  gap: 6px;
   align-items: center;
-  margin-bottom: 14px;
-  position: relative;
+  gap: 8px;
+  margin-bottom: 16px;
 }
-.date-selector button {
-  font-family: inherit;
-  font-size: 11px;
+.date-arrow {
+  background: none;
+  border: none;
+  font-size: 22px;
   color: var(--dim);
-  border: 1px solid #ddd;
-  padding: 6px 12px;
-  background: transparent;
   cursor: pointer;
-  transition: all 0.15s;
+  padding: 2px 8px;
+  line-height: 1;
+  transition: color 0.15s;
 }
-.date-selector button.selected {
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
+.date-arrow:hover { color: var(--fg); }
+.date-arrow:disabled { opacity: 0.2; cursor: default; }
+.date-label {
+  font-size: 13px;
+  color: var(--dim);
 }
 
 /* Notes field */
@@ -926,13 +935,15 @@ input:focus, textarea:focus, button:focus { outline: none; }
 <!-- ═══════════════════════════════════ LOG ═══════════════════════════════════ -->
 <div class="tab-content active" id="tab-log">
   <div class="home-greeting" id="greeting"></div>
-  <div class="home-date" id="home-date"></div>
+  <div class="date-nav" id="date-nav">
+    <button class="date-arrow" id="date-prev">&#8249;</button>
+    <span class="date-label" id="date-label"></span>
+    <button class="date-arrow" id="date-next">&#8250;</button>
+  </div>
 
   <div class="week-viz" id="week-viz"></div>
 
   <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
-
-  <div class="date-selector" id="date-selector"></div>
 
   <div class="section-label">Category</div>
   <div class="category-grid" id="cat-grid">
@@ -1190,87 +1201,122 @@ function showUserPicker() {
   document.getElementById('user-picker').style.display = '';
 }
 
-// ─── Date Selector ───
-function renderDateSelector() {
-  const el = document.getElementById('date-selector');
-  el.innerHTML = '';
-  const now = new Date();
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  // "today" button
-  const todayBtn = document.createElement('button');
-  todayBtn.textContent = 'today';
-  if (!selectedDate) todayBtn.classList.add('selected');
-  todayBtn.addEventListener('click', () => {
-    selectedDate = null;
-    renderDateSelector();
-  });
-  el.appendChild(todayBtn);
-
-  // "yesterday" button
-  const yestBtn = document.createElement('button');
-  yestBtn.textContent = 'yesterday';
-  if (selectedDate && selectedDate.toDateString() === yesterday.toDateString()) {
-    yestBtn.classList.add('selected');
-  }
-  yestBtn.addEventListener('click', () => {
-    selectedDate = yesterday;
-    renderDateSelector();
-  });
-  el.appendChild(yestBtn);
-
-  // "earlier" button — opens hidden date input
-  const earlierBtn = document.createElement('button');
-  const pickerActive = selectedDate && selectedDate.toDateString() !== yesterday.toDateString();
-  if (pickerActive) {
-    const d = selectedDate;
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    earlierBtn.textContent = months[d.getMonth()] + ' ' + d.getDate();
-    earlierBtn.classList.add('selected');
-  } else {
-    earlierBtn.textContent = 'earlier';
-  }
-
-  // Hidden date input
-  const picker = document.createElement('input');
-  picker.type = 'date';
-  picker.style.position = 'absolute';
-  picker.style.opacity = '0';
-  picker.style.width = '0';
-  picker.style.height = '0';
-  const toISO = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  picker.max = toISO(now);
-  if (pickerActive) picker.value = toISO(selectedDate);
-
-  picker.addEventListener('change', () => {
-    if (picker.value) {
-      const parts = picker.value.split('-');
-      selectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
-      renderDateSelector();
-    }
-  });
-
-  earlierBtn.addEventListener('click', () => {
-    picker.showPicker ? picker.showPicker() : picker.click();
-  });
-
-  el.appendChild(earlierBtn);
-  el.appendChild(picker);
+// ─── Date Navigation ───
+function getSelectedDate() {
+  return selectedDate || new Date();
 }
 
 function getLogTimestamp() {
-  if (!selectedDate) return null; // null = let API use now
-  // Set to noon local time on the selected date
+  if (!selectedDate) return null;
   const d = new Date(selectedDate);
   d.setHours(12, 0, 0, 0);
   return d.toISOString();
 }
 
-// ─── Log Tab (greeting + week viz + log form + today's entries) ───
-function renderLog() {
-  renderDateSelector();
+function updateDateNav() {
+  const d = getSelectedDate();
+  const now = new Date();
+  const options = { weekday: 'long', month: 'long', day: 'numeric' };
+  const isToday = !selectedDate;
 
+  const label = document.getElementById('date-label');
+  if (isToday) {
+    const streakStr = appData && appData.streak > 0 ? ` \u00b7 Day ${appData.streak}` : '';
+    label.textContent = d.toLocaleDateString('en-US', options) + streakStr;
+  } else {
+    label.textContent = d.toLocaleDateString('en-US', options);
+  }
+
+  // Disable forward arrow if at today
+  document.getElementById('date-next').disabled = isToday;
+}
+
+function shiftDate(dir) {
+  const d = getSelectedDate();
+  d.setDate(d.getDate() + dir);
+  const now = new Date();
+  // Don't go past today
+  if (d.toDateString() === now.toDateString()) {
+    selectedDate = null;
+  } else if (d > now) {
+    return;
+  } else {
+    selectedDate = d;
+  }
+  updateDateNav();
+  renderWeekViz();
+}
+
+// Wire up arrows once
+document.getElementById('date-prev').addEventListener('click', () => shiftDate(-1));
+document.getElementById('date-next').addEventListener('click', () => shiftDate(1));
+
+function renderWeekViz() {
+  const weekViz = document.getElementById('week-viz');
+  weekViz.innerHTML = '';
+  if (!appData || !appData.week || !appData.week.days) return;
+
+  const selDate = getSelectedDate();
+  const selStr = selDate.getFullYear() + '-' +
+    String(selDate.getMonth() + 1).padStart(2, '0') + '-' +
+    String(selDate.getDate()).padStart(2, '0');
+
+  appData.week.days.forEach(day => {
+    const wrap = document.createElement('div');
+    wrap.className = 'day-wrap';
+
+    // Highlight selected day
+    if (day.date === selStr) {
+      wrap.classList.add('selected-day');
+    }
+
+    const cell = document.createElement('div');
+    cell.className = 'day-cell';
+    if (day.isFuture) {
+      cell.classList.add('future');
+    } else if (day.hasGig) {
+      cell.classList.add('gig-day');
+      cell.style.background = GIG_COLOR;
+    } else {
+      cell.style.background = INTENSITY_COLORS[day.intensity] || INTENSITY_COLORS[0];
+    }
+
+    if (!day.isFuture && day.minutes > 0) {
+      cell.textContent = day.minutes;
+      cell.classList.add(day.intensity <= 1 && !day.hasGig ? 'mins-dark' : 'mins-light');
+    }
+
+    // Tap a day cell to select it
+    if (!day.isFuture) {
+      wrap.style.cursor = 'pointer';
+      wrap.addEventListener('click', () => {
+        const now = new Date();
+        const nowStr = now.getFullYear() + '-' +
+          String(now.getMonth() + 1).padStart(2, '0') + '-' +
+          String(now.getDate()).padStart(2, '0');
+        if (day.date === nowStr) {
+          selectedDate = null;
+        } else {
+          const parts = day.date.split('-');
+          selectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+        updateDateNav();
+        renderWeekViz();
+      });
+    }
+
+    const dayLabel = document.createElement('div');
+    dayLabel.className = 'day-name';
+    dayLabel.textContent = day.dayLabel;
+
+    wrap.appendChild(cell);
+    wrap.appendChild(dayLabel);
+    weekViz.appendChild(wrap);
+  });
+}
+
+// ─── Log Tab ───
+function renderLog() {
   // Greeting
   const hour = new Date().getHours();
   let greet = 'Good evening';
@@ -1279,46 +1325,11 @@ function renderLog() {
   const name = getUserName();
   document.getElementById('greeting').textContent = name ? `${greet}, ${name}.` : `${greet}.`;
 
-  // Date + streak
-  const now = new Date();
-  const options = { weekday: 'long', month: 'long', day: 'numeric' };
-  const dateStr = now.toLocaleDateString('en-US', options);
-  const streakStr = appData.streak > 0 ? ` · Day ${appData.streak} of your streak` : '';
-  document.getElementById('home-date').textContent = dateStr + streakStr;
+  // Date nav
+  updateDateNav();
 
   // Week visualisation
-  const weekViz = document.getElementById('week-viz');
-  weekViz.innerHTML = '';
-  if (appData.week && appData.week.days) {
-    appData.week.days.forEach(day => {
-      const wrap = document.createElement('div');
-      wrap.className = 'day-wrap';
-
-      const cell = document.createElement('div');
-      cell.className = 'day-cell';
-      if (day.isFuture) {
-        cell.classList.add('future');
-      } else if (day.hasGig) {
-        cell.classList.add('gig-day');
-        cell.style.background = GIG_COLOR;
-      } else {
-        cell.style.background = INTENSITY_COLORS[day.intensity] || INTENSITY_COLORS[0];
-      }
-
-      if (!day.isFuture && day.minutes > 0) {
-        cell.textContent = day.minutes;
-        cell.classList.add(day.intensity <= 1 && !day.hasGig ? 'mins-dark' : 'mins-light');
-      }
-
-      const dayLabel = document.createElement('div');
-      dayLabel.className = 'day-name';
-      dayLabel.textContent = day.dayLabel;
-
-      wrap.appendChild(cell);
-      wrap.appendChild(dayLabel);
-      weekViz.appendChild(wrap);
-    });
-  }
+  renderWeekViz();
 
   // Today's entries
   const entriesEl = document.getElementById('today-entries');
