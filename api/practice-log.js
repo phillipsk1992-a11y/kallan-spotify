@@ -186,7 +186,7 @@ module.exports = async (req, res) => {
       const entryType = type || 'practice';
       const entryVenue = venue || '';
       const entryUser = user || 'Kallan';
-      const timestamp = new Date().toISOString();
+      const timestamp = req.body.timestamp || new Date().toISOString();
 
       await sheets.spreadsheets.values.append({
         spreadsheetId: SHEET_ID,

@@ -396,6 +396,31 @@ body {
 }
 
 /* Notes field */
+.date-selector {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.date-selector button {
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--dim);
+  border: 1px solid #ddd;
+  padding: 6px 12px;
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.date-selector button.selected {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+
 .notes-field {
   width: 100%;
   background: transparent;
@@ -908,6 +933,8 @@ input:focus, textarea:focus, button:focus { outline: none; }
 
   <div class="divider">&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;</div>
 
+  <div class="date-selector" id="date-selector"></div>
+
   <div class="section-label">Category</div>
   <div class="category-grid" id="cat-grid">
     <button class="cat-btn" data-cat="technique">technique</button>
@@ -1080,6 +1107,7 @@ let selectedCategory = null;
 let isGigMode = false;
 let duration = 20;
 let currentView = 'main'; // main | share | card
+let selectedDate = null; // null = today, otherwise Date object
 
 // ═══════════════════════════════════════════
 // API
@@ -1103,15 +1131,17 @@ async function fetchStats() {
   }
 }
 
-async function logEntry(category, minutes, notes, type, venue) {
+async function logEntry(category, minutes, notes, type, venue, timestamp) {
   try {
+    const body = { category, minutes, notes, type, venue, user: currentUser || 'Kallan' };
+    if (timestamp) body.timestamp = timestamp;
     const resp = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${API_SECRET}`,
       },
-      body: JSON.stringify({ category, minutes, notes, type, venue, user: currentUser || 'Kallan' }),
+      body: JSON.stringify(body),
     });
     if (!resp.ok) throw new Error('API error');
     return await resp.json();
@@ -1161,8 +1191,53 @@ function showUserPicker() {
   document.getElementById('user-picker').style.display = '';
 }
 
+// ─── Date Selector ───
+function renderDateSelector() {
+  const el = document.getElementById('date-selector');
+  el.innerHTML = '';
+  const now = new Date();
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const btn = document.createElement('button');
+
+    if (i === 0) {
+      btn.textContent = 'today';
+    } else if (i === 1) {
+      btn.textContent = 'yesterday';
+    } else {
+      btn.textContent = days[d.getDay()] + ' ' + d.getDate();
+    }
+
+    // Selected state
+    if (i === 0 && !selectedDate) {
+      btn.classList.add('selected');
+    } else if (selectedDate && d.toDateString() === selectedDate.toDateString()) {
+      btn.classList.add('selected');
+    }
+
+    btn.addEventListener('click', () => {
+      selectedDate = i === 0 ? null : d;
+      renderDateSelector();
+    });
+    el.appendChild(btn);
+  }
+}
+
+function getLogTimestamp() {
+  if (!selectedDate) return null; // null = let API use now
+  // Set to noon local time on the selected date
+  const d = new Date(selectedDate);
+  d.setHours(12, 0, 0, 0);
+  return d.toISOString();
+}
+
 // ─── Log Tab (greeting + week viz + log form + today's entries) ───
 function renderLog() {
+  renderDateSelector();
+
   // Greeting
   const hour = new Date().getHours();
   let greet = 'Good evening';
@@ -1472,7 +1547,7 @@ document.getElementById('log-btn').addEventListener('click', async () => {
     btn.disabled = true;
     btn.textContent = 'logging...';
     try {
-      await logEntry('gig', duration, notes, 'gig', venue);
+      await logEntry('gig', duration, notes, 'gig', venue, getLogTimestamp());
       btn.textContent = 'logged';
       btn.classList.add('success');
       document.getElementById('venue-field').value = '';
@@ -1480,6 +1555,7 @@ document.getElementById('log-btn').addEventListener('click', async () => {
       isGigMode = false;
       document.getElementById('gig-btn').classList.remove('selected');
       document.getElementById('venue-field').classList.remove('visible');
+      selectedDate = null;
       await fetchStats();
       setTimeout(() => {
         btn.textContent = 'log';
@@ -1498,10 +1574,11 @@ document.getElementById('log-btn').addEventListener('click', async () => {
     btn.disabled = true;
     btn.textContent = 'logging...';
     try {
-      await logEntry(selectedCategory, duration, notes, 'practice', '');
+      await logEntry(selectedCategory, duration, notes, 'practice', '', getLogTimestamp());
       btn.textContent = 'logged';
       btn.classList.add('success');
       document.getElementById('notes-field').value = '';
+      selectedDate = null;
       await fetchStats();
       setTimeout(() => {
         btn.textContent = 'log';
