@@ -401,6 +401,7 @@ body {
   gap: 6px;
   align-items: center;
   margin-bottom: 14px;
+  position: relative;
 }
 .date-selector button {
   font-family: inherit;
@@ -417,22 +418,9 @@ body {
   color: var(--bg);
   border-color: var(--fg);
 }
-.date-selector input[type="date"] {
-  font-family: inherit;
-  font-size: 11px;
-  color: var(--dim);
-  border: 1px solid #ddd;
-  padding: 5px 8px;
-  background: transparent;
-  cursor: pointer;
-  -webkit-appearance: none;
-}
-.date-selector input[type="date"].selected {
-  border-color: var(--fg);
-  color: var(--fg);
-}
 
 /* Notes field */
+.notes-field {
   width: 100%;
   background: transparent;
   border: 1px solid var(--rule);
@@ -1232,18 +1220,29 @@ function renderDateSelector() {
   });
   el.appendChild(yestBtn);
 
-  // Date picker for anything older
-  const picker = document.createElement('input');
-  picker.type = 'date';
-  // Max = today
-  const toISO = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  picker.max = toISO(now);
-  // Is picker actively selected?
+  // "earlier" button — opens hidden date input
+  const earlierBtn = document.createElement('button');
   const pickerActive = selectedDate && selectedDate.toDateString() !== yesterday.toDateString();
   if (pickerActive) {
-    picker.value = toISO(selectedDate);
-    picker.classList.add('selected');
+    const d = selectedDate;
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    earlierBtn.textContent = months[d.getMonth()] + ' ' + d.getDate();
+    earlierBtn.classList.add('selected');
+  } else {
+    earlierBtn.textContent = 'earlier';
   }
+
+  // Hidden date input
+  const picker = document.createElement('input');
+  picker.type = 'date';
+  picker.style.position = 'absolute';
+  picker.style.opacity = '0';
+  picker.style.width = '0';
+  picker.style.height = '0';
+  const toISO = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  picker.max = toISO(now);
+  if (pickerActive) picker.value = toISO(selectedDate);
+
   picker.addEventListener('change', () => {
     if (picker.value) {
       const parts = picker.value.split('-');
@@ -1251,6 +1250,12 @@ function renderDateSelector() {
       renderDateSelector();
     }
   });
+
+  earlierBtn.addEventListener('click', () => {
+    picker.showPicker ? picker.showPicker() : picker.click();
+  });
+
+  el.appendChild(earlierBtn);
   el.appendChild(picker);
 }
 
