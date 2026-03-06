@@ -214,10 +214,16 @@ body {
 /* HOME TAB                               */
 /* ═══════════════════════════════════════ */
 
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+
 .home-greeting {
   font-size: 18px;
   font-weight: 400;
-  margin-bottom: 4px;
 }
 
 .home-date {
@@ -408,16 +414,15 @@ body {
 .date-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 4px;
 }
 .date-arrow {
   background: none;
   border: none;
-  font-size: 22px;
+  font-size: 18px;
   color: var(--dim);
   cursor: pointer;
-  padding: 2px 8px;
+  padding: 2px 4px;
   line-height: 1;
   transition: color 0.15s;
 }
@@ -426,6 +431,8 @@ body {
 .date-label {
   font-size: 13px;
   color: var(--dim);
+  min-width: 40px;
+  text-align: center;
 }
 
 /* Notes field */
@@ -934,11 +941,13 @@ input:focus, textarea:focus, button:focus { outline: none; }
 
 <!-- ═══════════════════════════════════ LOG ═══════════════════════════════════ -->
 <div class="tab-content active" id="tab-log">
-  <div class="home-greeting" id="greeting"></div>
-  <div class="date-nav" id="date-nav">
-    <button class="date-arrow" id="date-prev">&#8249;</button>
-    <span class="date-label" id="date-label"></span>
-    <button class="date-arrow" id="date-next">&#8250;</button>
+  <div class="log-header">
+    <div class="home-greeting" id="greeting"></div>
+    <div class="date-nav" id="date-nav">
+      <button class="date-arrow" id="date-prev">&#8249;</button>
+      <span class="date-label" id="date-label"></span>
+      <button class="date-arrow" id="date-next">&#8250;</button>
+    </div>
   </div>
 
   <div class="week-viz" id="week-viz"></div>
@@ -1216,13 +1225,12 @@ function getLogTimestamp() {
 function updateDateNav() {
   const d = getSelectedDate();
   const now = new Date();
-  const options = { weekday: 'long', month: 'long', day: 'numeric' };
+  const options = { weekday: 'short', month: 'short', day: 'numeric' };
   const isToday = !selectedDate;
 
   const label = document.getElementById('date-label');
   if (isToday) {
-    const streakStr = appData && appData.streak > 0 ? ` \u00b7 Day ${appData.streak}` : '';
-    label.textContent = d.toLocaleDateString('en-US', options) + streakStr;
+    label.textContent = 'today';
   } else {
     label.textContent = d.toLocaleDateString('en-US', options);
   }
