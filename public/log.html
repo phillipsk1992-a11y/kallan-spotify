@@ -2400,39 +2400,36 @@ function renderDayCard(ctx, reflection) {
 
   // ── Empty state — just the quip, vertically centred ──
   if (totalMins === 0) {
-    // Measure quip
-    ctx.font = `italic 40px ${mono}`;
-    const quipLines = getWrappedLines(ctx, 'the woodshed is gathering dust', L.cW - 40);
-    const quipH = quipLines.length * 52;
-    const footerH = 24;
-    const totalH = quipH + 60 + footerH;
-
+    // Fixed card size — same proportions as a normal card
     const safeTop = 240, safeBot = 380;
     const safeH = CH - safeTop - safeBot;
-    const borderPad = 60;
-    const borderH = totalH + borderPad * 2;
-    const borderY = safeTop + Math.max(0, (safeH - borderH) / 2);
+    const borderH = safeH;
+    const borderY = safeTop;
 
     drawCardBorder(ctx, L.cardX, borderY, L.cardW, borderH);
 
     // Logo top-right inside card
-    drawCardLogo(ctx, L.cR, borderY + 36);
+    drawCardLogo(ctx, L.cR, borderY + 48);
 
-    // Quip — vertically centred in card
-    let y = borderY + borderPad;
+    // Measure quip
+    ctx.font = `italic 40px ${mono}`;
+    const quipLines = getWrappedLines(ctx, 'the woodshed is gathering dust', L.cW - 40);
+    const quipH = quipLines.length * 52;
+
+    // Quip — true vertical centre of the card
+    const quipY = borderY + (borderH - quipH) / 2;
     ctx.font = `italic 40px ${mono}`;
     ctx.fillStyle = CARD_DIM;
     ctx.textAlign = 'center';
     quipLines.forEach((line, i) => {
-      ctx.fillText(line, CW / 2, y + i * 52);
+      ctx.fillText(line, CW / 2, quipY + i * 52);
     });
-    y += quipH + 60;
 
-    // Footer
+    // Footer — bottom of card
     ctx.font = `400 20px ${mono}`;
     ctx.fillStyle = '#aaa';
     ctx.textAlign = 'center';
-    ctx.fillText('woodshed.info', CW / 2, y);
+    ctx.fillText('woodshed.info', CW / 2, borderY + borderH - 48);
     return;
   }
 
