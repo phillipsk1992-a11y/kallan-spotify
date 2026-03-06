@@ -2398,99 +2398,37 @@ function renderDayCard(ctx, reflection) {
   const dateStr = dayNames[now.getDay()] + ', ' + monthNames[now.getMonth()] + ' ' + now.getDate();
   const nameLine = userName ? userName + '  \u00b7  ' + dateStr : dateStr;
 
-  // ── Empty state ──
+  // ── Empty state — just the quip, vertically centred ──
   if (totalMins === 0) {
-    const streak = appData.streak || 0;
-    const longestStreak = appData.longestStreak || 0;
-    const weekMins = appData.week.totalMinutes;
-    function weekFmt(mins) {
-      if (mins < 60) return mins + 'm';
-      const h = Math.floor(mins / 60);
-      const m = mins % 60;
-      return m > 0 ? h + 'h ' + m + 'm' : h + 'h';
-    }
-
-    const nameH = 30;
-    const quipH = 100;
-    const statsH = 2 * 48;
+    // Measure quip
+    ctx.font = `italic 40px ${mono}`;
+    const quipLines = getWrappedLines(ctx, 'the woodshed is gathering dust', L.cW - 40);
+    const quipH = quipLines.length * 52;
     const footerH = 24;
-    const totalH = nameH + 32 + quipH + 40 + statsH + 40 + footerH;
+    const totalH = quipH + 60 + footerH;
 
     const safeTop = 240, safeBot = 380;
     const safeH = CH - safeTop - safeBot;
-    const borderPad = 56;
+    const borderPad = 60;
     const borderH = totalH + borderPad * 2;
     const borderY = safeTop + Math.max(0, (safeH - borderH) / 2);
 
     drawCardBorder(ctx, L.cardX, borderY, L.cardW, borderH);
+
+    // Logo top-right inside card
+    drawCardLogo(ctx, L.cR, borderY + 36);
+
+    // Quip — vertically centred in card
     let y = borderY + borderPad;
-
-    // Centred name line
-    ctx.font = `400 26px ${mono}`;
-    ctx.fillStyle = CARD_DIM;
-    ctx.textAlign = 'center';
-    ctx.fillText(nameLine, CW / 2, y + 20);
-    // Logo right
-    drawCardLogo(ctx, L.cR, y + 20);
-    y += nameH + 48;
-
-    // The quip — centred
     ctx.font = `italic 40px ${mono}`;
     ctx.fillStyle = CARD_DIM;
     ctx.textAlign = 'center';
-    const lines = getWrappedLines(ctx, 'the woodshed is gathering dust', L.cW);
-    lines.forEach((line, i) => {
+    quipLines.forEach((line, i) => {
       ctx.fillText(line, CW / 2, y + i * 52);
     });
-    y += lines.length * 52 + 48;
+    y += quipH + 60;
 
-    // Stats — centred single lines
-    const streakLabel = streak > 0 ? 'streak' : 'longest streak';
-    const streakVal = streak > 0 ? streak : longestStreak;
-    ctx.font = `400 28px ${mono}`;
-    ctx.textAlign = 'center';
-
-    ctx.fillStyle = FG_COLOR;
-    const s1val = streakVal + ' day' + (streakVal !== 1 ? 's' : '');
-    const s1w = ctx.measureText(s1val + ' ').width;
-    ctx.fillText(s1val, CW / 2 - 4, y);
-    ctx.fillStyle = CARD_DIM;
-    ctx.font = `400 28px ${mono}`;
-    // Draw as inline: "X days streak" centred
-    const s1full = s1val + ' ' + streakLabel;
-    ctx.font = `500 28px ${mono}`;
-    ctx.fillStyle = FG_COLOR;
-    const valW1 = ctx.measureText(s1val).width;
-    ctx.font = `400 28px ${mono}`;
-    ctx.fillStyle = CARD_DIM;
-    const labW1 = ctx.measureText(' ' + streakLabel).width;
-    const line1X = (CW - valW1 - labW1) / 2;
-    ctx.font = `500 28px ${mono}`;
-    ctx.fillStyle = FG_COLOR;
-    ctx.textAlign = 'left';
-    ctx.fillText(s1val, line1X, y);
-    ctx.font = `400 28px ${mono}`;
-    ctx.fillStyle = CARD_DIM;
-    ctx.fillText(' ' + streakLabel, line1X + valW1, y);
-    y += 44;
-
-    const s2val = weekFmt(weekMins);
-    const s2label = ' this week';
-    ctx.font = `500 28px ${mono}`;
-    const valW2 = ctx.measureText(s2val).width;
-    ctx.font = `400 28px ${mono}`;
-    const labW2 = ctx.measureText(s2label).width;
-    const line2X = (CW - valW2 - labW2) / 2;
-    ctx.font = `500 28px ${mono}`;
-    ctx.fillStyle = FG_COLOR;
-    ctx.textAlign = 'left';
-    ctx.fillText(s2val, line2X, y);
-    ctx.font = `400 28px ${mono}`;
-    ctx.fillStyle = CARD_DIM;
-    ctx.fillText(s2label, line2X + valW2, y);
-    y += 48;
-
-    // Footer — centred
+    // Footer
     ctx.font = `400 20px ${mono}`;
     ctx.fillStyle = '#aaa';
     ctx.textAlign = 'center';
