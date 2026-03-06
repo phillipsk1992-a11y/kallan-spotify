@@ -395,13 +395,12 @@ body {
   color: var(--fg);
 }
 
-/* Notes field */
+/* Date selector */
 .date-selector {
   display: flex;
   gap: 6px;
+  align-items: center;
   margin-bottom: 14px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 .date-selector button {
   font-family: inherit;
@@ -411,8 +410,6 @@ body {
   padding: 6px 12px;
   background: transparent;
   cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
   transition: all 0.15s;
 }
 .date-selector button.selected {
@@ -420,8 +417,22 @@ body {
   color: var(--bg);
   border-color: var(--fg);
 }
+.date-selector input[type="date"] {
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--dim);
+  border: 1px solid #ddd;
+  padding: 5px 8px;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+.date-selector input[type="date"].selected {
+  border-color: var(--fg);
+  color: var(--fg);
+}
 
-.notes-field {
+/* Notes field */
   width: 100%;
   background: transparent;
   border: 1px solid var(--rule);
@@ -1196,34 +1207,51 @@ function renderDateSelector() {
   const el = document.getElementById('date-selector');
   el.innerHTML = '';
   const now = new Date();
-  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
 
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const btn = document.createElement('button');
+  // "today" button
+  const todayBtn = document.createElement('button');
+  todayBtn.textContent = 'today';
+  if (!selectedDate) todayBtn.classList.add('selected');
+  todayBtn.addEventListener('click', () => {
+    selectedDate = null;
+    renderDateSelector();
+  });
+  el.appendChild(todayBtn);
 
-    if (i === 0) {
-      btn.textContent = 'today';
-    } else if (i === 1) {
-      btn.textContent = 'yesterday';
-    } else {
-      btn.textContent = days[d.getDay()] + ' ' + d.getDate();
-    }
-
-    // Selected state
-    if (i === 0 && !selectedDate) {
-      btn.classList.add('selected');
-    } else if (selectedDate && d.toDateString() === selectedDate.toDateString()) {
-      btn.classList.add('selected');
-    }
-
-    btn.addEventListener('click', () => {
-      selectedDate = i === 0 ? null : d;
-      renderDateSelector();
-    });
-    el.appendChild(btn);
+  // "yesterday" button
+  const yestBtn = document.createElement('button');
+  yestBtn.textContent = 'yesterday';
+  if (selectedDate && selectedDate.toDateString() === yesterday.toDateString()) {
+    yestBtn.classList.add('selected');
   }
+  yestBtn.addEventListener('click', () => {
+    selectedDate = yesterday;
+    renderDateSelector();
+  });
+  el.appendChild(yestBtn);
+
+  // Date picker for anything older
+  const picker = document.createElement('input');
+  picker.type = 'date';
+  // Max = today
+  const toISO = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  picker.max = toISO(now);
+  // Is picker actively selected?
+  const pickerActive = selectedDate && selectedDate.toDateString() !== yesterday.toDateString();
+  if (pickerActive) {
+    picker.value = toISO(selectedDate);
+    picker.classList.add('selected');
+  }
+  picker.addEventListener('change', () => {
+    if (picker.value) {
+      const parts = picker.value.split('-');
+      selectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      renderDateSelector();
+    }
+  });
+  el.appendChild(picker);
 }
 
 function getLogTimestamp() {
