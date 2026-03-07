@@ -2100,52 +2100,52 @@ function drawCardSectionLabel(ctx, text, x, y) {
 // Footer — just the URL, quiet
 // Intensity legend: less [□□□□□] more · ○ gig
 function drawGridLegend(ctx, x, r, y) {
-  const swatchSize = 10;
-  const gap = 4;
+  const swatchSize = 14;
+  const gap = 5;
   const colors = INTENSITY_COLORS;
 
-  ctx.font = `400 16px ${mono}`;
-  ctx.fillStyle = '#bbb';
+  ctx.font = `400 20px ${mono}`;
+  ctx.fillStyle = '#aaa';
   ctx.textAlign = 'right';
 
-  // Build from right: "gig" + circle + "·" + "more" + swatches + "less"
   let rx = r;
 
   // "gig"
-  ctx.fillText('gig', rx, y + 3);
+  ctx.fillText('gig', rx, y + 4);
   rx -= ctx.measureText('gig').width + gap + swatchSize;
 
   // gig circle
   ctx.fillStyle = GIG_COLOR;
   ctx.beginPath();
-  ctx.arc(rx + swatchSize / 2, y - 1, swatchSize / 2, 0, Math.PI * 2);
+  ctx.arc(rx + swatchSize / 2, y - 2, swatchSize / 2, 0, Math.PI * 2);
   ctx.fill();
-  rx -= gap + 2;
+  rx -= gap;
 
   // dot separator
-  ctx.fillStyle = '#bbb';
+  ctx.fillStyle = '#aaa';
   ctx.textAlign = 'right';
-  ctx.fillText('\u00b7', rx, y + 3);
+  ctx.fillText('\u00b7', rx, y + 4);
   rx -= ctx.measureText('\u00b7').width + gap * 2;
 
   // "more"
-  ctx.fillText('more', rx, y + 3);
+  ctx.fillStyle = '#aaa';
+  ctx.fillText('more', rx, y + 4);
   rx -= ctx.measureText('more').width + gap;
 
   // 5 intensity swatches (right to left, darkest first)
   for (let i = 4; i >= 0; i--) {
     ctx.fillStyle = colors[i];
-    roundRect(ctx, rx - swatchSize, y - swatchSize / 2 - 1, swatchSize, swatchSize, 2);
+    roundRect(ctx, rx - swatchSize, y - swatchSize / 2 - 2, swatchSize, swatchSize, 2);
     ctx.fill();
     rx -= swatchSize + gap;
   }
 
   // "less"
-  ctx.fillStyle = '#bbb';
+  ctx.fillStyle = '#aaa';
   ctx.textAlign = 'right';
-  ctx.fillText('less', rx, y + 3);
+  ctx.fillText('less', rx, y + 4);
 
-  return y + swatchSize + 10;
+  return y + swatchSize + 16;
 }
 
 function drawCardFooter(ctx, x, y) {
@@ -2240,11 +2240,11 @@ function renderWeekCard(ctx, reflection) {
   const statsH = 3 * 48;
   const gridLabelH = 28;
   const gridH = 12 + cellSize;
-  const legendH = 20;
+  const legendH = 30;
   const tenKH = weekTotalMins > 0 ? 56 : 0;
   const reflH = reflection ? Math.ceil(reflection.length / 35) * 38 + 20 : 0;
   const footerH = 22;
-  const totalH = nameH + SP + heroBlockH + SP + statsH + SP + gridLabelH + gridH + 8 + legendH + SP / 2 + tenKH + reflH + SP + footerH;
+  const totalH = nameH + SP + heroBlockH + SP + statsH + SP + gridLabelH + gridH + 24 + legendH + SP / 2 + tenKH + reflH + SP + footerH;
 
   const safeTop = 240, safeBot = 380;
   const safeH = CH - safeTop - safeBot;
@@ -2310,7 +2310,7 @@ function renderWeekCard(ctx, reflection) {
       }
     });
   }
-  y += cellSize + 8;
+  y += cellSize + 24;
 
   // Intensity legend
   y = drawGridLegend(ctx, L.cX, L.cR, y);
@@ -2395,12 +2395,12 @@ function renderMonthCard(ctx, reflection) {
   const statsH = statsRows * 48;
   const calLabelH = 28;
   const calGridH = calRows * (cellSize + cellGap) - cellGap;
-  const legendH = 20;
+  const legendH = 30;
   const catBarH = (cats.length > 0 && catTotal > 0) ? (16 + 32 + Math.ceil(cats.length / 2) * 44) : 0;
   const tenKH = appData.month.totalMinutes > 0 ? 56 : 0;
   const reflH = reflection ? Math.ceil(reflection.length / 30) * 38 + 20 : 0;
   const footerH = 22;
-  const totalH = nameH + SP + heroBlockH + SP + statsH + SP + calLabelH + 12 + calGridH + 8 + legendH + SP / 2 + catBarH + tenKH + reflH + SP + footerH;
+  const totalH = nameH + SP + heroBlockH + SP + statsH + SP + calLabelH + 12 + calGridH + 20 + legendH + SP / 2 + catBarH + tenKH + reflH + SP + footerH;
 
   const safeTop = 240, safeBot = 380;
   const safeH = CH - safeTop - safeBot;
@@ -2507,10 +2507,10 @@ function renderMonthCard(ctx, reflection) {
       dayNum++;
     }
   }
-  y += calRows * (cellSize + cellGap) - cellGap + 8;
+  y += calRows * (cellSize + cellGap) - cellGap + 20;
 
-  // Intensity legend
-  y = drawGridLegend(ctx, L.cX, L.cR, y);
+  // Intensity legend — aligned to calendar grid right edge
+  y = drawGridLegend(ctx, calX, calX + calW, y);
   y += SP / 2;
 
   // Category bar + legend
