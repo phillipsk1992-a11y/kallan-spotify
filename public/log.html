@@ -2098,6 +2098,58 @@ function drawCardSectionLabel(ctx, text, x, y) {
 }
 
 // Footer — just the URL, quiet
+// Intensity legend: less [□□□□□] more · ○ gig
+function drawGridLegend(ctx, x, r, y) {
+  const swatchSize = 14;
+  const gap = 5;
+  const colors = INTENSITY_COLORS;
+
+  ctx.font = `400 20px ${mono}`;
+  ctx.fillStyle = '#aaa';
+  ctx.textAlign = 'right';
+
+  // Build from right: "gig" + circle + "·" + "more" + swatches + "less"
+  let rx = r;
+
+  // "gig"
+  ctx.fillStyle = '#aaa';
+  ctx.fillText('gig', rx, y + 4);
+  rx -= ctx.measureText('gig').width + gap + swatchSize;
+
+  // gig circle
+  ctx.fillStyle = GIG_COLOR;
+  ctx.beginPath();
+  ctx.arc(rx + swatchSize / 2, y - 2, swatchSize / 2, 0, Math.PI * 2);
+  ctx.fill();
+  rx -= gap;
+
+  // dot separator
+  ctx.fillStyle = '#aaa';
+  ctx.textAlign = 'right';
+  ctx.fillText('\u00b7', rx, y + 4);
+  rx -= ctx.measureText('\u00b7').width + gap * 2;
+
+  // "more"
+  ctx.fillStyle = '#aaa';
+  ctx.fillText('more', rx, y + 4);
+  rx -= ctx.measureText('more').width + gap;
+
+  // 5 intensity swatches (right to left, darkest first)
+  for (let i = 4; i >= 0; i--) {
+    ctx.fillStyle = colors[i];
+    roundRect(ctx, rx - swatchSize, y - swatchSize / 2 - 2, swatchSize, swatchSize, 2);
+    ctx.fill();
+    rx -= swatchSize + gap;
+  }
+
+  // "less"
+  ctx.fillStyle = '#aaa';
+  ctx.textAlign = 'right';
+  ctx.fillText('less', rx, y + 4);
+
+  return y + swatchSize + 16;
+}
+
 function drawCardFooter(ctx, x, y) {
   ctx.font = `400 20px ${mono}`;
   ctx.fillStyle = '#aaa';
@@ -2190,11 +2242,11 @@ function renderWeekCard(ctx, reflection) {
   const statsH = 3 * 48;
   const gridLabelH = 28;
   const gridH = 12 + cellSize;
+  const legendH = 30;
   const tenKH = weekTotalMins > 0 ? 56 : 0;
   const reflH = reflection ? Math.ceil(reflection.length / 35) * 38 + 20 : 0;
   const footerH = 22;
-  // name + SP + hero + SP + stats + SP + gridLabel + grid + SP + 10k + refl + SP + footer
-  const totalH = nameH + SP + heroBlockH + SP + statsH + SP + gridLabelH + gridH + SP + tenKH + reflH + SP + footerH;
+  const totalH = nameH + SP + heroBlockH + SP + statsH + SP + gridLabelH + gridH + 16 + legendH + SP / 2 + tenKH + reflH + SP + footerH;
 
   const safeTop = 240, safeBot = 380;
   const safeH = CH - safeTop - safeBot;
@@ -2260,7 +2312,11 @@ function renderWeekCard(ctx, reflection) {
       }
     });
   }
-  y += cellSize + SP;
+  y += cellSize + 16;
+
+  // Intensity legend
+  y = drawGridLegend(ctx, L.cX, L.cR, y);
+  y += SP / 2;
 
   // 10,000 hours — "X more weeks like this"
   if (weekTotalMins > 0) {
@@ -2341,11 +2397,12 @@ function renderMonthCard(ctx, reflection) {
   const statsH = statsRows * 48;
   const calLabelH = 28;
   const calGridH = calRows * (cellSize + cellGap) - cellGap;
+  const legendH = 30;
   const catBarH = (cats.length > 0 && catTotal > 0) ? (16 + 32 + Math.ceil(cats.length / 2) * 44) : 0;
   const tenKH = appData.month.totalMinutes > 0 ? 56 : 0;
   const reflH = reflection ? Math.ceil(reflection.length / 30) * 38 + 20 : 0;
   const footerH = 22;
-  const totalH = nameH + SP + heroBlockH + SP + statsH + SP + calLabelH + 12 + calGridH + SP + catBarH + tenKH + reflH + SP + footerH;
+  const totalH = nameH + SP + heroBlockH + SP + statsH + SP + calLabelH + 12 + calGridH + 16 + legendH + SP / 2 + catBarH + tenKH + reflH + SP + footerH;
 
   const safeTop = 240, safeBot = 380;
   const safeH = CH - safeTop - safeBot;
@@ -2452,7 +2509,11 @@ function renderMonthCard(ctx, reflection) {
       dayNum++;
     }
   }
-  y += calRows * (cellSize + cellGap) - cellGap + SP;
+  y += calRows * (cellSize + cellGap) - cellGap + 16;
+
+  // Intensity legend
+  y = drawGridLegend(ctx, L.cX, L.cR, y);
+  y += SP / 2;
 
   // Category bar + legend
   if (cats.length > 0 && catTotal > 0) {
