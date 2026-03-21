@@ -116,6 +116,24 @@ header {
 .trip-total-amt.good { color: var(--green); }
 .wise-note { margin-top: 20px; padding: 12px; background: var(--cream-dark); border: 1px solid var(--cream-darker); border-radius: 2px; font-size: 11px; color: var(--ink-light); line-height: 1.7; }
 .wise-note strong { color: var(--ink-mid); font-weight: 500; }
+.full-trip { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--ink-faint); }
+.full-trip-header { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 12px; }
+.full-trip-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--cream-darker); }
+.full-trip-row:last-of-type { border-bottom: none; }
+.full-trip-label { font-size: 11px; color: var(--ink-mid); }
+.full-trip-amt { font-size: 13px; font-weight: 500; }
+.full-trip-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--ink-faint); }
+.full-trip-total-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); }
+.full-trip-total-amt { font-size: 16px; font-weight: 500; }
+.fixed-breakdown-toggle { font-size: 10px; color: var(--ink-faint); cursor: pointer; letter-spacing: 0.06em; margin-top: 10px; display: block; }
+.fixed-breakdown-toggle:hover { color: var(--ink-mid); }
+.fixed-breakdown { margin-top: 8px; display: none; }
+.fixed-breakdown.open { display: block; }
+.fixed-breakdown-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid var(--cream-darker); }
+.fixed-breakdown-row:last-child { border-bottom: none; }
+.fixed-breakdown-date { font-size: 10px; color: var(--ink-light); }
+.fixed-breakdown-label { font-size: 10px; color: var(--ink-mid); flex: 1; padding: 0 8px; }
+.fixed-breakdown-amt { font-size: 10px; color: var(--ink); }
 .loading-overlay { position: fixed; inset: 0; background: var(--cream); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; z-index: 100; }
 .loading-text { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); }
 .loading-dots::after { content: ''; animation: dots 1.2s steps(4, end) infinite; }
@@ -214,6 +232,24 @@ header {
     <div class="wise-note">
       <strong>Wise only.</strong> Korea Travel Card (transit + cash) is a separate pool — funded by USD cash at Incheon Woori Bank. Don't log those here.
     </div>
+
+    <div class="full-trip">
+      <div class="full-trip-header">Full trip costs</div>
+      <div class="full-trip-row">
+        <span class="full-trip-label">Pre-paid (fixed)</span>
+        <span class="full-trip-amt" id="ft-fixed">—</span>
+      </div>
+      <div class="full-trip-row">
+        <span class="full-trip-label">Wise card (variable)</span>
+        <span class="full-trip-amt" id="ft-wise">—</span>
+      </div>
+      <span class="fixed-breakdown-toggle" id="breakdown-toggle">▸ show breakdown</span>
+      <div class="fixed-breakdown" id="fixed-breakdown"></div>
+      <div class="full-trip-total">
+        <span class="full-trip-total-label">Total spend</span>
+        <span class="full-trip-total-amt" id="ft-total">—</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -222,6 +258,22 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxc0zsxUGZ9YPuWLDQwi
 const DAYS = 9;
 const TOTAL_AUD = 1020;
 const DATES = ['Sun 23 Mar','Mon 24 Mar','Tue 25 Mar','Wed 26 Mar','Thu 27 Mar','Fri 28 Mar','Sat 29 Mar','Sun 30 Mar','Mon 31 Mar'];
+
+const FIXED_COSTS = [
+  { date: '22 Mar', label: 'Guam — hotel, flight, insurance', aud: 2828.56 },
+  { date: '23 Mar', label: 'Hotel + flight to Seoul', aud: 680.78 },
+  { date: '24 Mar', label: 'Hotel (Nook Inn)', aud: 93.04 },
+  { date: '25 Mar', label: 'Hotel (Nook Inn)', aud: 93.04 },
+  { date: '26 Mar', label: 'Hotel (Nook Inn)', aud: 93.04 },
+  { date: '27 Mar', label: 'Hotel (Nook Inn)', aud: 93.04 },
+  { date: '28 Mar', label: 'Hotel (Nook Inn)', aud: 93.04 },
+  { date: '29 Mar', label: 'Hotel (Nook Inn)', aud: 93.04 },
+  { date: '30 Mar', label: 'Hotel (Nook Inn)', aud: 93.04 },
+  { date: '31 Mar', label: 'Hotel (Nook Inn)', aud: 93.04 },
+  { date: '1 Apr',  label: 'Hotel (Nook Inn)', aud: 93.04 },
+  { date: '2 Apr',  label: 'Hotel (Paradise City)', aud: 49.00 },
+  { date: '3 Apr',  label: 'Hotel (Paradise City)', aud: 150.00 },
+];
 
 let currentDay = 0;
 let useAUD = false;
@@ -373,6 +425,33 @@ function render() {
   }
 
   renderTrip();
+  renderFullTrip();
+}
+
+function renderFullTrip() {
+  const fixedAUD = FIXED_COSTS.reduce((s, r) => s + r.aud, 0);
+  const wiseWon = allData.reduce((s, e) => s + e.won, 0);
+  const wiseAUD = wiseWon / rate;
+  const totalAUD = fixedAUD + wiseAUD;
+
+  function fmtAUD(aud) {
+    if (useUSD) return 'US$' + (aud * rate / rateUSD).toFixed(2);
+    if (useAUD) return '$' + aud.toFixed(2);
+    return '₩' + Math.round(aud * rate).toLocaleString();
+  }
+
+  document.getElementById('ft-fixed').textContent = fmtAUD(fixedAUD);
+  document.getElementById('ft-wise').textContent = fmtAUD(wiseAUD);
+  document.getElementById('ft-total').textContent = fmtAUD(totalAUD);
+
+  // Breakdown rows
+  const bd = document.getElementById('fixed-breakdown');
+  bd.innerHTML = FIXED_COSTS.map(r => `
+    <div class="fixed-breakdown-row">
+      <span class="fixed-breakdown-date">${r.date}</span>
+      <span class="fixed-breakdown-label">${r.label}</span>
+      <span class="fixed-breakdown-amt">${useUSD ? 'US$'+(r.aud*rate/rateUSD).toFixed(0) : useAUD ? '$'+r.aud.toFixed(2) : '—'}</span>
+    </div>`).join('');
 }
 
 function renderTrip() {
@@ -447,6 +526,13 @@ document.getElementById('add-btn').addEventListener('click', () => {
 
 document.getElementById('amt').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('add-btn').click();
+});
+
+document.getElementById('breakdown-toggle').addEventListener('click', () => {
+  const bd = document.getElementById('fixed-breakdown');
+  const toggle = document.getElementById('breakdown-toggle');
+  bd.classList.toggle('open');
+  toggle.textContent = bd.classList.contains('open') ? '▾ hide breakdown' : '▸ show breakdown';
 });
 
 async function init() {
