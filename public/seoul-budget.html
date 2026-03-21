@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seoul Budget — Mar 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #F4EFE4;
+  --cream-dark: #EDE7D9;
+  --cream-darker: #E0D9CC;
+  --ink: #1A1714;
+  --ink-mid: #5A5550;
+  --ink-light: #9A9590;
+  --ink-faint: #C8C3BC;
+  --red: #C0392B;
+  --green: #1A6B3A;
+  --amber: #8B5E0A;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+}
+header {
+  border-bottom: 1px solid var(--ink-faint);
+  padding: 20px 24px 18px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.header-left h1 { font-size: 13px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+.header-left p { font-size: 11px; color: var(--ink-light); margin-top: 2px; font-weight: 300; }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.sync-status { font-size: 10px; letter-spacing: 0.06em; color: var(--ink-faint); display: flex; align-items: center; gap: 6px; }
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); flex-shrink: 0; transition: background 0.3s; }
+.sync-dot.syncing { background: var(--amber); }
+.sync-dot.ok { background: var(--green); }
+.sync-dot.err { background: var(--red); }
+.currency-toggle { display: flex; border: 1px solid var(--ink-faint); border-radius: 2px; overflow: hidden; }
+.currency-toggle button { background: none; border: none; padding: 5px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.08em; color: var(--ink-light); cursor: pointer; transition: all 0.15s; }
+.currency-toggle button.active { background: var(--ink); color: var(--cream); }
+.main { display: grid; grid-template-columns: 1fr 290px; min-height: calc(100vh - 65px); }
+.left { border-right: 1px solid var(--ink-faint); padding: 24px; }
+.right { padding: 24px; }
+.day-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.day-nav button { background: none; border: 1px solid var(--ink-faint); border-radius: 2px; width: 32px; height: 32px; font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: var(--ink-mid); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.day-nav button:hover:not(:disabled) { background: var(--cream-dark); border-color: var(--ink-mid); }
+.day-nav button:disabled { opacity: 0.3; cursor: default; }
+.day-info { text-align: center; }
+.day-num { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+.day-date { font-size: 11px; color: var(--ink-light); margin-top: 2px; letter-spacing: 0.06em; }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--ink-faint); border: 1px solid var(--ink-faint); border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
+.metric { background: var(--cream); padding: 14px 16px; }
+.metric-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 6px; }
+.metric-value { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; }
+.metric-value.over { color: var(--red); }
+.metric-value.warn { color: var(--amber); }
+.metric-value.good { color: var(--green); }
+.progress-wrap { height: 3px; background: var(--ink-faint); margin-bottom: 24px; overflow: hidden; }
+.progress-fill { height: 3px; background: var(--ink); transition: width 0.3s ease; }
+.progress-fill.warn { background: var(--amber); }
+.progress-fill.over { background: var(--red); }
+.section-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 10px; }
+.entries { margin-bottom: 20px; min-height: 48px; }
+.entry { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--cream-darker); }
+.entry:last-child { border-bottom: none; }
+.entry-cat { font-size: 10px; letter-spacing: 0.04em; color: var(--ink-light); width: 90px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.entry-desc { flex: 1; font-size: 13px; color: var(--ink); }
+.entry-amt { font-size: 13px; font-weight: 500; color: var(--ink); text-align: right; min-width: 90px; }
+.entry-del { background: none; border: none; color: var(--ink-faint); cursor: pointer; font-size: 14px; padding: 0 2px; font-family: 'IBM Plex Mono', monospace; transition: color 0.15s; line-height: 1; }
+.entry-del:hover { color: var(--red); }
+.empty { font-size: 12px; color: var(--ink-faint); font-style: italic; padding: 10px 0; }
+.add-form { border: 1px solid var(--ink-faint); border-radius: 2px; padding: 16px; background: var(--cream-dark); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.form-row.single { grid-template-columns: 1fr; }
+.add-form input, .add-form select { font-family: 'IBM Plex Mono', monospace; font-size: 13px; background: var(--cream); border: 1px solid var(--ink-faint); border-radius: 2px; padding: 8px 10px; color: var(--ink); width: 100%; outline: none; transition: border-color 0.15s; }
+.add-form input:focus, .add-form select:focus { border-color: var(--ink-mid); }
+.amt-wrap { position: relative; }
+.amt-prefix { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--ink-mid); pointer-events: none; }
+.amt-wrap input { padding-left: 28px; }
+.add-btn { width: 100%; margin-top: 8px; padding: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--ink); color: var(--cream); border: none; border-radius: 2px; cursor: pointer; transition: opacity 0.15s; }
+.add-btn:hover { opacity: 0.85; }
+.right-header { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 16px; }
+.rate-block { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--cream-darker); }
+.rate-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 10px; }
+.rate-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--cream-darker); }
+.rate-row:last-of-type { border-bottom: none; }
+.rate-cur { font-size: 11px; color: var(--ink-light); letter-spacing: 0.08em; }
+.rate-val { font-size: 16px; font-weight: 500; letter-spacing: -0.02em; }
+.rate-updated { font-size: 10px; color: var(--ink-faint); margin-top: 8px; }
+.trip-day { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--cream-darker); cursor: pointer; transition: opacity 0.1s; }
+.trip-day:last-of-type { border-bottom: none; }
+.trip-day:hover { opacity: 0.7; }
+.trip-day-label { font-size: 12px; color: var(--ink-mid); }
+.trip-day.active .trip-day-label { color: var(--ink); font-weight: 500; }
+.trip-day-right { text-align: right; }
+.trip-day-amt { font-size: 12px; font-weight: 500; color: var(--ink); }
+.trip-day-amt.over { color: var(--red); }
+.trip-day-amt.muted { color: var(--ink-faint); font-weight: 300; }
+.trip-day-bar { width: 60px; height: 2px; background: var(--cream-darker); margin-top: 4px; margin-left: auto; overflow: hidden; }
+.trip-day-bar-fill { height: 2px; background: var(--ink); }
+.trip-day-bar-fill.warn { background: var(--amber); }
+.trip-day-bar-fill.over { background: var(--red); }
+.trip-total { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ink-faint); display: flex; justify-content: space-between; align-items: baseline; }
+.trip-total-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); }
+.trip-total-amt { font-size: 16px; font-weight: 500; }
+.trip-total-amt.over { color: var(--red); }
+.trip-total-amt.good { color: var(--green); }
+.wise-note { margin-top: 20px; padding: 12px; background: var(--cream-dark); border: 1px solid var(--cream-darker); border-radius: 2px; font-size: 11px; color: var(--ink-light); line-height: 1.7; }
+.wise-note strong { color: var(--ink-mid); font-weight: 500; }
+.loading-overlay { position: fixed; inset: 0; background: var(--cream); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; z-index: 100; }
+.loading-text { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); }
+.loading-dots::after { content: ''; animation: dots 1.2s steps(4, end) infinite; }
+@keyframes dots { 0%,20%{content:''} 40%{content:'.'} 60%{content:'..'} 80%,100%{content:'...'} }
+.error-banner { display: none; background: #FAF0EE; border-bottom: 1px solid #E8C4BE; padding: 10px 24px; font-size: 11px; color: var(--red); }
+@media (max-width: 640px) { .main { grid-template-columns: 1fr; } .right { border-top: 1px solid var(--ink-faint); } }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="loading-text">Syncing with Sheets<span class="loading-dots"></span></div>
+</div>
+
+<div class="error-banner" id="error-banner"></div>
+
+<header>
+  <div class="header-left">
+    <h1>Seoul Budget</h1>
+    <p>23 Mar – 31 Mar 2026 &nbsp;·&nbsp; Wise card tracker</p>
+  </div>
+  <div class="header-right">
+    <div class="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">—</span>
+    </div>
+    <div class="currency-toggle">
+      <button id="btn-krw" class="active">KRW</button>
+      <button id="btn-aud">AUD</button>
+      <button id="btn-usd">USD</button>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+  <div class="left">
+    <div class="day-nav">
+      <button id="prev">&#8592;</button>
+      <div class="day-info">
+        <div class="day-num" id="day-num">Day 1</div>
+        <div class="day-date" id="day-date">Sun 23 Mar</div>
+      </div>
+      <button id="next">&#8594;</button>
+    </div>
+
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Daily budget</div><div class="metric-value" id="m-budget">—</div></div>
+      <div class="metric"><div class="metric-label">Spent</div><div class="metric-value" id="m-spent">—</div></div>
+      <div class="metric"><div class="metric-label">Remaining</div><div class="metric-value" id="m-rem">—</div></div>
+    </div>
+
+    <div class="progress-wrap"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+
+    <div class="section-label">Today's expenses</div>
+    <div class="entries" id="entries"></div>
+
+    <div class="add-form">
+      <div class="form-row">
+        <select id="cat">
+          <option value="Food &amp; drinks">Food &amp; drinks</option>
+          <option value="Bars &amp; nightlife">Bars &amp; nightlife</option>
+          <option value="Shopping">Shopping</option>
+          <option value="Transport">Transport</option>
+          <option value="Activities">Activities</option>
+          <option value="Other">Other</option>
+        </select>
+        <input type="text" id="desc" placeholder="Description">
+      </div>
+      <div class="form-row single">
+        <div class="amt-wrap">
+          <span class="amt-prefix" id="amt-prefix">₩</span>
+          <input type="number" id="amt" placeholder="Amount" min="0" step="100">
+        </div>
+      </div>
+      <button class="add-btn" id="add-btn">+ Add expense</button>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="right-header">Trip overview</div>
+
+    <div class="rate-block">
+      <div class="rate-label">Live rates</div>
+      <div class="rate-row"><span class="rate-cur">AUD</span><span class="rate-val" id="rate-aud-display">fetching...</span></div>
+      <div class="rate-row"><span class="rate-cur">USD</span><span class="rate-val" id="rate-usd-display">fetching...</span></div>
+      <div class="rate-updated" id="rate-updated"></div>
+    </div>
+
+    <div id="trip-days"></div>
+
+    <div class="trip-total">
+      <span class="trip-total-label">Remaining</span>
+      <span class="trip-total-amt" id="trip-remaining">—</span>
+    </div>
+
+    <div class="wise-note">
+      <strong>Wise only.</strong> Korea Travel Card (transit + cash) is a separate pool — funded by USD cash at Incheon Woori Bank. Don't log those here.
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybQ4CGKmBiJqEiGqRfaIC5weHLEHi_nhI39D9J4pu220q4FvJZ-AckblGugLuwVIDyIw/exec';
+const DAYS = 9;
+const TOTAL_AUD = 1020;
+const DATES = ['Sun 23 Mar','Mon 24 Mar','Tue 25 Mar','Wed 26 Mar','Thu 27 Mar','Fri 28 Mar','Sat 29 Mar','Sun 30 Mar','Mon 31 Mar'];
+
+let currentDay = 0;
+let useAUD = false;
+let useUSD = false;
+let rate = parseFloat(localStorage.getItem('seoul-rate') || '880');
+let rateUSD = parseFloat(localStorage.getItem('seoul-rate-usd') || '1390');
+let allData = [];
+let syncTimeout = null;
+let pushing = false;
+
+async function fetchRates() {
+  try {
+    const res = await fetch('https://open.er-api.com/v6/latest/KRW');
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    rate = Math.round(1 / data.rates.AUD);
+    rateUSD = Math.round(1 / data.rates.USD);
+    localStorage.setItem('seoul-rate', rate);
+    localStorage.setItem('seoul-rate-usd', rateUSD);
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('rate-aud-display').textContent = '₩' + rate.toLocaleString();
+    document.getElementById('rate-usd-display').textContent = '₩' + rateUSD.toLocaleString();
+    document.getElementById('rate-updated').textContent = 'updated ' + timeStr;
+    render();
+  } catch(e) {
+    document.getElementById('rate-aud-display').textContent = '₩' + Math.round(rate).toLocaleString() + ' (cached)';
+    document.getElementById('rate-usd-display').textContent = '₩' + Math.round(rateUSD).toLocaleString() + ' (cached)';
+    document.getElementById('rate-updated').textContent = 'live rate unavailable';
+  }
+}
+
+function setSyncStatus(state, label) {
+  document.getElementById('sync-dot').className = 'sync-dot ' + (state || '');
+  document.getElementById('sync-label').textContent = label;
+}
+
+function showError(msg) {
+  const b = document.getElementById('error-banner');
+  b.textContent = msg;
+  b.style.display = msg ? 'block' : 'none';
+}
+
+async function fetchData() {
+  setSyncStatus('syncing', 'syncing...');
+  try {
+    const res = await fetch(SCRIPT_URL + '?nocache=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+    allData = rows
+      .filter(r => r[0] !== '' && r[0] !== null && r[0] !== undefined)
+      .map(r => ({ day: parseInt(r[0]), cat: String(r[1]), desc: String(r[2]), won: parseInt(r[3]) }))
+      .filter(r => !isNaN(r.day) && !isNaN(r.won));
+    localStorage.setItem('seoul-cache', JSON.stringify(allData));
+    setSyncStatus('ok', 'synced');
+    showError('');
+  } catch(e) {
+    setSyncStatus('err', 'offline');
+    const cached = localStorage.getItem('seoul-cache');
+    if (cached) { allData = JSON.parse(cached); showError('Sheet unreachable — showing cached data'); }
+    else { showError('Sheet unreachable — data will sync when online'); }
+  }
+}
+
+async function pushData() {
+  if (pushing) return;
+  pushing = true;
+  setSyncStatus('syncing', 'saving...');
+  const rows = allData.map(e => [e.day, e.cat, e.desc, e.won]);
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rows)
+    });
+    localStorage.setItem('seoul-cache', JSON.stringify(allData));
+    setSyncStatus('ok', 'saved');
+    showError('');
+  } catch(e) {
+    setSyncStatus('err', 'save failed');
+    showError('Could not reach Sheet — saved locally, will retry');
+  }
+  pushing = false;
+}
+
+function debouncePush() {
+  clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(pushData, 800);
+}
+
+function dayEntries(d) { return allData.filter(e => e.day === d); }
+function dailyBudgetWon() { return Math.round((TOTAL_AUD * rate) / DAYS); }
+
+function fmt(won) {
+  if (useUSD) return 'US$' + (won / rateUSD).toFixed(2);
+  if (useAUD) return '$' + Math.round(won / rate).toLocaleString('en-AU');
+  return '₩' + Math.round(won).toLocaleString();
+}
+
+function pctClass(pct) {
+  if (pct >= 100) return 'over';
+  if (pct >= 80) return 'warn';
+  return '';
+}
+
+function render() {
+  const budget = dailyBudgetWon();
+  const entries = dayEntries(currentDay);
+  const spent = entries.reduce((s, e) => s + e.won, 0);
+  const remaining = budget - spent;
+  const pct = budget > 0 ? Math.min(100, Math.round(spent / budget * 100)) : 0;
+
+  document.getElementById('day-num').textContent = 'Day ' + (currentDay + 1);
+  document.getElementById('day-date').textContent = DATES[currentDay];
+  document.getElementById('prev').disabled = currentDay === 0;
+  document.getElementById('next').disabled = currentDay === DAYS - 1;
+  document.getElementById('amt-prefix').textContent = useUSD ? 'US$' : useAUD ? '$' : '₩';
+  document.getElementById('m-budget').textContent = fmt(budget);
+  document.getElementById('m-spent').textContent = fmt(spent);
+
+  const remEl = document.getElementById('m-rem');
+  remEl.textContent = fmt(Math.abs(remaining));
+  remEl.className = 'metric-value ' + (remaining < 0 ? 'over' : remaining < budget * 0.2 ? 'warn' : 'good');
+
+  const prog = document.getElementById('progress');
+  prog.style.width = pct + '%';
+  prog.className = 'progress-fill ' + pctClass(pct);
+
+  const entriesEl = document.getElementById('entries');
+  entriesEl.innerHTML = '';
+  if (entries.length === 0) {
+    entriesEl.innerHTML = '<div class="empty">Nothing logged yet.</div>';
+  } else {
+    entries.forEach(e => {
+      const gi = allData.indexOf(e);
+      const div = document.createElement('div');
+      div.className = 'entry';
+      div.innerHTML = `<span class="entry-cat">${e.cat}</span><span class="entry-desc">${e.desc}</span><span class="entry-amt">${fmt(e.won)}</span><button class="entry-del" data-gi="${gi}">×</button>`;
+      entriesEl.appendChild(div);
+    });
+    entriesEl.querySelectorAll('.entry-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        allData.splice(parseInt(btn.dataset.gi), 1);
+        debouncePush();
+        render();
+      });
+    });
+  }
+
+  renderTrip();
+}
+
+function renderTrip() {
+  const budget = dailyBudgetWon();
+  const tripEl = document.getElementById('trip-days');
+  tripEl.innerHTML = '';
+  let totalSpent = 0;
+
+  for (let d = 0; d < DAYS; d++) {
+    const entries = dayEntries(d);
+    const spent = entries.reduce((s, e) => s + e.won, 0);
+    totalSpent += spent;
+    const pct = budget > 0 ? Math.min(100, Math.round(spent / budget * 100)) : 0;
+
+    const div = document.createElement('div');
+    div.className = 'trip-day' + (d === currentDay ? ' active' : '');
+    div.innerHTML = `<span class="trip-day-label">${DATES[d]}</span>
+      <div class="trip-day-right">
+        <div class="trip-day-amt ${spent > budget ? 'over' : spent === 0 ? 'muted' : ''}">${spent === 0 ? '—' : fmt(spent)}</div>
+        <div class="trip-day-bar"><div class="trip-day-bar-fill ${pctClass(pct)}" style="width:${pct}%"></div></div>
+      </div>`;
+    div.addEventListener('click', () => { currentDay = d; render(); });
+    tripEl.appendChild(div);
+  }
+
+  const rem = budget * DAYS - totalSpent;
+  const remEl = document.getElementById('trip-remaining');
+  remEl.textContent = fmt(Math.abs(rem));
+  remEl.className = 'trip-total-amt ' + (rem < 0 ? 'over' : 'good');
+}
+
+document.getElementById('prev').addEventListener('click', () => { if (currentDay > 0) { currentDay--; render(); } });
+document.getElementById('next').addEventListener('click', () => { if (currentDay < DAYS - 1) { currentDay++; render(); } });
+
+document.getElementById('btn-krw').addEventListener('click', () => {
+  useAUD = false; useUSD = false;
+  document.getElementById('btn-krw').classList.add('active');
+  document.getElementById('btn-aud').classList.remove('active');
+  document.getElementById('btn-usd').classList.remove('active');
+  render();
+});
+document.getElementById('btn-aud').addEventListener('click', () => {
+  useAUD = true; useUSD = false;
+  document.getElementById('btn-aud').classList.add('active');
+  document.getElementById('btn-krw').classList.remove('active');
+  document.getElementById('btn-usd').classList.remove('active');
+  render();
+});
+document.getElementById('btn-usd').addEventListener('click', () => {
+  useUSD = true; useAUD = false;
+  document.getElementById('btn-usd').classList.add('active');
+  document.getElementById('btn-krw').classList.remove('active');
+  document.getElementById('btn-aud').classList.remove('active');
+  render();
+});
+
+
+
+
+document.getElementById('add-btn').addEventListener('click', () => {
+  const cat = document.getElementById('cat').value;
+  const desc = document.getElementById('desc').value.trim() || cat;
+  const amtRaw = parseFloat(document.getElementById('amt').value);
+  if (!amtRaw || amtRaw <= 0) return;
+  const won = useUSD ? Math.round(amtRaw * rateUSD) : useAUD ? Math.round(amtRaw * rate) : Math.round(amtRaw);
+  allData.push({ day: currentDay, cat, desc, won });
+  document.getElementById('amt').value = '';
+  document.getElementById('desc').value = '';
+  debouncePush();
+  render();
+});
+
+document.getElementById('amt').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('add-btn').click();
+});
+
+async function init() {
+  document.getElementById('loading').style.display = 'flex';
+  await Promise.all([fetchData(), fetchRates()]);
+  document.getElementById('loading').style.display = 'none';
+  render();
+  setInterval(fetchData, 30000);
+  setInterval(fetchRates, 300000);
+}
+
+init();
+</script>
+</body>
+</html>
