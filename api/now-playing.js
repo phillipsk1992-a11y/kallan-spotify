@@ -25,6 +25,11 @@ module.exports = async function handler(req, res) {
   const tokenData = await tokenRes.json();
   const accessToken = tokenData.access_token;
 
+  // Surface auth failures instead of silently returning "nothing playing"
+  if (!accessToken) {
+    return res.json({ isPlaying: false, track: null, playedAt: null, error: tokenData.error || 'no_access_token', detail: tokenData.error_description || null });
+  }
+
   const nowRes = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
     headers: { 'Authorization': 'Bearer ' + accessToken },
   });
